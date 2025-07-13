@@ -261,11 +261,11 @@ src/
 *Goal: Basic working editor with file operations*
 
 **Week 1:**
-- [ ] Set up Tauri project with React + TypeScript
-- [ ] Create basic window layout (header, sidebar, main content)
-- [ ] Implement project folder selection dialog
-- [ ] Basic file system commands (read directory, read file)
-- [ ] Simple file tree in sidebar
+- [x] Set up Tauri project with React + TypeScript
+- [x] Create basic window layout (header, sidebar, main content)
+- [x] Implement project folder selection dialog
+- [x] Basic file system commands (read directory, read file)
+- [x] Simple file tree in sidebar
 
 **Week 2:**
 - [ ] Integrate CodeMirror 6 with basic markdown highlighting

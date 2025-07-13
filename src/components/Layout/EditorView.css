@@ -1,0 +1,32 @@
+.editor-view {
+  height: 100%;
+  padding: 20px;
+  background-color: #fafafa;
+}
+
+.editor-codemirror {
+  height: 100%;
+  font-family: 'iA Writer Duo', 'Menlo', 'Monaco', 'Consolas', monospace;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.editor-codemirror .cm-editor {
+  background-color: transparent;
+  border: none;
+  outline: none;
+}
+
+.editor-codemirror .cm-content {
+  padding: 0;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.editor-codemirror .cm-focused {
+  outline: none;
+}
+
+.editor-codemirror .cm-line {
+  font-family: inherit;
+}

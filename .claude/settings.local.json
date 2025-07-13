@@ -3,7 +3,8 @@
     "allow": [
       "mcp__context7__resolve-library-id",
       "mcp__context7__get-library-docs",
-      "Bash(npm create:*)"
+      "Bash(npm create:*)",
+      "Bash(npm run tauri:*)"
     ],
     "deny": []
   }
