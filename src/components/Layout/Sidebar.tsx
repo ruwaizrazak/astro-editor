@@ -2,18 +2,17 @@ import React from 'react';
 import { useAppStore } from '../../store';
 import { CollectionsList } from './CollectionsList';
 import { FilesList } from './FilesList';
-import './Sidebar.css';
 
 export const Sidebar: React.FC = () => {
   const { selectedCollection } = useAppStore();
 
   return (
-    <div className="sidebar">
-      <div className="sidebar-header">
-        <h3>Collections</h3>
+    <div className="h-full flex flex-col">
+      <div className="p-4 border-b bg-muted/30">
+        <h3 className="text-sm font-semibold text-foreground m-0">Collections</h3>
       </div>
       
-      <div className="sidebar-content">
+      <div className="flex-1 overflow-y-auto py-2">
         {!selectedCollection ? (
           <CollectionsList />
         ) : (

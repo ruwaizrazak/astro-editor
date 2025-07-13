@@ -61,6 +61,7 @@ Also look at the images in `/planning`.
 ### Research Summary (Completed)
 
 **Technology Stack Research:**
+
 1. **Framework:** Tauri vs Electron
    - Tauri: Rust backend, web frontend, smaller bundle size, better performance
    - Electron: Node.js backend, larger but more mature ecosystem
@@ -75,19 +76,22 @@ Also look at the images in `/planning`.
 ### Core Technology Decisions
 
 **Primary Framework: Tauri**
-- **Rationale:** 
+
+- **Rationale:**
   - Better performance and smaller bundle size critical for editor responsiveness
   - Rust backend provides excellent file system performance for file watching
   - Native macOS integration superior to Electron
   - Modern architecture better suited for this type of application
 
 **Frontend Framework: React + TypeScript**
+
 - **Rationale:**
   - Large ecosystem of UI components
   - Excellent TypeScript support crucial for type-safe Astro content collection integration
   - Good integration with both text editor options
 
 **Text Editor: CodeMirror 6**
+
 - **Rationale:**
   - More suitable for markdown-focused editing (Monaco is better for code)
   - Lighter weight crucial for startup performance
@@ -96,12 +100,14 @@ Also look at the images in `/planning`.
   - More flexible for implementing hanging hash marks for headings
 
 **State Management: Zustand**
+
 - **Rationale:**
   - Lightweight, TypeScript-first
   - Good for managing file state, sidebar visibility, etc.
   - Simpler than Redux for this use case
 
 **File Parsing: Tree-sitter**
+
 - **Rationale:**
   - Robust TypeScript/Astro config parsing
   - Can parse Astro components for MDX slash commands (stretch goal)
@@ -110,6 +116,7 @@ Also look at the images in `/planning`.
 ### Application Architecture
 
 **High-Level Structure:**
+
 ```
 ┌─────────────────────────────────────────┐
 │                Frontend                 │
@@ -141,6 +148,7 @@ Also look at the images in `/planning`.
 **Detailed Architecture:**
 
 **Frontend Components:**
+
 ```
 App
 ├── Layout
@@ -161,59 +169,64 @@ App
 ```
 
 **State Management (Zustand):**
+
 ```typescript
 interface AppState {
   // Project state
-  projectPath: string | null;
-  collections: Collection[];
-  
+  projectPath: string | null
+  collections: Collection[]
+
   // UI state
-  sidebarVisible: boolean;
-  frontmatterPanelVisible: boolean;
-  currentFile: FileEntry | null;
-  
+  sidebarVisible: boolean
+  frontmatterPanelVisible: boolean
+  currentFile: FileEntry | null
+
   // Editor state
-  editorContent: string;
-  isDirty: boolean;
-  
+  editorContent: string
+  isDirty: boolean
+
   // Actions
-  setProject: (path: string) => void;
-  loadCollections: () => Promise<void>;
-  openFile: (file: FileEntry) => Promise<void>;
-  saveFile: () => Promise<void>;
-  updateFrontmatter: (data: any) => void;
+  setProject: (path: string) => void
+  loadCollections: () => Promise<void>
+  openFile: (file: FileEntry) => Promise<void>
+  saveFile: () => Promise<void>
+  updateFrontmatter: (data: any) => void
 }
 ```
 
 **Data Flow:**
 
 1. **Project Loading:**
+
    ```
-   User selects project → Backend parses config.ts → 
+   User selects project → Backend parses config.ts →
    Extract collections & schemas → Update frontend state
    ```
 
 2. **File Operations:**
+
    ```
-   User clicks file → Backend reads file → 
-   Parse frontmatter/content → Update editor state → 
+   User clicks file → Backend reads file →
+   Parse frontmatter/content → Update editor state →
    Hide frontmatter in editor → Show in panel
    ```
 
 3. **File Editing:**
+
    ```
-   User types in editor → Update state → 
-   Auto-save timer → Backend writes file → 
+   User types in editor → Update state →
+   Auto-save timer → Backend writes file →
    File watcher confirms change
    ```
 
 4. **Frontmatter Editing:**
    ```
-   User edits form → Validate against Zod → 
+   User edits form → Validate against Zod →
    Update file content → Sync with backend
    ```
 
 **Backend (Rust) Components:**
+
 ```
 src/
 ├── main.rs              # Tauri app entry
@@ -236,16 +249,19 @@ src/
 ### Key Technical Challenges
 
 1. **Astro Config Parsing**
+
    - Parse TypeScript `src/content/config.ts`
    - Extract Zod schemas dynamically
    - Convert Zod schemas to UI form components
 
 2. **Frontmatter Hiding**
+
    - Parse markdown to identify frontmatter boundaries
    - Hide from CodeMirror display while preserving in file
    - Sync frontmatter panel with file contents
 
 3. **MDX Import Hiding**
+
    - Parse MDX files to identify TypeScript imports after frontmatter
    - Hide from display while preserving in file
    - Auto-add imports when MDX components are used
@@ -258,9 +274,10 @@ src/
 ### Implementation Phases
 
 **Phase 1: Core Foundation (Week 1-2)**
-*Goal: Basic working editor with file operations*
+_Goal: Basic working editor with file operations_
 
 **Week 1:**
+
 - [x] Set up Tauri project with React + TypeScript
 - [x] Create basic window layout (header, sidebar, main content)
 - [x] Implement project folder selection dialog
@@ -268,6 +285,7 @@ src/
 - [x] Simple file tree in sidebar
 
 **Week 2:**
+
 - [x] Integrate CodeMirror 6 with basic markdown highlighting
 - [x] Implement file opening/switching
 - [x] Basic file saving functionality (with auto-save)
@@ -276,18 +294,33 @@ src/
 
 **Deliverable:** Basic editor that can open a folder, display files, and edit/save markdown
 
+#### Post Phase 1 Extra Tasks
+
+- [ ] Add ESLint and/or prettier with suitable configs to help prevent errors? Plus similar linters and checkers for the rust part?
+- [ ] Add a simple test framework (both TS and Rust?) and write some basic tests for what we've done so far. So we don't break things later on?
+- [ ] Consider using an appropriate UI framework and tailwind. I'd prefer one with no external deps like shadcn, but there may be better options. We only really need UI components like this for the window "chrome" and settings etc. We'll probably have to hand-write CSS for the markdown editor to makeit really beautiful. There may be beter optionsfor our use case than shadcn?
+- [ ] Bring in an icon library for when we need icons. Suggest: https://www.radix-ui.com/icons
+- [ ] Update CLAUDE.md with details of the project structure, tech etc and instructions to run checks and tests to verify work, as well as guidance on the other patterns we've developed so far. Should also include a note about using Context7 to access docs etc
+- [ ] Work out how to get Claude Code to "see" the app running to help with design later? Playwright MCP or similar?
+- [ ] Check Tauri is configured in the most optimal way for nice-looking macos apps
+  - [ ] Transparent titlebar (https://v2.tauri.app/learn/window-customization/#macos-transparent-titlebar-with-custom-window-background-color)
+  - [ ] Sensible window menu with Open Project and the minimum usual stuff youd expect
+  - [ ] Any other "boilerplateish" Tauri stuff we should do
+
 ---
 
 **Phase 2: Astro Integration (Week 3-4)**
-*Goal: Parse Astro config and handle content collections*
+_Goal: Parse Astro config and handle content collections_
 
 **Week 3:**
+
 - [ ] Implement TypeScript parser for `src/content/config.ts`
 - [ ] Extract collection definitions and Zod schemas
 - [ ] Create data structures for collections and schemas
 - [ ] Display collections in sidebar instead of raw files
 
 **Week 4:**
+
 - [ ] Parse frontmatter from markdown files
 - [ ] Hide frontmatter from CodeMirror display
 - [ ] Create basic frontmatter editing panel
@@ -299,9 +332,10 @@ src/
 ---
 
 **Phase 3: Enhanced Editor Experience (Week 5-6)**
-*Goal: Beautiful, iA Writer-inspired editing experience*
+_Goal: Beautiful, iA Writer-inspired editing experience_
 
 **Week 5:**
+
 - [ ] Implement iA Writer-inspired typography and colors
 - [ ] Create hanging hash marks for headings
 - [ ] Custom CodeMirror theme matching iA Writer aesthetic
@@ -309,6 +343,7 @@ src/
 - [ ] Improve markdown syntax highlighting
 
 **Week 6:**
+
 - [ ] Implement image drag & drop functionality
 - [ ] Auto-copy images to `src/assets/[collection]/` with date prefixes
 - [ ] Insert markdown image syntax at drop location
@@ -320,9 +355,10 @@ src/
 ---
 
 **Phase 4: Polish & Performance (Week 7-8)**
-*Goal: Production-ready reliability and performance*
+_Goal: Production-ready reliability and performance_
 
 **Week 7:**
+
 - [ ] Implement auto-save (every 30 seconds + on blur)
 - [ ] Add error handling and graceful degradation
 - [ ] Optimize for large collections (virtualized lists)
@@ -330,6 +366,7 @@ src/
 - [ ] Crash recovery and unsaved changes detection
 
 **Week 8:**
+
 - [ ] Performance optimization and profiling
 - [ ] Add comprehensive keyboard shortcuts
 - [ ] Implement proper macOS integration (menu bar, etc.)
@@ -341,19 +378,22 @@ src/
 ---
 
 **Phase 5: Stretch Goals (Week 9+)**
-*Goal: Advanced features that differentiate from basic editors*
+_Goal: Advanced features that differentiate from basic editors_
 
 **Priority 1 (Week 9):**
+
 - [ ] Focus mode highlighting current sentence/paragraph
 - [ ] Image preview on hover over markdown image syntax
 - [ ] Better error messages and user guidance
 
 **Priority 2 (Week 10):**
+
 - [ ] MDX component discovery from `src/components/mdx/`
 - [ ] Slash command system for inserting MDX components
 - [ ] Auto-import management for MDX components
 
 **Priority 3 (Future):**
+
 - [ ] Writing analysis (sentence complexity, readability)
 - [ ] Syntax highlighting by parts of speech
 - [ ] Typewriter mode (current line stays centered)
@@ -365,20 +405,24 @@ src/
 ### Technical Milestones
 
 **Week 2 Checkpoint:**
+
 - Can open project, browse files, edit and save markdown
 - Basic UI layout working
 
 **Week 4 Checkpoint:**
+
 - Understands Astro content collections
 - Frontmatter editing works
 - Collections displayed properly
 
 **Week 6 Checkpoint:**
+
 - Beautiful editing experience
 - Image handling works
 - Feels like a dedicated writing tool
 
 **Week 8 Checkpoint:**
+
 - Production ready
 - All core features implemented
 - Performance optimized
@@ -386,12 +430,14 @@ src/
 ### Risk Mitigation
 
 **High Risk Items:**
+
 1. **Astro config parsing complexity** → Start with simple cases, add complexity gradually
 2. **CodeMirror customization difficulties** → Research extensively, have fallback plans
 3. **File watching performance** → Use debouncing, limit to relevant directories
 4. **Frontmatter/content synchronization** → Implement robust parsing and validation
 
 **Success Criteria:**
+
 - App launches in < 2 seconds
 - File operations feel instant (< 100ms)
 - Zero data loss from crashes

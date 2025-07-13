@@ -1,7 +1,8 @@
 import React from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { useAppStore } from '../../store';
-import './ToolBar.css';
+import { Button } from '../ui/button';
+import { FolderOpen, Save } from 'lucide-react';
 
 export const ToolBar: React.FC = () => {
   const { 
@@ -34,31 +35,48 @@ export const ToolBar: React.FC = () => {
   return (
     <div className="toolbar">
       <div className="toolbar-left">
-        <button onClick={handleOpenProject} className="toolbar-button">
+        <Button 
+          onClick={handleOpenProject} 
+          variant="ghost" 
+          size="sm"
+          className="gap-2"
+        >
+          <FolderOpen className="h-4 w-4" />
           Open Project
-        </button>
-        <button onClick={toggleSidebar} className="toolbar-button">
+        </Button>
+        <Button 
+          onClick={toggleSidebar} 
+          variant="ghost" 
+          size="sm"
+        >
           Toggle Sidebar
-        </button>
+        </Button>
       </div>
       
       <div className="toolbar-center">
         {projectPath && (
-          <span className="project-path">{projectPath}</span>
+          <span className="project-path text-sm text-muted-foreground">{projectPath}</span>
         )}
       </div>
       
       <div className="toolbar-right">
-        <button onClick={toggleFrontmatterPanel} className="toolbar-button">
-          Frontmatter
-        </button>
-        <button 
-          onClick={handleSave} 
-          className={`toolbar-button ${isDirty ? 'save-needed' : ''}`}
-          disabled={!currentFile || !isDirty}
+        <Button 
+          onClick={toggleFrontmatterPanel} 
+          variant="ghost" 
+          size="sm"
         >
+          Frontmatter
+        </Button>
+        <Button 
+          onClick={handleSave} 
+          variant={isDirty ? "default" : "ghost"}
+          size="sm"
+          disabled={!currentFile || !isDirty}
+          className="gap-2"
+        >
+          <Save className="h-4 w-4" />
           Save {isDirty ? '•' : ''}
-        </button>
+        </Button>
       </div>
     </div>
   );

@@ -1,6 +1,5 @@
 import React from 'react';
 import { useAppStore } from '../../store';
-import './StatusBar.css';
 
 export const StatusBar: React.FC = () => {
   const { currentFile, editorContent, isDirty } = useAppStore();
@@ -9,21 +8,21 @@ export const StatusBar: React.FC = () => {
   const charCount = editorContent.length;
 
   return (
-    <div className="status-bar">
-      <div className="status-left">
+    <div className="flex justify-between items-center px-4 py-1 bg-muted/50 border-t text-xs text-muted-foreground h-6">
+      <div className="flex items-center">
         {currentFile && (
-          <span className="file-info">
+          <span>
             {currentFile.name}.{currentFile.extension}
-            {isDirty && <span className="dirty-indicator"> •</span>}
+            {isDirty && <span className="text-primary font-bold"> •</span>}
           </span>
         )}
       </div>
       
-      <div className="status-right">
+      <div className="flex gap-4">
         {currentFile && (
           <>
-            <span className="word-count">{wordCount} words</span>
-            <span className="char-count">{charCount} characters</span>
+            <span>{wordCount} words</span>
+            <span>{charCount} characters</span>
           </>
         )}
       </div>
