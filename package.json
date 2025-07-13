@@ -19,7 +19,7 @@
     "rust:fmt": "source ~/.cargo/env && cd src-tauri && cargo fmt",
     "rust:fmt:check": "source ~/.cargo/env && cd src-tauri && cargo fmt --check",
     "rust:clippy": "source ~/.cargo/env && cd src-tauri && cargo clippy -- -D warnings",
-    "rust:clippy:fix": "source ~/.cargo/env && cd src-tauri && cargo clippy --fix",
+    "rust:clippy:fix": "source ~/.cargo/env && cd src-tauri && cargo clippy --fix --allow-dirty",
     "check-all": "npm run typecheck && npm run lint && npm run format:check && npm run rust:fmt:check && npm run rust:clippy",
     "fix-all": "npm run lint:fix && npm run format && npm run rust:fmt && npm run rust:clippy:fix"
   },

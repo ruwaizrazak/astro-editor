@@ -16,19 +16,19 @@ pub async fn start_watching_project(app: AppHandle, project_path: String) -> Res
     let mut watcher = notify::recommended_watcher(move |result| match result {
         Ok(event) => {
             if let Err(e) = tx.send(event) {
-                eprintln!("Failed to send file event: {}", e);
+                eprintln!("Failed to send file event: {e}");
             }
         }
-        Err(e) => eprintln!("Watch error: {:?}", e),
+        Err(e) => eprintln!("Watch error: {e:?}"),
     })
-    .map_err(|e| format!("Failed to create watcher: {}", e))?;
+    .map_err(|e| format!("Failed to create watcher: {e}"))?;
 
     // Watch the content directory specifically
     let content_path = PathBuf::from(&project_path).join("src").join("content");
     if content_path.exists() {
         watcher
             .watch(&content_path, RecursiveMode::Recursive)
-            .map_err(|e| format!("Failed to watch directory: {}", e))?;
+            .map_err(|e| format!("Failed to watch directory: {e}"))?;
     }
 
     // Store the watcher so it doesn't get dropped
@@ -71,7 +71,7 @@ pub async fn stop_watching_project(app: AppHandle, project_path: String) -> Resu
     }
 }
 
-async fn process_events(app: &AppHandle, events: &mut Vec<Event>) {
+async fn process_events(app: &AppHandle, events: &mut [Event]) {
     for event in events.iter() {
         match &event.kind {
             EventKind::Create(_) | EventKind::Modify(_) | EventKind::Remove(_) => {
@@ -87,7 +87,7 @@ async fn process_events(app: &AppHandle, events: &mut Vec<Event>) {
                                     kind: format!("{:?}", event.kind),
                                 },
                             ) {
-                                eprintln!("Failed to emit file change event: {}", e);
+                                eprintln!("Failed to emit file change event: {e}");
                             }
                         }
                     }

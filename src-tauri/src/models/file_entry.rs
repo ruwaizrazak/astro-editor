@@ -26,7 +26,7 @@ impl FileEntry {
             .unwrap_or("")
             .to_string();
 
-        let id = format!("{}/{}", collection, name);
+        let id = format!("{collection}/{name}");
 
         Self {
             id,
@@ -39,6 +39,7 @@ impl FileEntry {
         }
     }
 
+    #[allow(dead_code)]
     pub fn is_markdown(&self) -> bool {
         matches!(self.extension.as_str(), "md" | "mdx")
     }

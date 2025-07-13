@@ -9,29 +9,33 @@ import { useAppStore } from '../../store';
 import './EditorView.css';
 
 export const EditorViewComponent: React.FC = () => {
-  const { editorContent, setEditorContent, currentFile, saveFile, isDirty } = useAppStore();
+  const { editorContent, setEditorContent, currentFile, saveFile, isDirty } =
+    useAppStore();
   const autoSaveTimeoutRef = useRef<number | null>(null);
 
-  const onChange = useCallback((value: string) => {
-    setEditorContent(value);
-    
-    // Clear existing timeout
-    if (autoSaveTimeoutRef.current) {
-      clearTimeout(autoSaveTimeoutRef.current);
-    }
-    
-    // Set new auto-save timeout (30 seconds)
-    autoSaveTimeoutRef.current = window.setTimeout(() => {
-      if (currentFile && isDirty) {
-        saveFile();
+  const onChange = useCallback(
+    (value: string) => {
+      setEditorContent(value);
+
+      // Clear existing timeout
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
       }
-    }, 30000);
-  }, [setEditorContent, saveFile, currentFile, isDirty]);
+
+      // Set new auto-save timeout (30 seconds)
+      autoSaveTimeoutRef.current = window.setTimeout(() => {
+        if (currentFile && isDirty) {
+          void saveFile();
+        }
+      }, 30000);
+    },
+    [setEditorContent, saveFile, currentFile, isDirty]
+  );
 
   // Auto-save on blur (when editor loses focus)
   const handleBlur = useCallback(() => {
     if (currentFile && isDirty) {
-      saveFile();
+      void saveFile();
     }
   }, [saveFile, currentFile, isDirty]);
 
@@ -58,37 +62,38 @@ export const EditorViewComponent: React.FC = () => {
         run: () => {
           // Bold shortcut - will implement markdown formatting
           return true;
-        }
+        },
       },
       {
         key: 'Mod-i',
         run: () => {
-          // Italic shortcut - will implement markdown formatting  
+          // Italic shortcut - will implement markdown formatting
           return true;
-        }
+        },
       },
       {
         key: 'Mod-k',
         run: () => {
           // Link shortcut - will implement markdown link creation
           return true;
-        }
+        },
       },
       {
         key: 'Mod-s',
         run: () => {
           // Save shortcut
           if (currentFile && isDirty) {
-            saveFile();
+            void saveFile();
           }
           return true;
-        }
-      }
+        },
+      },
     ]),
     EditorView.theme({
       '&': {
         fontSize: '16px',
-        fontFamily: '"SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        fontFamily:
+          '"SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       },
       '.cm-content': {
         padding: '20px 40px',
@@ -142,12 +147,13 @@ export const EditorViewComponent: React.FC = () => {
         color: '#8E8E93',
       },
       '.tok-monospace': {
-        fontFamily: '"SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace',
+        fontFamily:
+          '"SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace',
         fontSize: '0.9em',
         backgroundColor: 'rgba(142, 142, 147, 0.12)',
         padding: '2px 4px',
         borderRadius: '3px',
-      }
+      },
     }),
     EditorView.lineWrapping,
   ];

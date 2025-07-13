@@ -4,7 +4,9 @@ import { useAppStore } from '../../store';
 export const StatusBar: React.FC = () => {
   const { currentFile, editorContent, isDirty } = useAppStore();
 
-  const wordCount = editorContent.split(/\s+/).filter(word => word.length > 0).length;
+  const wordCount = editorContent
+    .split(/\s+/)
+    .filter(word => word.length > 0).length;
   const charCount = editorContent.length;
 
   return (
@@ -17,7 +19,7 @@ export const StatusBar: React.FC = () => {
           </span>
         )}
       </div>
-      
+
       <div className="flex gap-4">
         {currentFile && (
           <>

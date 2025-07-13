@@ -16,6 +16,7 @@ export const Sidebar: React.FC = () => {
         setProject(result);
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to open project:', error);
     }
   };
@@ -24,20 +25,22 @@ export const Sidebar: React.FC = () => {
     <div className="h-full flex flex-col">
       <div className="p-4 border-b bg-muted/30 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Button 
-            onClick={handleOpenProject}
-            variant="ghost" 
+          <Button
+            onClick={() => void handleOpenProject()}
+            variant="ghost"
             size="sm"
             className="h-6 w-6 p-0"
             title="Open Project"
           >
             <FolderOpen className="h-4 w-4" />
           </Button>
-          <h3 className="text-sm font-semibold text-foreground m-0">Collections</h3>
+          <h3 className="text-sm font-semibold text-foreground m-0">
+            Collections
+          </h3>
         </div>
-        <Button 
+        <Button
           onClick={toggleSidebar}
-          variant="ghost" 
+          variant="ghost"
           size="sm"
           className="h-6 w-6 p-0"
           title="Close Sidebar"
@@ -45,13 +48,9 @@ export const Sidebar: React.FC = () => {
           <PanelLeftClose className="h-4 w-4" />
         </Button>
       </div>
-      
+
       <div className="flex-1 overflow-y-auto py-2">
-        {!selectedCollection ? (
-          <CollectionsList />
-        ) : (
-          <FilesList />
-        )}
+        {!selectedCollection ? <CollectionsList /> : <FilesList />}
       </div>
     </div>
   );

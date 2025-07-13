@@ -27,9 +27,9 @@ pub async fn scan_project(project_path: String) -> Result<Vec<Collection>, Strin
     if content_dir.exists() {
         // Look for common collection directories
         for entry in std::fs::read_dir(&content_dir)
-            .map_err(|e| format!("Failed to read content directory: {}", e))?
+            .map_err(|e| format!("Failed to read content directory: {e}"))?
         {
-            let entry = entry.map_err(|e| format!("Failed to read directory entry: {}", e))?;
+            let entry = entry.map_err(|e| format!("Failed to read directory entry: {e}"))?;
             let path = entry.path();
 
             if path.is_dir() {
@@ -56,10 +56,10 @@ pub async fn scan_collection_files(collection_path: String) -> Result<Vec<FileEn
         .to_string();
 
     // Scan for markdown and MDX files
-    for entry in std::fs::read_dir(&path)
-        .map_err(|e| format!("Failed to read collection directory: {}", e))?
+    for entry in
+        std::fs::read_dir(&path).map_err(|e| format!("Failed to read collection directory: {e}"))?
     {
-        let entry = entry.map_err(|e| format!("Failed to read directory entry: {}", e))?;
+        let entry = entry.map_err(|e| format!("Failed to read directory entry: {e}"))?;
         let path = entry.path();
 
         if path.is_file() {

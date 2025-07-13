@@ -12,9 +12,9 @@ export const MainEditor: React.FC = () => {
   return (
     <div className="flex flex-col h-full relative">
       {!sidebarVisible && (
-        <Button 
+        <Button
           onClick={toggleSidebar}
-          variant="ghost" 
+          variant="ghost"
           size="sm"
           className="absolute top-2 left-2 z-10 h-8 w-8 p-0"
           title="Open Sidebar"
@@ -23,20 +23,25 @@ export const MainEditor: React.FC = () => {
         </Button>
       )}
       <ToolBar />
-      
+
       <div className="flex-1 overflow-hidden">
         {currentFile ? (
           <EditorView />
         ) : (
           <div className="flex items-center justify-center h-full bg-background">
             <div className="text-center text-muted-foreground">
-              <h2 className="m-0 mb-4 text-2xl font-light">Welcome to Astro Editor</h2>
-              <p className="m-0 text-sm">Select a project folder to get started, then choose a file to edit.</p>
+              <h2 className="m-0 mb-4 text-2xl font-light">
+                Welcome to Astro Editor
+              </h2>
+              <p className="m-0 text-sm">
+                Select a project folder to get started, then choose a file to
+                edit.
+              </p>
             </div>
           </div>
         )}
       </div>
-      
+
       <StatusBar />
     </div>
   );
