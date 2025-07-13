@@ -1,5 +1,5 @@
-pub mod file_entry;
 pub mod collection;
+pub mod file_entry;
 
-pub use file_entry::FileEntry;
 pub use collection::Collection;
+pub use file_entry::FileEntry;

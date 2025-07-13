@@ -1,5 +1,5 @@
-mod models;
 mod commands;
+mod models;
 
 use commands::*;
 

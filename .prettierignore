@@ -1,0 +1,7 @@
+node_modules
+dist
+target
+.git
+*.lock
+*.log
+src-tauri/target

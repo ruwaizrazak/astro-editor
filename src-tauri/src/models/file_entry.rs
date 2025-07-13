@@ -19,7 +19,7 @@ impl FileEntry {
             .and_then(|s| s.to_str())
             .unwrap_or("unknown")
             .to_string();
-        
+
         let extension = path
             .extension()
             .and_then(|s| s.to_str())

@@ -109,6 +109,64 @@ This is a macOS markdown editor specifically designed for managing and editing A
 - Implement resize handles with CSS `resize: horizontal`
 - Use `min-w-*` and `max-w-*` for panel constraints
 
+## Code Quality Tools
+
+### TypeScript Linting & Formatting
+
+**ESLint Configuration:**
+- Configured with TypeScript strict rules and React hooks
+- Excludes build files and config files from linting
+- Warns on console statements, requires proper async/await handling
+
+**Available Commands:**
+```bash
+npm run lint          # Check for linting errors
+npm run lint:fix      # Auto-fix linting issues
+npm run format        # Format code with Prettier
+npm run format:check  # Check if code is formatted
+npm run typecheck     # TypeScript type checking
+```
+
+**Key Rules:**
+- No unused variables (prefix with `_` to ignore)
+- Proper async/await usage required
+- React hooks rules enforced
+- Console statements generate warnings
+
+### Rust Linting & Formatting
+
+**rustfmt Configuration:**
+- 100 character line width
+- 4-space indentation
+- Unix line endings
+- Stable features only (no nightly required)
+
+**Clippy Configuration:**
+- MSRV: 1.70
+- Cognitive complexity threshold: 30
+- Treats warnings as errors in CI
+
+**Available Commands:**
+```bash
+npm run rust:fmt         # Format Rust code
+npm run rust:fmt:check   # Check Rust formatting
+npm run rust:clippy      # Run Clippy linting
+npm run rust:clippy:fix  # Auto-fix Clippy issues
+```
+
+### Combined Commands
+
+```bash
+npm run check-all  # Run all linting and formatting checks
+npm run fix-all    # Auto-fix all linting and formatting issues
+```
+
+**Pre-commit Workflow:**
+1. Always run `npm run check-all` before committing
+2. Use `npm run fix-all` to auto-fix issues
+3. Address any remaining linting errors manually
+4. TypeScript compilation must pass without errors
+
 ---
 
 _Remember: Update this file as the project evolves and always keep `planning.md` current with completed tasks._
