@@ -1,6 +1,8 @@
 import React from 'react';
 import { useAppStore } from '../../store';
 import { cn } from '@/lib/utils';
+import { Button } from '../ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 export const FilesList: React.FC = () => {
   const { 
@@ -21,12 +23,15 @@ export const FilesList: React.FC = () => {
 
   return (
     <div>
-      <button 
-        className="px-4 py-2 bg-transparent border-none cursor-pointer text-left text-xs text-primary border-b border-border/50 hover:bg-accent/50 w-full"
+      <Button 
+        variant="ghost"
+        size="sm"
+        className="justify-start w-full h-auto px-4 py-2 text-xs text-primary border-b border-border/50 rounded-none hover:bg-accent/50"
         onClick={handleBackClick}
       >
-        ← Back to Collections
-      </button>
+        <ArrowLeft className="h-3 w-3 mr-1" />
+        Back to Collections
+      </Button>
       
       <div className="px-4 py-2 text-xs font-semibold text-muted-foreground">
         {selectedCollection}
