@@ -167,6 +167,70 @@ npm run fix-all    # Auto-fix all linting and formatting issues
 3. Address any remaining linting errors manually
 4. TypeScript compilation must pass without errors
 
+## Testing Framework
+
+### TypeScript Testing (Vitest + React Testing Library)
+
+**Setup:**
+- **Vitest** for fast unit testing with native ESM support
+- **React Testing Library** for component testing
+- **jsdom** environment for DOM simulation
+- **Mocked Tauri APIs** for testing without backend
+
+**Available Commands:**
+```bash
+npm run test          # Run tests in watch mode
+npm run test:run      # Run tests once
+npm run test:ui       # Run tests with UI
+npm run test:coverage # Run tests with coverage report
+```
+
+**Testing Patterns:**
+- **Store tests**: State management, actions, and async operations
+- **Component tests**: Rendering, user interactions, button states, and integration
+- **Error handling**: API failures, file system errors, edge cases
+- **Utility tests**: Helper functions and UI utilities
+- **Tauri API mocking**: Use `globalThis.mockTauri` for API calls
+- **Reset state**: Use `beforeEach` to reset store and mocks
+
+### Rust Testing (cargo test)
+
+**Setup:**
+- Built-in Rust testing framework
+- Unit tests in `#[cfg(test)]` modules
+- Integration tests for command functions
+
+**Available Commands:**
+```bash
+npm run rust:test  # Run all Rust tests
+npm run test:all   # Run both TS and Rust tests
+```
+
+**Testing Patterns:**
+- **Model tests**: Test struct creation, validation, and utility methods
+- **Command tests**: Test file operations (read, write, create, delete)
+- **Error scenarios**: File not found, permission denied, file exists
+- **Integration tests**: Test complete workflows with temporary files
+- **Edge cases**: Special characters, empty files, invalid paths
+
+### Combined Testing
+
+```bash
+npm run test:all   # Run all tests (TS + Rust)
+npm run check-all  # Run all checks including tests
+```
+
+**Test Performance:**
+- **Vitest**: ~800ms for 46 tests (very fast)
+- **Cargo test**: ~2-3s for 13 tests (fast compilation)
+- **Total**: ~4-5s for full test suite
+
+**Development Workflow:**
+1. Write tests alongside features for TDD
+2. Run `npm run test` during development (watch mode)
+3. Run `npm run test:all` before commits
+4. Maintain >90% test coverage for critical paths
+
 ---
 
 _Remember: Update this file as the project evolves and always keep `planning.md` current with completed tasks._

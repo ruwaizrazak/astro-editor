@@ -20,7 +20,13 @@
     "rust:fmt:check": "source ~/.cargo/env && cd src-tauri && cargo fmt --check",
     "rust:clippy": "source ~/.cargo/env && cd src-tauri && cargo clippy -- -D warnings",
     "rust:clippy:fix": "source ~/.cargo/env && cd src-tauri && cargo clippy --fix --allow-dirty",
-    "check-all": "npm run typecheck && npm run lint && npm run format:check && npm run rust:fmt:check && npm run rust:clippy",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "rust:test": "source ~/.cargo/env && cd src-tauri && cargo test",
+    "test:all": "npm run test:run && npm run rust:test",
+    "check-all": "npm run typecheck && npm run lint && npm run format:check && npm run rust:fmt:check && npm run rust:clippy && npm run test:run && npm run rust:test",
     "fix-all": "npm run lint:fix && npm run format && npm run rust:fmt && npm run rust:clippy:fix"
   },
   "dependencies": {
@@ -47,6 +53,9 @@
   "devDependencies": {
     "@eslint/js": "^9.31.0",
     "@tauri-apps/cli": "^2",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/eslint__js": "^8.42.3",
     "@types/react": "^18.3.1",
     "@types/react-dom": "^18.3.1",
@@ -59,11 +68,13 @@
     "eslint-plugin-prettier": "^5.5.1",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
+    "jsdom": "^26.1.0",
     "postcss": "^8.5.6",
     "prettier": "^3.6.2",
     "tailwindcss": "^3.4.17",
     "typescript": "~5.6.2",
     "typescript-eslint": "^8.36.0",
-    "vite": "^6.0.3"
+    "vite": "^6.0.3",
+    "vitest": "^3.2.4"
   }
 }

@@ -44,3 +44,64 @@ impl FileEntry {
         matches!(self.extension.as_str(), "md" | "mdx")
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::PathBuf;
+
+    #[test]
+    fn test_file_entry_creation() {
+        let path = PathBuf::from("/test/posts/hello-world.md");
+        let collection = "posts".to_string();
+
+        let entry = FileEntry::new(path.clone(), collection.clone());
+
+        assert_eq!(entry.name, "hello-world");
+        assert_eq!(entry.extension, "md");
+        assert_eq!(entry.collection, "posts");
+        assert_eq!(entry.id, "posts/hello-world");
+        assert_eq!(entry.path, path);
+        assert!(!entry.is_draft);
+        assert!(entry.last_modified.is_none());
+    }
+
+    #[test]
+    fn test_file_entry_without_extension() {
+        let path = PathBuf::from("/test/posts/readme");
+        let collection = "docs".to_string();
+
+        let entry = FileEntry::new(path, collection);
+
+        assert_eq!(entry.name, "readme");
+        assert_eq!(entry.extension, "");
+        assert_eq!(entry.id, "docs/readme");
+    }
+
+    #[test]
+    fn test_is_markdown() {
+        let md_path = PathBuf::from("/test/post.md");
+        let mdx_path = PathBuf::from("/test/post.mdx");
+        let txt_path = PathBuf::from("/test/post.txt");
+
+        let md_entry = FileEntry::new(md_path, "posts".to_string());
+        let mdx_entry = FileEntry::new(mdx_path, "posts".to_string());
+        let txt_entry = FileEntry::new(txt_path, "posts".to_string());
+
+        assert!(md_entry.is_markdown());
+        assert!(mdx_entry.is_markdown());
+        assert!(!txt_entry.is_markdown());
+    }
+
+    #[test]
+    fn test_special_characters_in_filename() {
+        let path = PathBuf::from("/test/posts/hello-world_2024.md");
+        let collection = "posts".to_string();
+
+        let entry = FileEntry::new(path, collection);
+
+        assert_eq!(entry.name, "hello-world_2024");
+        assert_eq!(entry.extension, "md");
+        assert_eq!(entry.id, "posts/hello-world_2024");
+    }
+}

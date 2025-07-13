@@ -6,7 +6,8 @@
       "Bash(cargo check:*)",
       "Bash(npx tailwindcss init:*)",
       "Bash(mkdir:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(find:*)"
     ],
     "deny": []
   }

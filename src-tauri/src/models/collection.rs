@@ -16,4 +16,50 @@ impl Collection {
             schema: None,
         }
     }
+
+    #[allow(dead_code)]
+    pub fn with_schema(name: String, path: PathBuf, schema: String) -> Self {
+        Self {
+            name,
+            path,
+            schema: Some(schema),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::PathBuf;
+
+    #[test]
+    fn test_collection_creation() {
+        let path = PathBuf::from("/project/src/content/posts");
+        let collection = Collection::new("posts".to_string(), path.clone());
+
+        assert_eq!(collection.name, "posts");
+        assert_eq!(collection.path, path);
+        assert!(collection.schema.is_none());
+    }
+
+    #[test]
+    fn test_collection_with_schema() {
+        let schema = r#"
+        z.object({
+            title: z.string(),
+            description: z.string().optional(),
+            pubDate: z.coerce.date(),
+            draft: z.boolean().default(false),
+        })
+        "#;
+
+        let path = PathBuf::from("/project/src/content/blog");
+        let collection =
+            Collection::with_schema("blog".to_string(), path.clone(), schema.to_string());
+
+        assert_eq!(collection.name, "blog");
+        assert_eq!(collection.path, path);
+        assert!(collection.schema.is_some());
+        assert!(collection.schema.unwrap().contains("title"));
+    }
 }
