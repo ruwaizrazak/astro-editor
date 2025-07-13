@@ -34,9 +34,6 @@ export const Sidebar: React.FC = () => {
           >
             <FolderOpen className="h-4 w-4" />
           </Button>
-          <h3 className="text-sm font-semibold text-foreground m-0">
-            Collections
-          </h3>
         </div>
         <Button
           onClick={toggleSidebar}

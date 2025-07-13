@@ -1,11 +1,85 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useAppStore } from '../../store';
+import { listen } from '@tauri-apps/api/event';
+import { invoke } from '@tauri-apps/api/core';
 import { Sidebar } from './Sidebar';
 import { MainEditor } from './MainEditor';
 import { FrontmatterPanel } from './FrontmatterPanel';
 
 export const Layout: React.FC = () => {
-  const { sidebarVisible, frontmatterPanelVisible } = useAppStore();
+  const { 
+    sidebarVisible, 
+    frontmatterPanelVisible, 
+    currentFile,
+    editorContent,
+    isDirty,
+    openFile,
+    saveFile,
+    setProject,
+    toggleSidebar,
+    toggleFrontmatterPanel 
+  } = useAppStore();
+
+  // macOS keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // macOS uses metaKey (Cmd key)
+      if (e.metaKey) {
+        switch (e.key) {
+          case 's':
+            e.preventDefault();
+            // Cmd+S: Save File
+            if (currentFile && isDirty) {
+              void saveFile();
+            }
+            break;
+          case '1':
+            e.preventDefault();
+            // Cmd+1: Toggle Sidebar
+            toggleSidebar();
+            break;
+          case '2':
+            e.preventDefault();
+            // Cmd+2: Toggle Frontmatter Panel
+            toggleFrontmatterPanel();
+            break;
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [currentFile, editorContent, isDirty, saveFile, toggleSidebar, toggleFrontmatterPanel]);
+
+  // Menu event listeners
+  useEffect(() => {
+    const handleOpenProject = async () => {
+      try {
+        const projectPath = await invoke<string>('select_project_folder');
+        if (projectPath) {
+          setProject(projectPath);
+        }
+      } catch (error) {
+        console.error('Failed to open project:', error);
+      }
+    };
+
+    const unlistenOpenProject = listen('menu-open-project', handleOpenProject);
+    const unlistenSave = listen('menu-save', () => {
+      if (currentFile && isDirty) {
+        void saveFile();
+      }
+    });
+    const unlistenToggleSidebar = listen('menu-toggle-sidebar', toggleSidebar);
+    const unlistenToggleFrontmatter = listen('menu-toggle-frontmatter', toggleFrontmatterPanel);
+
+    return () => {
+      void unlistenOpenProject.then(fn => fn());
+      void unlistenSave.then(fn => fn());
+      void unlistenToggleSidebar.then(fn => fn());
+      void unlistenToggleFrontmatter.then(fn => fn());
+    };
+  }, [currentFile, isDirty, saveFile, setProject, toggleSidebar, toggleFrontmatterPanel]);
 
   return (
     <div className="flex h-screen w-screen bg-background font-sans">
