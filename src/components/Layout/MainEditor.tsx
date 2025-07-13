@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAppStore } from '../../store';
 import { ToolBar } from './ToolBar';
-import { EditorView } from './EditorView';
+import { EditorView } from './index';
 import { StatusBar } from './StatusBar';
 import './MainEditor.css';
 

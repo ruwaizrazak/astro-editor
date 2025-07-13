@@ -13,6 +13,7 @@ fn greet(name: &str) -> String {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .manage(commands::watcher::init_watcher_state())
         .invoke_handler(tauri::generate_handler![
             greet,
             select_project_folder,
@@ -21,7 +22,9 @@ pub fn run() {
             read_file,
             write_file,
             create_file,
-            delete_file
+            delete_file,
+            start_watching_project,
+            stop_watching_project
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

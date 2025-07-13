@@ -2,8 +2,7 @@ use crate::models::{Collection, FileEntry};
 use std::path::PathBuf;
 
 #[tauri::command]
-pub async fn select_project_folder(app: tauri::AppHandle) -> Result<Option<String>, String> {
-    use tauri::Manager;
+pub async fn select_project_folder(_app: tauri::AppHandle) -> Result<Option<String>, String> {
     
     let file_dialog = rfd::AsyncFileDialog::new()
         .set_title("Select Astro Project Folder")

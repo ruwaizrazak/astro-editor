@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { invoke } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
 
 export interface FileEntry {
   id: string;
@@ -43,6 +44,8 @@ interface AppState {
   toggleSidebar: () => void;
   toggleFrontmatterPanel: () => void;
   setSelectedCollection: (collection: string | null) => void;
+  startFileWatcher: () => Promise<void>;
+  stopFileWatcher: () => Promise<void>;
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -61,6 +64,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   setProject: (path: string) => {
     set({ projectPath: path });
     get().loadCollections();
+    get().startFileWatcher();
   },
   
   loadCollections: async () => {
@@ -132,5 +136,44 @@ export const useAppStore = create<AppState>((set, get) => ({
   
   setSelectedCollection: (collection: string | null) => {
     set({ selectedCollection: collection });
+  },
+
+  startFileWatcher: async () => {
+    const { projectPath } = get();
+    if (!projectPath) return;
+
+    try {
+      await invoke('start_watching_project', { projectPath });
+      
+      // Listen for file change events
+      listen('file-changed', (event: any) => {
+        console.log('File changed:', event.payload);
+        
+        // Refresh collections if a file was changed
+        const { selectedCollection } = get();
+        if (selectedCollection) {
+          get().loadCollections();
+          // Reload files for current collection
+          const collections = get().collections;
+          const currentCollection = collections.find(c => c.name === selectedCollection);
+          if (currentCollection) {
+            get().loadCollectionFiles(currentCollection.path);
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Failed to start file watcher:', error);
+    }
+  },
+
+  stopFileWatcher: async () => {
+    const { projectPath } = get();
+    if (!projectPath) return;
+
+    try {
+      await invoke('stop_watching_project', { projectPath });
+    } catch (error) {
+      console.error('Failed to stop file watcher:', error);
+    }
   }
 }));

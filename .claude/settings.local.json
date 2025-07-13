@@ -1,10 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "mcp__context7__resolve-library-id",
-      "mcp__context7__get-library-docs",
-      "Bash(npm create:*)",
-      "Bash(npm run tauri:*)"
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(cargo check:*)"
     ],
     "deny": []
   }

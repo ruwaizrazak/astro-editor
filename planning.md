@@ -268,11 +268,11 @@ src/
 - [x] Simple file tree in sidebar
 
 **Week 2:**
-- [ ] Integrate CodeMirror 6 with basic markdown highlighting
-- [ ] Implement file opening/switching
-- [ ] Basic file saving functionality
-- [ ] Set up state management with Zustand
-- [ ] File watcher for external changes
+- [x] Integrate CodeMirror 6 with basic markdown highlighting
+- [x] Implement file opening/switching
+- [x] Basic file saving functionality (with auto-save)
+- [x] Set up state management with Zustand
+- [x] File watcher for external changes
 
 **Deliverable:** Basic editor that can open a folder, display files, and edit/save markdown
 
