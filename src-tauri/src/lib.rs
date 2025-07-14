@@ -1,5 +1,6 @@
 mod commands;
 mod models;
+mod parser;
 
 use commands::*;
 use tauri::{menu::{Menu, MenuItem, PredefinedMenuItem, Submenu}, Emitter, Manager};
@@ -105,6 +106,8 @@ pub fn run() {
             write_file,
             create_file,
             delete_file,
+            parse_markdown_content,
+            update_frontmatter,
             start_watching_project,
             stop_watching_project
         ])

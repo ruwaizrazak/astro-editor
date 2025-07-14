@@ -89,6 +89,7 @@ name = "astro-editor"
 version = "0.1.0"
 dependencies = [
  "notify",
+ "regex",
  "rfd",
  "serde",
  "serde_json",

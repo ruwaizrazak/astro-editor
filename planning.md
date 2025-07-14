@@ -173,24 +173,24 @@ App
 ```typescript
 interface AppState {
   // Project state
-  projectPath: string | null
-  collections: Collection[]
+  projectPath: string | null;
+  collections: Collection[];
 
   // UI state
-  sidebarVisible: boolean
-  frontmatterPanelVisible: boolean
-  currentFile: FileEntry | null
+  sidebarVisible: boolean;
+  frontmatterPanelVisible: boolean;
+  currentFile: FileEntry | null;
 
   // Editor state
-  editorContent: string
-  isDirty: boolean
+  editorContent: string;
+  isDirty: boolean;
 
   // Actions
-  setProject: (path: string) => void
-  loadCollections: () => Promise<void>
-  openFile: (file: FileEntry) => Promise<void>
-  saveFile: () => Promise<void>
-  updateFrontmatter: (data: any) => void
+  setProject: (path: string) => void;
+  loadCollections: () => Promise<void>;
+  openFile: (file: FileEntry) => Promise<void>;
+  saveFile: () => Promise<void>;
+  updateFrontmatter: (data: any) => void;
 }
 ```
 
@@ -249,19 +249,16 @@ src/
 ### Key Technical Challenges
 
 1. **Astro Config Parsing**
-
    - Parse TypeScript `src/content/config.ts`
    - Extract Zod schemas dynamically
    - Convert Zod schemas to UI form components
 
 2. **Frontmatter Hiding**
-
    - Parse markdown to identify frontmatter boundaries
    - Hide from CodeMirror display while preserving in file
    - Sync frontmatter panel with file contents
 
 3. **MDX Import Hiding**
-
    - Parse MDX files to identify TypeScript imports after frontmatter
    - Hide from display while preserving in file
    - Auto-add imports when MDX components are used
@@ -296,16 +293,15 @@ _Goal: Basic working editor with file operations_
 
 #### Post Phase 1 Extra Tasks
 
-- [ ] Add ESLint and/or prettier with suitable configs to help prevent errors? Plus similar linters and checkers for the rust part?
-- [ ] Add a simple test framework (both TS and Rust?) and write some basic tests for what we've done so far. So we don't break things later on?
-- [ ] Consider using an appropriate UI framework and tailwind. I'd prefer one with no external deps like shadcn, but there may be better options. We only really need UI components like this for the window "chrome" and settings etc. We'll probably have to hand-write CSS for the markdown editor to makeit really beautiful. There may be beter optionsfor our use case than shadcn?
-- [ ] Bring in an icon library for when we need icons. Suggest: https://www.radix-ui.com/icons
-- [ ] Update CLAUDE.md with details of the project structure, tech etc and instructions to run checks and tests to verify work, as well as guidance on the other patterns we've developed so far. Should also include a note about using Context7 to access docs etc
-- [ ] Work out how to get Claude Code to "see" the app running to help with design later? Playwright MCP or similar?
-- [ ] Check Tauri is configured in the most optimal way for nice-looking macos apps
-  - [ ] Transparent titlebar (https://v2.tauri.app/learn/window-customization/#macos-transparent-titlebar-with-custom-window-background-color)
-  - [ ] Sensible window menu with Open Project and the minimum usual stuff youd expect
-  - [ ] Any other "boilerplateish" Tauri stuff we should do
+- [x] Add ESLint and/or prettier with suitable configs to help prevent errors? Plus similar linters and checkers for the rust part?
+- [x] Add a simple test framework (both TS and Rust?) and write some basic tests for what we've done so far. So we don't break things later on?
+- [x] Consider using an appropriate UI framework and tailwind. I'd prefer one with no external deps like shadcn, but there may be better options. We only really need UI components like this for the window "chrome" and settings etc. We'll probably have to hand-write CSS for the markdown editor to makeit really beautiful. There may be beter optionsfor our use case than shadcn?
+- [x] Bring in an icon library for when we need icons. Suggest: https://www.radix-ui.com/icons
+- [x] Update CLAUDE.md with details of the project structure, tech etc and instructions to run checks and tests to verify work, as well as guidance on the other patterns we've developed so far. Should also include a note about using Context7 to access docs etc
+- [x] Check Tauri is configured in the most optimal way for nice-looking macos apps
+  - [x] Transparent titlebar (https://v2.tauri.app/learn/window-customization/#macos-transparent-titlebar-with-custom-window-background-color)
+  - [x] Sensible window menu with Open Project and the minimum usual stuff youd expect
+  - [x] Any other "boilerplateish" Tauri stuff we should do
 
 ---
 
@@ -314,14 +310,14 @@ _Goal: Parse Astro config and handle content collections_
 
 **Week 3:**
 
-- [ ] Implement TypeScript parser for `src/content/config.ts`
-- [ ] Extract collection definitions and Zod schemas
-- [ ] Create data structures for collections and schemas
-- [ ] Display collections in sidebar instead of raw files
+- [x] Implement TypeScript parser for `src/content/config.ts`
+- [x] Extract collection definitions and Zod schemas
+- [x] Create data structures for collections and schemas
+- [x] Display collections in sidebar instead of raw files
 
 **Week 4:**
 
-- [ ] Parse frontmatter from markdown files
+- [x] Parse frontmatter from markdown files
 - [ ] Hide frontmatter from CodeMirror display
 - [ ] Create basic frontmatter editing panel
 - [ ] Implement Zod-to-form-field generation

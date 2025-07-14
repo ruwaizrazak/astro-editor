@@ -1,5 +1,6 @@
 use crate::models::{Collection, FileEntry};
-use std::path::PathBuf;
+use crate::parser::parse_astro_config;
+use std::path::{Path, PathBuf};
 
 #[tauri::command]
 pub async fn select_project_folder(_app: tauri::AppHandle) -> Result<Option<String>, String> {
@@ -18,12 +19,23 @@ pub async fn select_project_folder(_app: tauri::AppHandle) -> Result<Option<Stri
 pub async fn scan_project(project_path: String) -> Result<Vec<Collection>, String> {
     let path = PathBuf::from(&project_path);
 
-    // For now, create a simple mock collection
-    // Later this will parse src/content/config.ts
+    // Try to parse Astro config first
+    match parse_astro_config(&path) {
+        Ok(collections) if !collections.is_empty() => {
+            Ok(collections)
+        }
+        Ok(_) | Err(_) => {
+            // Fallback: scan directory structure if config parsing fails or returns empty
+            scan_content_directories(path.as_path())
+        }
+    }
+}
+
+fn scan_content_directories(project_path: &Path) -> Result<Vec<Collection>, String> {
     let mut collections = Vec::new();
 
     // Check for common Astro content directories
-    let content_dir = path.join("src").join("content");
+    let content_dir = project_path.join("src").join("content");
     if content_dir.exists() {
         // Look for common collection directories
         for entry in std::fs::read_dir(&content_dir)
