@@ -127,6 +127,7 @@ pub fn run() {
             delete_file,
             parse_markdown_content,
             update_frontmatter,
+            save_markdown_content,
             start_watching_project,
             stop_watching_project
         ])

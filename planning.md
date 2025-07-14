@@ -318,7 +318,7 @@ _Goal: Parse Astro config and handle content collections_
 **Week 4:**
 
 - [x] Parse frontmatter from markdown files
-- [ ] Hide frontmatter from CodeMirror display
+- [x] Hide frontmatter from CodeMirror display
 - [ ] Create basic frontmatter editing panel
 - [ ] Implement Zod-to-form-field generation
 - [ ] Sync frontmatter panel with file contents

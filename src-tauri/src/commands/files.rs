@@ -63,6 +63,16 @@ pub async fn update_frontmatter(
     std::fs::write(&file_path, new_content).map_err(|e| format!("Failed to write file: {e}"))
 }
 
+#[tauri::command]
+pub async fn save_markdown_content(
+    file_path: String,
+    frontmatter: HashMap<String, Value>,
+    content: String,
+) -> Result<(), String> {
+    let new_content = rebuild_markdown_with_frontmatter(&frontmatter, &content)?;
+    std::fs::write(&file_path, new_content).map_err(|e| format!("Failed to write file: {e}"))
+}
+
 fn parse_frontmatter(content: &str) -> Result<MarkdownContent, String> {
     let lines: Vec<&str> = content.lines().collect();
 
@@ -373,5 +383,37 @@ This is just regular markdown content without frontmatter."#;
         assert!(result.contains("title: \"New Title\""));
         assert!(result.contains("draft: true"));
         assert!(result.contains("# Content"));
+    }
+
+    #[tokio::test]
+    async fn test_save_markdown_content() {
+        let temp_dir = std::env::temp_dir();
+        let test_file = temp_dir.join("test_save_markdown.md");
+
+        let mut frontmatter = HashMap::new();
+        frontmatter.insert("title".to_string(), Value::String("Test Article".to_string()));
+        frontmatter.insert("draft".to_string(), Value::Bool(false));
+
+        let content = "# Test Article\n\nThis is the article content.";
+
+        let result = save_markdown_content(
+            test_file.to_string_lossy().to_string(),
+            frontmatter,
+            content.to_string(),
+        )
+        .await;
+
+        assert!(result.is_ok());
+
+        // Verify the saved file
+        let saved_content = fs::read_to_string(&test_file).unwrap();
+        assert!(saved_content.starts_with("---\n"));
+        assert!(saved_content.contains("title: \"Test Article\""));
+        assert!(saved_content.contains("draft: false"));
+        assert!(saved_content.contains("# Test Article"));
+        assert!(saved_content.contains("This is the article content."));
+
+        // Clean up
+        let _ = fs::remove_file(&test_file);
     }
 }

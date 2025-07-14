@@ -12,6 +12,12 @@ export interface FileEntry {
   last_modified?: number;
 }
 
+export interface MarkdownContent {
+  frontmatter: Record<string, unknown>;
+  content: string;
+  raw_frontmatter: string;
+}
+
 export interface Collection {
   name: string;
   path: string;
@@ -31,7 +37,9 @@ interface AppState {
   selectedCollection: string | null;
 
   // Editor state
-  editorContent: string;
+  editorContent: string; // Content without frontmatter
+  frontmatter: Record<string, unknown>; // Parsed frontmatter object
+  rawFrontmatter: string; // Original frontmatter string
   isDirty: boolean;
 
   // Actions
@@ -41,6 +49,7 @@ interface AppState {
   openFile: (file: FileEntry) => Promise<void>;
   saveFile: () => Promise<void>;
   setEditorContent: (content: string) => void;
+  updateFrontmatter: (frontmatter: Record<string, unknown>) => void;
   toggleSidebar: () => void;
   toggleFrontmatterPanel: () => void;
   setSelectedCollection: (collection: string | null) => void;
@@ -58,6 +67,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   files: [],
   selectedCollection: null,
   editorContent: '',
+  frontmatter: {},
+  rawFrontmatter: '',
   isDirty: false,
 
   // Actions
@@ -96,12 +107,14 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   openFile: async (file: FileEntry) => {
     try {
-      const content = await invoke<string>('read_file', {
+      const markdownContent = await invoke<MarkdownContent>('parse_markdown_content', {
         filePath: file.path,
       });
       set({
         currentFile: file,
-        editorContent: content,
+        editorContent: markdownContent.content,
+        frontmatter: markdownContent.frontmatter,
+        rawFrontmatter: markdownContent.raw_frontmatter,
         isDirty: false,
       });
     } catch (error) {
@@ -111,12 +124,13 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   saveFile: async () => {
-    const { currentFile, editorContent } = get();
+    const { currentFile, editorContent, frontmatter } = get();
     if (!currentFile) return;
 
     try {
-      await invoke('write_file', {
+      await invoke('save_markdown_content', {
         filePath: currentFile.path,
+        frontmatter,
         content: editorContent,
       });
       set({ isDirty: false });
@@ -128,6 +142,10 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   setEditorContent: (content: string) => {
     set({ editorContent: content, isDirty: true });
+  },
+
+  updateFrontmatter: (frontmatter: Record<string, unknown>) => {
+    set({ frontmatter, isDirty: true });
   },
 
   toggleSidebar: () => {

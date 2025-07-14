@@ -64,20 +64,26 @@ describe('Store Async Operations', () => {
         is_draft: false,
         collection: 'posts',
       };
-      const mockContent = '# Hello World\n\nThis is a test post.';
+      const mockMarkdownContent = {
+        frontmatter: { title: 'Hello World', draft: false },
+        content: '# Hello World\n\nThis is a test post.',
+        raw_frontmatter: 'title: Hello World\ndraft: false',
+      };
 
-      globalThis.mockTauri.invoke.mockResolvedValue(mockContent);
+      globalThis.mockTauri.invoke.mockResolvedValue(mockMarkdownContent);
 
       const { openFile } = useAppStore.getState();
       await openFile(mockFile);
 
-      expect(globalThis.mockTauri.invoke).toHaveBeenCalledWith('read_file', {
+      expect(globalThis.mockTauri.invoke).toHaveBeenCalledWith('parse_markdown_content', {
         filePath: '/project/posts/hello.md',
       });
 
       const state = useAppStore.getState();
       expect(state.currentFile).toEqual(mockFile);
-      expect(state.editorContent).toBe(mockContent);
+      expect(state.editorContent).toBe(mockMarkdownContent.content);
+      expect(state.frontmatter).toEqual(mockMarkdownContent.frontmatter);
+      expect(state.rawFrontmatter).toBe(mockMarkdownContent.raw_frontmatter);
       expect(state.isDirty).toBe(false);
     });
 
@@ -115,9 +121,12 @@ describe('Store Async Operations', () => {
         collection: 'posts',
       };
 
+      const mockFrontmatter = { title: 'Test Post', draft: false };
+
       useAppStore.setState({
         currentFile: mockFile,
         editorContent: '# Updated Content',
+        frontmatter: mockFrontmatter,
         isDirty: true,
       });
 
@@ -126,8 +135,9 @@ describe('Store Async Operations', () => {
       const { saveFile } = useAppStore.getState();
       await saveFile();
 
-      expect(globalThis.mockTauri.invoke).toHaveBeenCalledWith('write_file', {
+      expect(globalThis.mockTauri.invoke).toHaveBeenCalledWith('save_markdown_content', {
         filePath: '/project/posts/test.md',
+        frontmatter: mockFrontmatter,
         content: '# Updated Content',
       });
       expect(useAppStore.getState().isDirty).toBe(false);
