@@ -13,7 +13,6 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { AutoGrowingInput } from '@/components/ui/auto-growing-input';
 import { TagsInput } from '@/components/ui/tags-input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent } from '@/components/ui/card';
 
 // Helper component for rendering different input types
 const FrontmatterField: React.FC<{
@@ -31,14 +30,8 @@ const FrontmatterField: React.FC<{
 
     if (inputType === 'checkbox' || typeof value === 'boolean') {
       return (
-        <div className="flex items-center space-x-2">
-          <Switch
-            checked={Boolean(value)}
-            onCheckedChange={onChange}
-          />
-          <span className="text-sm text-muted-foreground">
-            {value ? 'Enabled' : 'Disabled'}
-          </span>
+        <div className="flex items-center justify-end">
+          <Switch checked={Boolean(value)} onCheckedChange={onChange} />
         </div>
       );
     }
@@ -49,21 +42,25 @@ const FrontmatterField: React.FC<{
           type="number"
           value={typeof value === 'number' ? value : ''}
           onChange={e => onChange(Number(e.target.value))}
-          placeholder={
-            field?.optional
-              ? `${label} (optional)`
-              : `Enter ${label.toLowerCase()}...`
+          placeholder={`Enter ${label.toLowerCase()}...`}
+          className={
+            validationError
+              ? 'border-destructive focus-visible:ring-destructive'
+              : ''
           }
         />
       );
     }
 
     if (inputType === 'date') {
-      const dateValue = typeof value === 'string' && value ? new Date(value) : undefined;
+      const dateValue =
+        typeof value === 'string' && value ? new Date(value) : undefined;
       return (
         <DatePicker
           date={dateValue}
-          onDateChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')}
+          onDateChange={date =>
+            onChange(date ? date.toISOString().split('T')[0] : '')
+          }
           placeholder="Select date..."
         />
       );
@@ -93,17 +90,13 @@ const FrontmatterField: React.FC<{
                 : ''
           }
           onChange={e => onChange(e.target.value)}
-          placeholder={
-            field?.optional
-              ? `${label} (optional)`
-              : `Enter ${label.toLowerCase()}...`
-          }
-          className="text-base font-medium"
+          placeholder={`Enter ${label.toLowerCase()}...`}
+          className={`text-base font-medium ${validationError ? 'border-destructive focus-visible:ring-destructive' : ''}`}
         />
       );
     }
 
-    // Special handling for description field - use textarea
+    // Special handling for description field - use auto-resizing textarea
     if (label.toLowerCase() === 'description') {
       return (
         <Textarea
@@ -115,12 +108,8 @@ const FrontmatterField: React.FC<{
                 : ''
           }
           onChange={e => onChange(e.target.value)}
-          placeholder={
-            field?.optional
-              ? `${label} (optional)`
-              : `Enter ${label.toLowerCase()}...`
-          }
-          className="min-h-[80px] resize-none"
+          placeholder={`Enter ${label.toLowerCase()}...`}
+          className={`resize-none ${validationError ? 'border-destructive focus-visible:ring-destructive' : ''}`}
         />
       );
     }
@@ -137,10 +126,11 @@ const FrontmatterField: React.FC<{
               : ''
         }
         onChange={e => onChange(e.target.value)}
-        placeholder={
-          field?.optional
-            ? `${label} (optional)`
-            : `Enter ${label.toLowerCase()}...`
+        placeholder={`Enter ${label.toLowerCase()}...`}
+        className={
+          validationError
+            ? 'border-destructive focus-visible:ring-destructive'
+            : ''
         }
       />
     );
@@ -148,13 +138,13 @@ const FrontmatterField: React.FC<{
 
   return (
     <div className="flex flex-col gap-2">
-      <Label className={`text-sm font-medium capitalize ${
-        label.toLowerCase() === 'title' ? 'text-base' : ''
-      }`}>
+      <Label
+        className={`text-sm font-medium capitalize ${
+          label.toLowerCase() === 'title' ? 'text-base' : ''
+        }`}
+      >
         {label}
-        {field?.optional ? (
-          <span className="text-muted-foreground ml-1 font-normal">(optional)</span>
-        ) : field ? (
+        {field && !field.optional ? (
           <span className="text-destructive ml-1">*</span>
         ) : null}
       </Label>
@@ -188,13 +178,16 @@ export const FrontmatterPanel: React.FC = () => {
       console.log('Raw schema string:', currentCollection?.schema);
       console.log('Parsed schema:', schema);
       console.log('Current frontmatter:', frontmatter);
-      
+
       if (schema) {
-        console.log('Schema fields:', schema.fields.map(f => ({
-          name: f.name,
-          type: f.type,
-          optional: f.optional
-        })));
+        console.log(
+          'Schema fields:',
+          schema.fields.map(f => ({
+            name: f.name,
+            type: f.type,
+            optional: f.optional,
+          }))
+        );
       }
     }
   }, [currentFile, currentCollection, schema, frontmatter]);
@@ -277,23 +270,19 @@ export const FrontmatterPanel: React.FC = () => {
                 />
               ))
             ) : (
-              <Card>
-                <CardContent className="flex items-center justify-center py-6">
-                  <p className="text-sm text-muted-foreground">
-                    No frontmatter fields found.
-                  </p>
-                </CardContent>
-              </Card>
+              <div className="text-center py-6">
+                <p className="text-sm text-muted-foreground">
+                  No frontmatter fields found.
+                </p>
+              </div>
             )}
           </div>
         ) : (
-          <Card>
-            <CardContent className="flex items-center justify-center py-12">
-              <p className="text-sm text-muted-foreground text-center">
-                Select a file to edit its frontmatter.
-              </p>
-            </CardContent>
-          </Card>
+          <div className="text-center py-12">
+            <p className="text-sm text-muted-foreground">
+              Select a file to edit its frontmatter.
+            </p>
+          </div>
         )}
       </div>
     </div>
