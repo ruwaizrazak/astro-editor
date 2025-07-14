@@ -29,12 +29,13 @@ export const UnifiedTitleBar: React.FC = () => {
 
   const handleToggleMaximize = async () => {
     const window = getCurrentWindow();
-    await window.toggleMaximize();
+    const isFullscreen = await window.isFullscreen();
+    await window.setFullscreen(!isFullscreen);
   };
 
   const handleClose = async () => {
     const window = getCurrentWindow();
-    await window.close();
+    await window.hide();
   };
 
   return (
