@@ -30,10 +30,7 @@ import {
 } from '@/components/ui/select'
 import { TagInput, type Tag } from '@/components/ui/tag-input'
 
-// Helper functions to convert between string arrays and Tag objects
-const stringArrayToTags = (strings: string[]): Tag[] =>
-  strings.map(str => ({ id: crypto.randomUUID(), text: str }))
-
+// Helper function to convert Tag objects back to string arrays
 const tagsToStringArray = (tags: Tag[]): string[] => tags.map(tag => tag.text)
 
 // Auto-expanding textarea component
@@ -91,7 +88,8 @@ const FrontmatterField: React.FC<{
   field?: ZodField | undefined
   control: Control<FieldValues>
   onFieldChange: (name: string, value: unknown) => void
-}> = ({ name, label, field, control, onFieldChange }) => {
+  frontmatter: Record<string, unknown>
+}> = ({ name, label, field, control, onFieldChange, frontmatter }) => {
   const inputType = field ? getInputTypeForZodField(field.type) : 'text'
 
   return (
@@ -205,17 +203,22 @@ const FrontmatterField: React.FC<{
                 ) : field?.type === 'Array' ? (
                   <TagInput
                     placeholder={`Enter ${label.toLowerCase()}...`}
-                    tags={stringArrayToTags(
-                      Array.isArray(formField.value) && 
-                      formField.value.every((item): item is string => typeof item === 'string')
-                        ? formField.value 
-                        : []
-                    )}
-                    onTagsChange={tags => {
+                    tags={React.useMemo(() => {
+                      // Get value directly from frontmatter instead of form
+                      const currentValue = frontmatter[name]
+                      if (Array.isArray(currentValue) && 
+                          currentValue.every((item): item is string => typeof item === 'string')) {
+                        return currentValue.map((str, index) => ({ 
+                          id: `${name}-${str}-${index}`, 
+                          text: str 
+                        }))
+                      }
+                      return []
+                    }, [frontmatter, name])}
+                    onTagsChange={React.useCallback((tags: Tag[]) => {
                       const stringArray = tagsToStringArray(tags)
-                      formField.onChange(stringArray)
                       onFieldChange(name, stringArray)
-                    }}
+                    }, [onFieldChange, name])}
                   />
                 ) : (
                   <Input
@@ -310,10 +313,10 @@ export const FrontmatterPanel: React.FC = () => {
     mode: 'onChange',
   })
 
-  // Update form when file changes
+  // Update form when file changes (but not when defaultValues change due to frontmatter updates)
   React.useEffect(() => {
     form.reset(defaultValues)
-  }, [currentFile?.path, form, defaultValues])
+  }, [currentFile?.path, form])
 
   // Handle individual field changes - update store directly
   const handleFieldChange = React.useCallback(
@@ -353,6 +356,7 @@ export const FrontmatterPanel: React.FC = () => {
                     field={schemaField}
                     control={form.control}
                     onFieldChange={handleFieldChange}
+                    frontmatter={frontmatter}
                   />
                 ))}
               </form>
