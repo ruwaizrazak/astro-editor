@@ -31,7 +31,7 @@ This is a native macOS markdown editor specifically designed for managing and ed
 - **State Management:** Zustand with persistence
 - **Styling:** Tailwind CSS v3 + shadcn/ui components (v4 upgrade planned)
 - **Icons:** Lucide React + Radix UI icons
-- **Forms:** React Hook Form + Zod validation
+- **Forms:** Direct Zustand store updates (React Hook Form removed)
 - **Testing:** Vitest + React Testing Library (frontend), Cargo test (backend)
 - **Code Quality:** ESLint, Prettier, Clippy with comprehensive configurations
 
@@ -116,12 +116,17 @@ blog-editor/
 - Comprehensive testing and linting setup
 - macOS-native window customization
 
-### 🚧 In Progress (Phase 2.3)
+### ✅ Completed (Phase 2.3)
 
 - UI refinement with shadcn components
-- Frontmatter panel improvements (forms, auto-growing inputs)
-- Left sidebar redesign with collection navigation
-- Bug fixes (save refreshing, frontmatter ordering)
+- Frontmatter panel improvements (auto-growing textareas, field extraction)
+- Direct store pattern architecture (eliminated infinite loops)
+- Bug fixes (save refreshing, frontmatter ordering, textarea auto-expansion)
+- Architectural refactor removing React Hook Form dependencies
+
+### 🚧 In Progress (Phase 2.3)
+
+- Left sidebar redesign with collection navigation 
 - Test data enhancement
 
 ### 📋 Next Steps
@@ -146,6 +151,7 @@ blog-editor/
 - Keep components focused and reusable
 - Use TypeScript interfaces for all component props
 - Implement proper loading states and error boundaries
+- **CRITICAL:** Follow the Direct Store Pattern for all form-like components (see below)
 
 ### Styling Guidelines
 
@@ -229,12 +235,43 @@ A dummy astro project with most of the relevant files exists at `dummy-astro-pro
 - State persistence for project path and UI preferences
 - Separation of UI state and file content state
 
+### Direct Store Pattern (CRITICAL)
+
+**Problem:** React Hook Form + Zustand sync causes infinite loops when extracting components.
+
+**Solution:** Components read/write directly to Zustand store using `updateFrontmatterField`.
+
+**Pattern:**
+```tsx
+const MyField: React.FC<{ name: string; label: string }> = ({ name, label }) => {
+  const { frontmatter, updateFrontmatterField } = useAppStore()
+  
+  return (
+    <div className="space-y-2">
+      <label className="text-sm font-medium">{label}</label>
+      <Input
+        value={frontmatter[name] ? String(frontmatter[name]) : ''}
+        onChange={e => updateFrontmatterField(name, e.target.value)}
+      />
+    </div>
+  )
+}
+```
+
+**Benefits:**
+- No callback dependencies → no infinite loops
+- Components are safely extractable
+- Real-time updates maintained
+- Auto-save works seamlessly
+
+**Use for:** Any component that modifies frontmatter, form fields, or app state.
+
 ### Frontmatter Form Generation
 
 - Dynamic forms generated from Zod schemas in `lib/schema.ts`
 - Support for string, number, boolean, date, enum, and array fields
-- Real-time validation with error messages
-- Sync between form state and file frontmatter
+- Direct store updates (no React Hook Form)
+- Individual field components: `StringField`, `BooleanField`, `DateField`, etc.
 
 ### File Operations
 
@@ -252,15 +289,22 @@ A dummy astro project with most of the relevant files exists at `dummy-astro-pro
 - Regex-based TypeScript parsing (improvement planned)
 - macOS only (initial version)
 
+### WebKit/Tauri Considerations
+
+- `field-sizing: content` CSS is not supported → use JavaScript-based auto-expansion
+- Use `AutoExpandingTextarea` component for auto-resizing textareas
+- WebKit has different behavior than Chrome DevTools
+
 ## Key Files to Understand
 
 ### Essential Reading
 
 - `docs/initial-prd.md` - Product requirements and vision
 - `docs/tasks.md` - Implementation plan and current status
-- `src/store/index.ts` - Application state management
+- `src/store/index.ts` - Application state management (includes `updateFrontmatterField`)
 - `src/lib/schema.ts` - Schema parsing and form generation
-- `src/components/Layout/` - Main UI components
+- `src/components/Layout/FrontmatterPanel.tsx` - Direct Store Pattern example
+- `src/components/ui/auto-expanding-textarea.tsx` - WebKit-compatible auto-expansion
 
 ### Configuration Files
 
@@ -282,10 +326,18 @@ A dummy astro project with most of the relevant files exists at `dummy-astro-pro
 ### When Adding Features
 
 1. Check if shadcn/ui has a suitable component first
-2. Write tests for new functionality
-3. Update types and interfaces as needed
-4. Consider performance impact for large collections
-5. Follow established patterns in existing code
+2. **Use Direct Store Pattern for any state-modifying components**
+3. Write tests for new functionality
+4. Update types and interfaces as needed
+5. Consider performance impact for large collections
+6. Follow established patterns in existing code
+
+### Component Extraction Rules
+
+- **NEVER** use React Hook Form for new components
+- **ALWAYS** use `updateFrontmatterField` for frontmatter changes
+- **AVOID** callback props that depend on changing state
+- **USE** direct store access: `const { state, action } = useAppStore()`
 
 ### Code Review Checklist
 

@@ -143,13 +143,13 @@ Investigate alternatives to regex-based parsing:
 - [x] Bug: When saving changes to frontmatter, the frontmatter is reordered in the markdown docs. The easiest solution here is to ensure it is always ordered as per the order in the schema, with any extra fields not in the schema in their original order.
 - [x] Refine frontmatter sidebar panel UI
   - [x] Use shadcn components and refactor to use the shadcn Form structures
-  - [ ] Remove the header completely - we don't need it (frontmatter using X schema)
+  - [x] Remove the header completely - we don't need it (frontmatter using X schema)
   - [ ] If title field exists, make it a slightly bigger text size
-  - [ ] Ensure the switches work properly with the labels - the labels for these should not be above the input but next to them. Likle in most settings apps.
+  - [x] Ensure the switches work properly with the labels - the labels for these should not be above the input but next to them. Likle in most settings apps.
   - [ ] The two textareas do not expand vetically with their content. I think this should be the default behaviour of shadcn's <Textarea> so let's work out what's preventing it working.
-  - [ ] Add a way to clear datepicker fields - currently if a date is set it cannot be removed.
-  - [ ] Implement https://github.com/JaleelB/emblor for handling array fields. Make it work with the latest tailwind and shadcn if needed (more at https://emblor.jaleelbennett.com/introduction).
-  - [ ] Platform is an enum field in the astro schema. So it shuold render a dropdown not a textbox. The dropdown should have a blank option which removes the property (same behavior as blank fields for other things.)
+  - [x] Add a way to clear datepicker fields - currently if a date is set it cannot be removed.
+  - [x] Implement https://github.com/JaleelB/emblor for handling array fields. Make it work with the latest tailwind and shadcn if needed (more at https://emblor.jaleelbennett.com/introduction).
+  - [x] Platform is an enum field in the astro schema. So it shuold render a dropdown not a textbox. The dropdown should have a blank option which removes the property (same behavior as blank fields for other things.)
 - [ ] Left sidebar UI improvements
   - [ ] Completely rebuild the left sidebar with shadcn's components (see https://ui.shadcn.com/docs/components/sidebar). The sidebar header "Collections" should only say "Collections" when not inside a collection. Once the user has clicked into a collection it should use the name of the collection, capitalised. Eg "Articles" or "Notes". When inside a collection there should be a back arrow which takes you back up to the collections list. We can then remove everything bar the list of items in the collection from the scrollable area of the sidebar. We can maybe use Shadcn's sidebar patterns to make this UI work a bit better.
   - [ ] Each content item in the left sidebar should display:

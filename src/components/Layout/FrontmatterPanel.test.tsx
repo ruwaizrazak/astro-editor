@@ -12,6 +12,23 @@ describe('FrontmatterPanel Component', () => {
       updateFrontmatter: (frontmatter: Record<string, unknown>) => {
         useAppStore.setState({ frontmatter })
       },
+      updateFrontmatterField: (key: string, value: unknown) => {
+        const { frontmatter } = useAppStore.getState()
+        const newFrontmatter = { ...frontmatter }
+
+        if (
+          value === null ||
+          value === undefined ||
+          value === '' ||
+          (Array.isArray(value) && value.length === 0)
+        ) {
+          delete newFrontmatter[key]
+        } else {
+          newFrontmatter[key] = value
+        }
+
+        useAppStore.setState({ frontmatter: newFrontmatter })
+      },
     })
   })
 
@@ -179,9 +196,6 @@ describe('FrontmatterPanel Component', () => {
 
     render(<FrontmatterPanel />)
 
-    // Should show schema indicator
-    expect(screen.getByText('Using posts schema')).toBeInTheDocument()
-
     // Should show all schema fields, even if not in frontmatter
     expect(screen.getByDisplayValue('Test Post')).toBeInTheDocument()
     expect(screen.getByRole('switch')).toBeInTheDocument() // Boolean field
@@ -189,37 +203,6 @@ describe('FrontmatterPanel Component', () => {
 
     // Should show required indicator for title field (1 required field: title)
     expect(screen.getAllByText('*')).toHaveLength(1)
-  })
-
-  it('should show validation errors for invalid fields', () => {
-    const mockFile = {
-      id: 'posts/test',
-      path: '/project/posts/test.md',
-      name: 'test',
-      extension: 'md',
-      is_draft: false,
-      collection: 'posts',
-    }
-
-    const mockCollection = {
-      name: 'posts',
-      path: '/project/posts',
-      schema: JSON.stringify({
-        type: 'zod',
-        fields: [{ name: 'title', type: 'String', optional: false }],
-      }),
-    }
-
-    useAppStore.setState({
-      currentFile: mockFile,
-      frontmatter: { title: '' }, // Empty required field
-      collections: [mockCollection],
-    })
-
-    render(<FrontmatterPanel />)
-
-    // Should show validation error for empty required field
-    expect(screen.getByText('title is required')).toBeInTheDocument()
   })
 
   it('should show all schema fields even when not in frontmatter', () => {

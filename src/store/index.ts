@@ -55,6 +55,7 @@ interface AppState {
   saveFile: () => Promise<void>
   setEditorContent: (content: string) => void
   updateFrontmatter: (frontmatter: Record<string, unknown>) => void
+  updateFrontmatterField: (key: string, value: unknown) => void
   scheduleAutoSave: () => void
   toggleSidebar: () => void
   toggleFrontmatterPanel: () => void
@@ -260,6 +261,27 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   updateFrontmatter: (frontmatter: Record<string, unknown>) => {
     set({ frontmatter, isDirty: true })
+    get().scheduleAutoSave()
+  },
+
+  updateFrontmatterField: (key: string, value: unknown) => {
+    const { frontmatter } = get()
+    const newFrontmatter = { ...frontmatter }
+
+    // Remove field if value is empty
+    const isEmpty =
+      value === null ||
+      value === undefined ||
+      value === '' ||
+      (Array.isArray(value) && value.length === 0)
+
+    if (isEmpty) {
+      delete newFrontmatter[key]
+    } else {
+      newFrontmatter[key] = value
+    }
+
+    set({ frontmatter: newFrontmatter, isDirty: true })
     get().scheduleAutoSave()
   },
 
