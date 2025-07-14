@@ -21,14 +21,16 @@
         "fullscreen": false,
         "maximized": false,
         "center": true,
-        "decorations": true,
-        "alwaysOnTop": false
+        "decorations": false,
+        "alwaysOnTop": false,
+        "transparent": true,
+        "shadow": false
       }
     ],
     "security": {
       "csp": null
     },
-    "macOSPrivateApi": false,
+    "macOSPrivateApi": true,
     "withGlobalTauri": false
   },
   "bundle": {

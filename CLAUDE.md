@@ -22,13 +22,15 @@ This is a macOS markdown editor specifically designed for managing and editing A
 
 ### Technology Stack (DECIDED - Do Not Change)
 
-- **Framework:** Tauri (Rust backend + React frontend)
+- **Framework:** Tauri v2 (Rust backend + React frontend)
 - **Text Editor:** CodeMirror 6
 - **Frontend:** React + TypeScript
 - **State Management:** Zustand
 - **Styling:** Tailwind CSS + shadcn/ui components
 - **Icons:** Lucide React
 - **Parsing:** Tree-sitter for TypeScript/Astro config parsing
+
+**CRITICAL:** This project uses Tauri v2. Always refer to Tauri v2 documentation and patterns. Many Tauri v1 approaches and APIs do NOT work in v2. When searching for solutions or examples, specifically look for "Tauri v2" or "Tauri 2.x" content.
 
 ### Code Quality
 

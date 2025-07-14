@@ -64,6 +64,13 @@ pub fn run() {
             let menu = Menu::with_items(app, &[&file_menu, &edit_menu, &view_menu])?;
             app.set_menu(menu)?;
 
+            // Apply window vibrancy with rounded corners on macOS
+            #[cfg(target_os = "macos")]
+            {
+                let window = app.get_webview_window("main").unwrap();
+                apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, Some(12.0))
+                    .expect("Unsupported platform! 'apply_vibrancy' is only supported on macOS");
+            }
 
             // Handle menu events
             app.on_menu_event(move |app, event| {

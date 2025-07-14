@@ -4,10 +4,10 @@ import { useAppStore } from '../../store';
 import { CollectionsList } from './CollectionsList';
 import { FilesList } from './FilesList';
 import { Button } from '../ui/button';
-import { PanelLeftClose, FolderOpen } from 'lucide-react';
+import { FolderOpen } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
-  const { selectedCollection, toggleSidebar, setProject } = useAppStore();
+  const { selectedCollection, setProject } = useAppStore();
 
   const handleOpenProject = async () => {
     try {
@@ -23,27 +23,17 @@ export const Sidebar: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="p-4 border-b bg-muted/30 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button
-            onClick={() => void handleOpenProject()}
-            variant="ghost"
-            size="sm"
-            className="h-6 w-6 p-0"
-            title="Open Project"
-          >
-            <FolderOpen className="h-4 w-4" />
-          </Button>
-        </div>
+      <div className="p-3 border-b bg-muted/30 flex items-center gap-2">
         <Button
-          onClick={toggleSidebar}
+          onClick={() => void handleOpenProject()}
           variant="ghost"
           size="sm"
           className="h-6 w-6 p-0"
-          title="Close Sidebar"
+          title="Open Project"
         >
-          <PanelLeftClose className="h-4 w-4" />
+          <FolderOpen className="h-4 w-4" />
         </Button>
+        <span className="text-sm font-medium text-foreground">Collections</span>
       </div>
 
       <div className="flex-1 overflow-y-auto py-2">

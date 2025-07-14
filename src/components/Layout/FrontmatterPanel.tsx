@@ -1,26 +1,15 @@
 import React from 'react';
 import { useAppStore } from '../../store';
-import { Button } from '../ui/button';
-import { PanelRightClose } from 'lucide-react';
 
 export const FrontmatterPanel: React.FC = () => {
-  const { currentFile, toggleFrontmatterPanel } = useAppStore();
+  const { currentFile } = useAppStore();
 
   return (
     <div className="h-full flex flex-col bg-muted/20">
-      <div className="p-4 border-b bg-muted/30 flex items-center justify-between">
+      <div className="p-3 border-b bg-muted/30">
         <h3 className="text-sm font-semibold text-foreground m-0">
           Frontmatter
         </h3>
-        <Button
-          onClick={toggleFrontmatterPanel}
-          variant="ghost"
-          size="sm"
-          className="h-6 w-6 p-0"
-          title="Close Frontmatter Panel"
-        >
-          <PanelRightClose className="h-4 w-4" />
-        </Button>
       </div>
 
       <div className="flex-1 p-4 overflow-y-auto">
