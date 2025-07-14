@@ -182,10 +182,13 @@ const FrontmatterField: React.FC<{
                   />
                 ) : field?.type === 'Enum' && field?.options ? (
                   <Select
-                    value={String(formField.value || '')}
+                    value={
+                      formField.value ? String(formField.value) : '__NONE__'
+                    }
                     onValueChange={value => {
-                      // Empty string means clear the field
-                      const finalValue = value === '' ? undefined : value
+                      // Special sentinel value means clear the field
+                      const finalValue =
+                        value === '__NONE__' ? undefined : value
                       formField.onChange(finalValue)
                       onFieldChange(name, finalValue)
                     }}
@@ -196,7 +199,7 @@ const FrontmatterField: React.FC<{
                       />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">
+                      <SelectItem value="__NONE__">
                         <span className="text-muted-foreground">(None)</span>
                       </SelectItem>
                       {field.options.map(option => (
