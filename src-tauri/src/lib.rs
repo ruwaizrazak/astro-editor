@@ -3,7 +3,10 @@ mod models;
 mod parser;
 
 use commands::*;
-use tauri::{menu::{Menu, MenuItem, PredefinedMenuItem, Submenu}, Emitter, Manager};
+use tauri::{
+    menu::{Menu, MenuItem, PredefinedMenuItem, Submenu},
+    Emitter, Manager,
+};
 
 #[cfg(target_os = "macos")]
 use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
@@ -26,7 +29,13 @@ pub fn run() {
                 "File",
                 true,
                 &[
-                    &MenuItem::with_id(app, "open_project", "Open Project...", true, Some("CmdOrCtrl+Shift+O"))?,
+                    &MenuItem::with_id(
+                        app,
+                        "open_project",
+                        "Open Project...",
+                        true,
+                        Some("CmdOrCtrl+Shift+O"),
+                    )?,
                     &MenuItem::with_id(app, "new_file", "New File", true, Some("CmdOrCtrl+N"))?,
                     &PredefinedMenuItem::separator(app)?,
                     &MenuItem::with_id(app, "save", "Save", true, Some("CmdOrCtrl+S"))?,
@@ -55,8 +64,20 @@ pub fn run() {
                 "View",
                 true,
                 &[
-                    &MenuItem::with_id(app, "toggle_sidebar", "Toggle Sidebar", true, Some("CmdOrCtrl+1"))?,
-                    &MenuItem::with_id(app, "toggle_frontmatter", "Toggle Frontmatter Panel", true, Some("CmdOrCtrl+2"))?,
+                    &MenuItem::with_id(
+                        app,
+                        "toggle_sidebar",
+                        "Toggle Sidebar",
+                        true,
+                        Some("CmdOrCtrl+1"),
+                    )?,
+                    &MenuItem::with_id(
+                        app,
+                        "toggle_frontmatter",
+                        "Toggle Frontmatter Panel",
+                        true,
+                        Some("CmdOrCtrl+2"),
+                    )?,
                     &PredefinedMenuItem::separator(app)?,
                     &PredefinedMenuItem::fullscreen(app, Some("Enter Full Screen"))?,
                 ],
@@ -74,25 +95,23 @@ pub fn run() {
             }
 
             // Handle menu events
-            app.on_menu_event(move |app, event| {
-                match event.id().as_ref() {
-                    "open_project" => {
-                        let _ = app.emit("menu-open-project", ());
-                    }
-                    "new_file" => {
-                        let _ = app.emit("menu-new-file", ());
-                    }
-                    "save" => {
-                        let _ = app.emit("menu-save", ());
-                    }
-                    "toggle_sidebar" => {
-                        let _ = app.emit("menu-toggle-sidebar", ());
-                    }
-                    "toggle_frontmatter" => {
-                        let _ = app.emit("menu-toggle-frontmatter", ());
-                    }
-                    _ => {}
+            app.on_menu_event(move |app, event| match event.id().as_ref() {
+                "open_project" => {
+                    let _ = app.emit("menu-open-project", ());
                 }
+                "new_file" => {
+                    let _ = app.emit("menu-new-file", ());
+                }
+                "save" => {
+                    let _ = app.emit("menu-save", ());
+                }
+                "toggle_sidebar" => {
+                    let _ = app.emit("menu-toggle-sidebar", ());
+                }
+                "toggle_frontmatter" => {
+                    let _ = app.emit("menu-toggle-frontmatter", ());
+                }
+                _ => {}
             });
 
             Ok(())

@@ -7,7 +7,11 @@ describe('Utils - cn function', () => {
   });
 
   it('should handle conditional classes', () => {
-    expect(cn('base', true && 'conditional', false && 'hidden')).toBe('base conditional');
+    const condition1 = true;
+    const condition2 = false;
+    expect(
+      cn('base', condition1 && 'conditional', condition2 && 'hidden')
+    ).toBe('base conditional');
   });
 
   it('should handle undefined and null values', () => {
@@ -21,20 +25,29 @@ describe('Utils - cn function', () => {
   });
 
   it('should handle complex conditional logic', () => {
-    const variant = 'primary';
-    const disabled = false;
-    const size = 'lg';
-    
-    const result = cn(
-      'btn',
-      variant === 'primary' && 'btn-primary',
-      variant === 'secondary' && 'btn-secondary',
-      disabled && 'btn-disabled',
-      size === 'sm' && 'btn-sm',
-      size === 'lg' && 'btn-lg'
+    // Test with different combinations
+    const getButtonClasses = (
+      variant: string,
+      size: string,
+      disabled: boolean
+    ) => {
+      return cn(
+        'btn',
+        variant === 'primary' && 'btn-primary',
+        variant === 'secondary' && 'btn-secondary',
+        disabled && 'btn-disabled',
+        size === 'sm' && 'btn-sm',
+        size === 'lg' && 'btn-lg'
+      );
+    };
+
+    expect(getButtonClasses('primary', 'lg', false)).toBe(
+      'btn btn-primary btn-lg'
     );
-    
-    expect(result).toBe('btn btn-primary btn-lg');
+    expect(getButtonClasses('secondary', 'sm', true)).toBe(
+      'btn btn-secondary btn-disabled btn-sm'
+    );
+    expect(getButtonClasses('other', 'md', false)).toBe('btn');
   });
 
   it('should handle empty inputs', () => {
@@ -48,11 +61,13 @@ describe('Utils - cn function', () => {
   });
 
   it('should handle object inputs for conditional classes', () => {
-    expect(cn({
-      'base': true,
-      'active': true,
-      'hidden': false,
-      'large': true
-    })).toBe('base active large');
+    expect(
+      cn({
+        base: true,
+        active: true,
+        hidden: false,
+        large: true,
+      })
+    ).toBe('base active large');
   });
 });

@@ -21,13 +21,13 @@ describe('ToolBar Component', () => {
     });
 
     render(<ToolBar />);
-    
+
     expect(screen.getByText('/Users/test/my-blog')).toBeInTheDocument();
   });
 
   it('should not show project path when none is set', () => {
     render(<ToolBar />);
-    
+
     // Should not have any path text
     expect(screen.queryByText(/Users/)).not.toBeInTheDocument();
   });
@@ -35,7 +35,7 @@ describe('ToolBar Component', () => {
   describe('Save Button', () => {
     it('should be disabled when no file is open', () => {
       render(<ToolBar />);
-      
+
       const saveButton = screen.getByTitle(/Save/);
       expect(saveButton).toBeDisabled();
     });
@@ -54,7 +54,7 @@ describe('ToolBar Component', () => {
       });
 
       render(<ToolBar />);
-      
+
       const saveButton = screen.getByTitle('Save');
       expect(saveButton).toBeDisabled();
     });
@@ -73,7 +73,7 @@ describe('ToolBar Component', () => {
       });
 
       render(<ToolBar />);
-      
+
       const saveButton = screen.getByTitle('Save (unsaved changes)');
       expect(saveButton).toBeEnabled();
       expect(saveButton).toHaveClass('bg-primary'); // default variant for dirty state
@@ -82,7 +82,7 @@ describe('ToolBar Component', () => {
     it('should call saveFile when clicked', async () => {
       const user = userEvent.setup();
       const mockSaveFile = vi.fn();
-      
+
       // Mock the saveFile function
       useAppStore.setState({
         currentFile: {
@@ -104,10 +104,10 @@ describe('ToolBar Component', () => {
       });
 
       render(<ToolBar />);
-      
+
       const saveButton = screen.getByTitle('Save (unsaved changes)');
       await user.click(saveButton);
-      
+
       expect(mockSaveFile).toHaveBeenCalledTimes(1);
     });
   });
@@ -119,7 +119,7 @@ describe('ToolBar Component', () => {
       });
 
       render(<ToolBar />);
-      
+
       const toggleButton = screen.getByTitle('Open Frontmatter Panel');
       expect(toggleButton).toBeInTheDocument();
     });
@@ -130,7 +130,7 @@ describe('ToolBar Component', () => {
       });
 
       render(<ToolBar />);
-      
+
       const toggleButton = screen.queryByTitle('Open Frontmatter Panel');
       expect(toggleButton).not.toBeInTheDocument();
     });
@@ -138,7 +138,7 @@ describe('ToolBar Component', () => {
     it('should call toggleFrontmatterPanel when clicked', async () => {
       const user = userEvent.setup();
       const mockToggle = vi.fn();
-      
+
       useAppStore.setState({
         frontmatterPanelVisible: false,
       });
@@ -151,10 +151,10 @@ describe('ToolBar Component', () => {
       });
 
       render(<ToolBar />);
-      
+
       const toggleButton = screen.getByTitle('Open Frontmatter Panel');
       await user.click(toggleButton);
-      
+
       expect(mockToggle).toHaveBeenCalledTimes(1);
     });
   });
@@ -175,15 +175,15 @@ describe('ToolBar Component', () => {
       });
 
       render(<ToolBar />);
-      
+
       const buttons = screen.getAllByRole('button');
       const saveButton = screen.getByTitle('Save (unsaved changes)');
       const frontmatterButton = screen.getByTitle('Open Frontmatter Panel');
-      
+
       // Save button should come before frontmatter toggle in DOM order
       const saveIndex = buttons.indexOf(saveButton);
       const frontmatterIndex = buttons.indexOf(frontmatterButton);
-      
+
       expect(saveIndex).toBeLessThan(frontmatterIndex);
     });
   });
@@ -191,10 +191,10 @@ describe('ToolBar Component', () => {
   describe('Integration with Store State', () => {
     it('should update button states when store state changes', () => {
       const { rerender } = render(<ToolBar />);
-      
+
       // Initially no file, save should be disabled
       expect(screen.getByTitle(/Save/).closest('button')).toBeDisabled();
-      
+
       // Add a dirty file
       useAppStore.setState({
         currentFile: {
@@ -207,11 +207,13 @@ describe('ToolBar Component', () => {
         },
         isDirty: true,
       });
-      
+
       rerender(<ToolBar />);
-      
+
       // Now save should be enabled
-      expect(screen.getByTitle('Save (unsaved changes)').closest('button')).toBeEnabled();
+      expect(
+        screen.getByTitle('Save (unsaved changes)').closest('button')
+      ).toBeEnabled();
     });
   });
 });

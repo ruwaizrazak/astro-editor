@@ -32,7 +32,7 @@ pub struct ParsedSchema {
 /// Parse Astro content config file and extract collection definitions
 pub fn parse_astro_config(project_path: &Path) -> Result<Vec<Collection>, String> {
     let config_path = project_path.join("src").join("content").join("config.ts");
-    
+
     if !config_path.exists() {
         return Ok(vec![]);
     }
@@ -43,16 +43,22 @@ pub fn parse_astro_config(project_path: &Path) -> Result<Vec<Collection>, String
     parse_collections_from_content(&content, project_path)
 }
 
-fn parse_collections_from_content(content: &str, project_path: &Path) -> Result<Vec<Collection>, String> {
+fn parse_collections_from_content(
+    content: &str,
+    project_path: &Path,
+) -> Result<Vec<Collection>, String> {
     let mut collections = Vec::new();
     let content_dir = project_path.join("src").join("content");
 
     // Remove comments and normalize whitespace
     let clean_content = remove_comments(content);
-    
+
     // Look for collections object in defineConfig
     if let Some(collections_block) = extract_collections_block(&clean_content) {
-        collections.extend(parse_collection_definitions(&collections_block, &content_dir)?);
+        collections.extend(parse_collection_definitions(
+            &collections_block,
+            &content_dir,
+        )?);
     }
 
     Ok(collections)
@@ -62,24 +68,24 @@ fn remove_comments(content: &str) -> String {
     // Simple comment removal - removes // and /* */ comments
     let line_comment_re = Regex::new(r"//.*").unwrap();
     let block_comment_re = Regex::new(r"/\*[\s\S]*?\*/").unwrap();
-    
+
     let no_line_comments = line_comment_re.replace_all(content, "");
     let no_comments = block_comment_re.replace_all(&no_line_comments, "");
-    
+
     no_comments.to_string()
 }
 
 fn extract_collections_block(content: &str) -> Option<String> {
     // Look for collections: { ... } within defineConfig
     let collections_re = Regex::new(r"collections\s*:\s*\{").unwrap();
-    
+
     if let Some(start_match) = collections_re.find(content) {
         let start = start_match.end() - 1; // Include the opening brace
-        
+
         // Find matching closing brace
         let mut brace_count = 0;
         let mut end = start;
-        
+
         for (i, ch) in content[start..].char_indices() {
             match ch {
                 '{' => brace_count += 1,
@@ -93,52 +99,56 @@ fn extract_collections_block(content: &str) -> Option<String> {
                 _ => {}
             }
         }
-        
+
         if brace_count == 0 {
             return Some(content[start..end].to_string());
         }
     }
-    
+
     None
 }
 
-fn parse_collection_definitions(collections_block: &str, content_dir: &Path) -> Result<Vec<Collection>, String> {
+fn parse_collection_definitions(
+    collections_block: &str,
+    content_dir: &Path,
+) -> Result<Vec<Collection>, String> {
     let mut collections = Vec::new();
-    
+
     // Extract collection name and definition pairs
     let collection_re = Regex::new(r"(\w+)\s*:\s*defineCollection\s*\(").unwrap();
-    
+
     for cap in collection_re.captures_iter(collections_block) {
         let collection_name = cap.get(1).unwrap().as_str();
         let collection_path = content_dir.join(collection_name);
-        
+
         // Only include collections that have actual directories
         if collection_path.exists() && collection_path.is_dir() {
             let mut collection = Collection::new(collection_name.to_string(), collection_path);
-            
+
             // Try to extract schema information (simplified)
             if let Some(schema) = extract_basic_schema(collections_block, collection_name) {
                 collection.schema = Some(schema);
             }
-            
+
             collections.push(collection);
         }
     }
-    
+
     Ok(collections)
 }
 
 fn extract_basic_schema(content: &str, collection_name: &str) -> Option<String> {
     // Look for the schema definition for this specific collection
-    let pattern = format!(r"{collection_name}:\s*defineCollection\s*\(\s*\{{[^}}]*schema\s*:\s*([^,}}]+)");
+    let pattern =
+        format!(r"{collection_name}:\s*defineCollection\s*\(\s*\{{[^}}]*schema\s*:\s*([^,}}]+)");
     let schema_re = Regex::new(&pattern).unwrap();
-    
+
     if let Some(cap) = schema_re.captures(content) {
         let schema_text = cap.get(1).unwrap().as_str().trim();
-        
+
         // Create a simplified schema representation
         let mut schema_fields = Vec::new();
-        
+
         // Look for common Zod patterns
         let field_patterns = [
             (r"(\w+)\s*:\s*z\.string\(\)", ZodFieldType::String),
@@ -147,7 +157,7 @@ fn extract_basic_schema(content: &str, collection_name: &str) -> Option<String> 
             (r"(\w+)\s*:\s*z\.coerce\.date\(\)", ZodFieldType::Date),
             (r"(\w+)\s*:\s*z\.date\(\)", ZodFieldType::Date),
         ];
-        
+
         for (pattern, field_type) in field_patterns {
             let re = Regex::new(pattern).unwrap();
             for cap in re.captures_iter(schema_text) {
@@ -160,7 +170,7 @@ fn extract_basic_schema(content: &str, collection_name: &str) -> Option<String> 
                 });
             }
         }
-        
+
         // Serialize to JSON for storage
         let schema_json = serde_json::json!({
             "type": "zod",
@@ -173,16 +183,16 @@ fn extract_basic_schema(content: &str, collection_name: &str) -> Option<String> 
                 })
             }).collect::<Vec<_>>()
         });
-        
+
         return Some(schema_json.to_string());
     }
-    
+
     None
 }
 
 fn extract_default_value(schema_text: &str, field_name: &str) -> Option<String> {
     let default_re = Regex::new(&format!(r"{field_name}.*\.default\s*\(\s*([^)]+)\s*\)")).unwrap();
-    
+
     if let Some(cap) = default_re.captures(schema_text) {
         let default_val = cap.get(1).unwrap().as_str().trim();
         Some(default_val.trim_matches('"').trim_matches('\'').to_string())
@@ -194,8 +204,8 @@ fn extract_default_value(schema_text: &str, field_name: &str) -> Option<String> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::path::PathBuf;
     use std::fs;
+    use std::path::PathBuf;
 
     #[test]
     fn test_parse_simple_config() {
@@ -220,17 +230,17 @@ export default defineConfig({
         let temp_dir = std::env::temp_dir().join("test-astro-parser");
         let project_path = temp_dir.join("project");
         let blog_path = project_path.join("src").join("content").join("blog");
-        
+
         fs::create_dir_all(&blog_path).unwrap();
-        
+
         let result = parse_collections_from_content(content, &project_path);
         assert!(result.is_ok());
-        
+
         let collections = result.unwrap();
         assert_eq!(collections.len(), 1);
         assert_eq!(collections[0].name, "blog");
         assert!(collections[0].schema.is_some());
-        
+
         // Clean up
         fs::remove_dir_all(&temp_dir).ok();
     }

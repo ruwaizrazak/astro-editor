@@ -21,9 +21,7 @@ pub async fn scan_project(project_path: String) -> Result<Vec<Collection>, Strin
 
     // Try to parse Astro config first
     match parse_astro_config(&path) {
-        Ok(collections) if !collections.is_empty() => {
-            Ok(collections)
-        }
+        Ok(collections) if !collections.is_empty() => Ok(collections),
         Ok(_) | Err(_) => {
             // Fallback: scan directory structure if config parsing fails or returns empty
             scan_content_directories(path.as_path())

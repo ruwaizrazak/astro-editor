@@ -124,49 +124,49 @@ body {
     font-weight: 900;
     line-height: 1;
   }
-  
+
   .traffic-light-close {
     background: #ff5f57;
     border-color: #e0443e;
   }
-  
+
   .traffic-light-close:hover {
     background: #ff6058;
   }
-  
+
   .traffic-light-minimize {
     background: #ffbd2e;
     border-color: #dea123;
   }
-  
+
   .traffic-light-minimize:hover {
     background: #ffbf2f;
   }
-  
+
   .traffic-light-maximize {
     background: #28ca42;
     border-color: #1aac29;
   }
-  
+
   .traffic-light-maximize:hover {
     background: #29cb43;
   }
-  
+
   .traffic-light .symbol {
     opacity: 0;
     transition: opacity 0.15s ease;
     color: rgba(0, 0, 0, 0.7);
   }
-  
+
   .traffic-light:hover .symbol {
     opacity: 1;
   }
 }
 
 /* Allow text selection in specific areas */
-input, 
-textarea, 
-[contenteditable="true"],
+input,
+textarea,
+[contenteditable='true'],
 .cm-editor,
 .CodeMirror {
   user-select: text !important;
@@ -182,15 +182,26 @@ textarea,
 }
 
 /* Force default cursor on all text elements */
-p, span, div, h1, h2, h3, h4, h5, h6, label, li, td, th {
+p,
+span,
+div,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+label,
+li,
+td,
+th {
   cursor: default !important;
 }
 
 /* Buttons and interactive elements should have pointer cursor */
 button,
 a,
-[role="button"],
+[role='button'],
 .cursor-pointer {
   cursor: pointer !important;
 }
-

@@ -8,17 +8,16 @@ import { MainEditor } from './MainEditor';
 import { FrontmatterPanel } from './FrontmatterPanel';
 
 export const Layout: React.FC = () => {
-  const { 
-    sidebarVisible, 
-    frontmatterPanelVisible, 
+  const {
+    sidebarVisible,
+    frontmatterPanelVisible,
     currentFile,
     editorContent,
     isDirty,
-    openFile,
     saveFile,
     setProject,
     toggleSidebar,
-    toggleFrontmatterPanel 
+    toggleFrontmatterPanel,
   } = useAppStore();
 
   // macOS keyboard shortcuts
@@ -50,7 +49,14 @@ export const Layout: React.FC = () => {
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [currentFile, editorContent, isDirty, saveFile, toggleSidebar, toggleFrontmatterPanel]);
+  }, [
+    currentFile,
+    editorContent,
+    isDirty,
+    saveFile,
+    toggleSidebar,
+    toggleFrontmatterPanel,
+  ]);
 
   // Menu event listeners
   useEffect(() => {
@@ -61,18 +67,27 @@ export const Layout: React.FC = () => {
           setProject(projectPath);
         }
       } catch (error) {
-        console.error('Failed to open project:', error);
+        // Handle error in production apps appropriately
+        if (import.meta.env.DEV) {
+          // eslint-disable-next-line no-console
+          console.error('Failed to open project:', error);
+        }
       }
     };
 
-    const unlistenOpenProject = listen('menu-open-project', handleOpenProject);
+    const unlistenOpenProject = listen('menu-open-project', () => {
+      void handleOpenProject();
+    });
     const unlistenSave = listen('menu-save', () => {
       if (currentFile && isDirty) {
         void saveFile();
       }
     });
     const unlistenToggleSidebar = listen('menu-toggle-sidebar', toggleSidebar);
-    const unlistenToggleFrontmatter = listen('menu-toggle-frontmatter', toggleFrontmatterPanel);
+    const unlistenToggleFrontmatter = listen(
+      'menu-toggle-frontmatter',
+      toggleFrontmatterPanel
+    );
 
     return () => {
       void unlistenOpenProject.then(fn => fn());
@@ -80,13 +95,20 @@ export const Layout: React.FC = () => {
       void unlistenToggleSidebar.then(fn => fn());
       void unlistenToggleFrontmatter.then(fn => fn());
     };
-  }, [currentFile, isDirty, saveFile, setProject, toggleSidebar, toggleFrontmatterPanel]);
+  }, [
+    currentFile,
+    isDirty,
+    saveFile,
+    setProject,
+    toggleSidebar,
+    toggleFrontmatterPanel,
+  ]);
 
   return (
     <div className="h-screen w-screen bg-background font-sans flex flex-col rounded-xl overflow-hidden">
       {/* Unified titlebar */}
       <UnifiedTitleBar />
-      
+
       {/* Main content area */}
       <div className="flex flex-1 overflow-hidden">
         {sidebarVisible && (

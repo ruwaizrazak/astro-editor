@@ -2,7 +2,13 @@ import React from 'react';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { useAppStore } from '../../store';
 import { Button } from '../ui/button';
-import { Save, PanelRight, PanelLeft, PanelLeftClose, PanelRightClose } from 'lucide-react';
+import {
+  Save,
+  PanelRight,
+  PanelLeft,
+  PanelLeftClose,
+  PanelRightClose,
+} from 'lucide-react';
 
 export const UnifiedTitleBar: React.FC = () => {
   const {
@@ -48,19 +54,19 @@ export const UnifiedTitleBar: React.FC = () => {
         {/* Custom traffic lights - no drag region on these */}
         <div className="flex items-center gap-2 mr-3">
           <button
-            onClick={handleClose}
+            onClick={() => void handleClose()}
             className="traffic-light traffic-light-close"
           >
             <span className="symbol">×</span>
           </button>
           <button
-            onClick={handleMinimize}
+            onClick={() => void handleMinimize()}
             className="traffic-light traffic-light-minimize"
           >
             <span className="symbol">−</span>
           </button>
           <button
-            onClick={handleToggleMaximize}
+            onClick={() => void handleToggleMaximize()}
             className="traffic-light traffic-light-maximize"
           >
             <span className="symbol">+</span>
@@ -73,7 +79,7 @@ export const UnifiedTitleBar: React.FC = () => {
           variant="ghost"
           size="sm"
           className="h-7 w-7 p-0"
-          title={sidebarVisible ? "Close Sidebar" : "Open Sidebar"}
+          title={sidebarVisible ? 'Close Sidebar' : 'Open Sidebar'}
         >
           {sidebarVisible ? (
             <PanelLeftClose className="h-4 w-4" />
@@ -84,7 +90,10 @@ export const UnifiedTitleBar: React.FC = () => {
       </div>
 
       {/* Center: Project path or app title - draggable */}
-      <div className="flex-1 text-center overflow-hidden" data-tauri-drag-region>
+      <div
+        className="flex-1 text-center overflow-hidden"
+        data-tauri-drag-region
+      >
         {projectPath ? (
           <span className="text-xs text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis max-w-xs block">
             {projectPath}
@@ -109,14 +118,18 @@ export const UnifiedTitleBar: React.FC = () => {
         >
           <Save className="h-4 w-4" />
         </Button>
-        
+
         {/* Right sidebar toggle - no drag region */}
         <Button
           onClick={toggleFrontmatterPanel}
           variant="ghost"
           size="sm"
           className="h-7 w-7 p-0"
-          title={frontmatterPanelVisible ? "Close Frontmatter Panel" : "Open Frontmatter Panel"}
+          title={
+            frontmatterPanelVisible
+              ? 'Close Frontmatter Panel'
+              : 'Open Frontmatter Panel'
+          }
         >
           {frontmatterPanelVisible ? (
             <PanelRightClose className="h-4 w-4" />

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { useAppStore } from './index';
 
 describe('Store Async Operations', () => {
@@ -34,7 +34,9 @@ describe('Store Async Operations', () => {
     });
 
     it('should handle loadCollections error gracefully', async () => {
-      globalThis.mockTauri.invoke.mockRejectedValue(new Error('Project not found'));
+      globalThis.mockTauri.invoke.mockRejectedValue(
+        new Error('Project not found')
+      );
       useAppStore.setState({ projectPath: '/invalid/project' });
 
       const { loadCollections } = useAppStore.getState();
@@ -89,7 +91,9 @@ describe('Store Async Operations', () => {
         collection: 'posts',
       };
 
-      globalThis.mockTauri.invoke.mockRejectedValue(new Error('File not found'));
+      globalThis.mockTauri.invoke.mockRejectedValue(
+        new Error('File not found')
+      );
 
       const { openFile } = useAppStore.getState();
       await openFile(mockFile);
@@ -145,7 +149,9 @@ describe('Store Async Operations', () => {
         isDirty: true,
       });
 
-      globalThis.mockTauri.invoke.mockRejectedValue(new Error('Permission denied'));
+      globalThis.mockTauri.invoke.mockRejectedValue(
+        new Error('Permission denied')
+      );
 
       const { saveFile } = useAppStore.getState();
       await saveFile();
@@ -194,14 +200,19 @@ describe('Store Async Operations', () => {
       const { loadCollectionFiles } = useAppStore.getState();
       await loadCollectionFiles('/project/posts');
 
-      expect(globalThis.mockTauri.invoke).toHaveBeenCalledWith('scan_collection_files', {
-        collectionPath: '/project/posts',
-      });
+      expect(globalThis.mockTauri.invoke).toHaveBeenCalledWith(
+        'scan_collection_files',
+        {
+          collectionPath: '/project/posts',
+        }
+      );
       expect(useAppStore.getState().files).toEqual(mockFiles);
     });
 
     it('should handle collection scan error gracefully', async () => {
-      globalThis.mockTauri.invoke.mockRejectedValue(new Error('Directory not found'));
+      globalThis.mockTauri.invoke.mockRejectedValue(
+        new Error('Directory not found')
+      );
 
       const { loadCollectionFiles } = useAppStore.getState();
       await loadCollectionFiles('/invalid/path');
