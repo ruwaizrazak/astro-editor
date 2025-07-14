@@ -280,7 +280,7 @@ const FrontmatterField: React.FC<{
       <TextareaField
         name={name}
         label={label}
-        className="text-lg"
+        className="text-lg font-bold"
         minRows={1}
         maxRows={3}
       />
@@ -288,7 +288,7 @@ const FrontmatterField: React.FC<{
   }
 
   if (label.toLowerCase() === 'description') {
-    return <TextareaField name={name} label={label} minRows={2} maxRows={6} />
+    return <TextareaField name={name} label={label} minRows={3} maxRows={16} />
   }
 
   if (field?.type === 'Array') {
