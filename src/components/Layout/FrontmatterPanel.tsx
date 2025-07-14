@@ -10,8 +10,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { DatePicker } from '@/components/ui/date-picker';
-import { AutoGrowingInput } from '@/components/ui/auto-growing-input';
-import { TagsInput } from '@/components/ui/tags-input';
 import { Label } from '@/components/ui/label';
 
 // Helper component for rendering different input types
@@ -57,23 +55,37 @@ const FrontmatterField: React.FC<{
         typeof value === 'string' && value ? new Date(value) : undefined;
       return (
         <DatePicker
-          date={dateValue}
-          onDateChange={date =>
-            onChange(date ? date.toISOString().split('T')[0] : '')
-          }
+          {...(dateValue && { value: dateValue })}
+          onChange={(date: Date | undefined) => {
+            if (date instanceof Date && !isNaN(date.getTime())) {
+              onChange(date.toISOString().split('T')[0]);
+            } else {
+              onChange('');
+            }
+          }}
           placeholder="Select date..."
+          className={
+            validationError
+              ? 'border-destructive focus-visible:ring-destructive'
+              : ''
+          }
         />
       );
     }
 
     // Handle arrays as tags
     if (field?.type === 'Array' || Array.isArray(value)) {
-      const arrayValue = Array.isArray(value) ? value : [];
       return (
-        <TagsInput
-          value={arrayValue}
-          onChange={onChange as (tags: string[]) => void}
-          placeholder={`Add ${label.toLowerCase()}...`}
+        <Input
+          type="text"
+          value={typeof value === 'string' ? value : ''}
+          onChange={e => onChange(e.target.value)}
+          placeholder={`Enter ${label.toLowerCase()}...`}
+          className={
+            validationError
+              ? 'border-destructive focus-visible:ring-destructive'
+              : ''
+          }
         />
       );
     }
@@ -81,7 +93,7 @@ const FrontmatterField: React.FC<{
     // Special handling for title field - use auto-growing input
     if (label.toLowerCase() === 'title') {
       return (
-        <AutoGrowingInput
+        <Textarea
           value={
             typeof value === 'string'
               ? value
@@ -91,7 +103,7 @@ const FrontmatterField: React.FC<{
           }
           onChange={e => onChange(e.target.value)}
           placeholder={`Enter ${label.toLowerCase()}...`}
-          className={`text-base font-medium ${validationError ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+          className={`${validationError ? 'border-destructive focus-visible:ring-destructive' : ''}`}
         />
       );
     }
@@ -109,7 +121,7 @@ const FrontmatterField: React.FC<{
           }
           onChange={e => onChange(e.target.value)}
           placeholder={`Enter ${label.toLowerCase()}...`}
-          className={`resize-none ${validationError ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+          className={`${validationError ? 'border-destructive focus-visible:ring-destructive' : ''}`}
         />
       );
     }
@@ -265,7 +277,7 @@ export const FrontmatterPanel: React.FC = () => {
                   key={fieldName}
                   label={fieldName}
                   value={value}
-                  field={schemaField}
+                  {...(schemaField && { field: schemaField })}
                   onChange={newValue => handleFieldChange(fieldName, newValue)}
                 />
               ))

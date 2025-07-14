@@ -45,7 +45,7 @@ export function parseSchemaJson(schemaJson: string): ParsedSchema | null {
       name: field.name,
       type: field.type as ZodFieldType,
       optional: field.optional || false,
-      default: field.default,
+      ...(field.default !== undefined && { default: field.default }),
     }));
 
     return {
@@ -124,7 +124,7 @@ export function getDefaultValueForField(
     case 'Boolean':
       return false;
     case 'Date':
-      return new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+      return new Date().toISOString().split('T')[0] || ''; // YYYY-MM-DD format
     case 'Array':
       return [];
     default:

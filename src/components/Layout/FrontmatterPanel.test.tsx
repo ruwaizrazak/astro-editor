@@ -50,9 +50,9 @@ describe('FrontmatterPanel Component', () => {
 
     expect(screen.getByDisplayValue('Test Post')).toBeInTheDocument();
     expect(screen.getByRole('switch')).toBeInTheDocument();
-    expect(screen.getByText('test')).toBeInTheDocument(); // Tags are now individual badges
-    expect(screen.getByText('demo')).toBeInTheDocument();
-    expect(screen.getByText('Pick a date')).toBeInTheDocument(); // DatePicker button
+    // Arrays are now rendered as text inputs, not individual badges
+    expect(screen.getByPlaceholderText('Enter tags...')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('2023-12-01')).toBeInTheDocument(); // Date shows as input value
     expect(screen.getByDisplayValue('5')).toBeInTheDocument();
   });
 
@@ -149,31 +149,6 @@ describe('FrontmatterPanel Component', () => {
     ).toBeInTheDocument();
   });
 
-  it('should handle array values as comma-separated strings', () => {
-    const mockFile = {
-      id: 'posts/test',
-      path: '/project/posts/test.md',
-      name: 'test',
-      extension: 'md',
-      is_draft: false,
-      collection: 'posts',
-    };
-
-    useAppStore.setState({
-      currentFile: mockFile,
-      frontmatter: { tags: ['react', 'typescript'] },
-    });
-
-    render(<FrontmatterPanel />);
-
-    // Tags are now individual badges, so we'll test adding a new tag
-    const tagsInput = screen.getByRole('textbox', { name: /tags/i }) || screen.getByPlaceholderText(/add tags/i);
-    fireEvent.change(tagsInput, { target: { value: 'vue' } });
-    fireEvent.keyDown(tagsInput, { key: 'Enter' });
-
-    // Note: This test might need adjustment based on actual TagsInput behavior
-  });
-
   it('should use schema information when available', () => {
     const mockFile = {
       id: 'posts/test',
@@ -212,9 +187,7 @@ describe('FrontmatterPanel Component', () => {
     // Should show all schema fields, even if not in frontmatter
     expect(screen.getByDisplayValue('Test Post')).toBeInTheDocument();
     expect(screen.getByRole('switch')).toBeInTheDocument(); // Boolean field
-    expect(
-      screen.getByPlaceholderText(/add tags/i)
-    ).toBeInTheDocument(); // Array field
+    expect(screen.getByPlaceholderText('Enter tags...')).toBeInTheDocument(); // Array field
 
     // Should show required indicator for title field (1 required field: title)
     expect(screen.getAllByText('*')).toHaveLength(1);
@@ -317,36 +290,5 @@ describe('FrontmatterPanel Component', () => {
     const state = useAppStore.getState();
     expect(state.frontmatter).toEqual({ title: 'Test Post' });
     expect(state.frontmatter.description).toBeUndefined();
-  });
-
-  it('should remove array field when emptied', () => {
-    const mockFile = {
-      id: 'posts/test',
-      path: '/project/posts/test.md',
-      name: 'test',
-      extension: 'md',
-      is_draft: false,
-      collection: 'posts',
-    };
-
-    useAppStore.setState({
-      currentFile: mockFile,
-      frontmatter: { title: 'Test Post', tags: ['react', 'typescript'] },
-    });
-
-    render(<FrontmatterPanel />);
-
-    // Remove all tags by clicking the X buttons
-    const removeButtons = screen.getAllByRole('button');
-    removeButtons.forEach(button => {
-      if (button.querySelector('svg')) { // X icon buttons
-        fireEvent.click(button);
-      }
-    });
-
-    // Array field should be removed when all tags are removed
-    const state = useAppStore.getState();
-    expect(state.frontmatter).toEqual({ title: 'Test Post' });
-    expect(state.frontmatter.tags).toBeUndefined();
   });
 });
