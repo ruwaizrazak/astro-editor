@@ -379,7 +379,9 @@ fn parse_schema_fields(schema_text: &str) -> Option<String> {
             let field_type = if field_definition.contains("z.array(") {
                 ZodFieldType::Array(Box::new(ZodFieldType::String))
             } else if field_definition.contains("z.enum(") {
-                ZodFieldType::Enum(vec![])
+                // Extract enum values from z.enum(['value1', 'value2'])
+                let enum_values = extract_enum_values(field_definition);
+                ZodFieldType::Enum(enum_values)
             } else if field_definition.contains("z.coerce.date()")
                 || field_definition.contains("z.date()")
             {
@@ -435,12 +437,22 @@ fn parse_schema_fields(schema_text: &str) -> Option<String> {
         let schema_json = serde_json::json!({
             "type": "zod",
             "fields": schema_fields.iter().map(|f| {
-                serde_json::json!({
+                let mut field_json = serde_json::json!({
                     "name": f.name,
-                    "type": format!("{:?}", f.field_type),
+                    "type": match &f.field_type {
+                        ZodFieldType::Enum(_) => "Enum".to_string(),
+                        _ => format!("{:?}", f.field_type)
+                    },
                     "optional": f.optional,
                     "default": f.default_value
-                })
+                });
+                
+                // Add enum options if field is an enum
+                if let ZodFieldType::Enum(options) = &f.field_type {
+                    field_json["options"] = serde_json::json!(options);
+                }
+                
+                field_json
             }).collect::<Vec<_>>()
         });
 
@@ -449,6 +461,29 @@ fn parse_schema_fields(schema_text: &str) -> Option<String> {
     }
 
     None
+}
+
+fn extract_enum_values(field_definition: &str) -> Vec<String> {
+    // Extract values from z.enum(['value1', 'value2']) or z.enum(["value1", "value2"])
+    let enum_re = Regex::new(r"z\.enum\s*\(\s*\[\s*([^\]]+)\s*\]\s*\)").unwrap();
+    
+    if let Some(cap) = enum_re.captures(field_definition) {
+        let values_str = cap.get(1).unwrap().as_str();
+        
+        // Split by comma and clean up quotes
+        values_str
+            .split(',')
+            .map(|v| {
+                v.trim()
+                    .trim_matches('"')
+                    .trim_matches('\'')
+                    .to_string()
+            })
+            .filter(|v| !v.is_empty())
+            .collect()
+    } else {
+        vec![]
+    }
 }
 
 fn extract_default_value(schema_text: &str, field_name: &str) -> Option<String> {

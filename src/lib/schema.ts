@@ -3,6 +3,7 @@ export interface ZodField {
   type: ZodFieldType
   optional: boolean
   default?: string
+  options?: string[] // For enum fields
 }
 
 export type ZodFieldType =
@@ -26,6 +27,7 @@ interface ParsedSchemaJson {
     type: string
     optional: boolean
     default?: string
+    options?: string[] // For enum fields
   }>
 }
 
@@ -46,6 +48,7 @@ export function parseSchemaJson(schemaJson: string): ParsedSchema | null {
       type: field.type as ZodFieldType,
       optional: field.optional || false,
       ...(field.default !== undefined && { default: field.default }),
+      ...(field.options !== undefined && { options: field.options }),
     }))
 
     return {

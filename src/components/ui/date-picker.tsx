@@ -47,6 +47,21 @@ function DatePicker({
             setOpen(false)
           }}
         />
+        {value && (
+          <div className="border-t p-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={() => {
+                onChange?.(undefined)
+                setOpen(false)
+              }}
+            >
+              Clear
+            </Button>
+          </div>
+        )}
       </PopoverContent>
     </Popover>
   )

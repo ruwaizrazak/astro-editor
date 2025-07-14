@@ -138,9 +138,9 @@ Investigate alternatives to regex-based parsing:
 
 - [x] Pull in basic shadui components we're probably gonna need so they're available for us to use (see https://ui.shadcn.com/docs/components).
 - [x] Manual refactoring and cleaning up of codebase, upgrade to React 19 and Tailwind 4. Reinstall all shadCN packages manually.
-- [ ] Ensure we are set up for Tailwind v4 in accordance with this guide: https://ui.shadcn.com/docs/tailwind-v4
-- [ ] Bug: When saving, the whole app refreshes back to its initial state (but the save works)
-- [ ] Bug: When saving changes to frontmatter, the frontmatter is reordered in the markdown docs. The easiest solution here is to ensure it is always ordered as per the order in the schema, with any extra fields not in the schema in their original order.
+- [x] Ensure we are set up for Tailwind v4 in accordance with this guide: https://ui.shadcn.com/docs/tailwind-v4
+- [x] Bug: When saving, the whole app refreshes back to its initial state (but the save works)
+- [x] Bug: When saving changes to frontmatter, the frontmatter is reordered in the markdown docs. The easiest solution here is to ensure it is always ordered as per the order in the schema, with any extra fields not in the schema in their original order.
 - [x] Refine frontmatter sidebar panel UI
   - [x] Use shadcn components and refactor to use the shadcn Form structures
   - [ ] Remove the header completely - we don't need it (frontmatter using X schema)
@@ -163,11 +163,12 @@ Investigate alternatives to regex-based parsing:
 - [ ] Improve the dummy data in `dummy-astro-project` so its's easier for us to test (both manually and automated):
   - Keep a few of the real examples and the styleguides but clear out some of theother stuff.
   - Add some more dummy content pieces into the two collections with differring frontmatter, content, filename formats etc. Ensure all features of (GitHub-flavoured) markdown are present so we can easily test the markdown editor later on. Maybe add another collection? Do not change the `notes` or `articles` collection schemas in `content.config.json` - they are exact copies of the schema for my personal blog.
-- [ ] Review all React code for opportunities to extract into reusable components. Refactor as needed.
-- [ ] Review all typescript code to ensure we're making full use of the various types and interfaces we've defined in `store/index.ts` and elsewhere. Can we improve simplicity and type safety elsewhere in the app?
-- [ ] Review our approach to parsing `content.config.js` - We currently use RegEx, but if we're able to execute JS/TS in the compiled Tauri app it may be possible to use `zod` to read and understand the schema in a more robust/efficient/safe way. Could we use the md/mdx files and zon schemas to creat our own typesafe objects, which our UI components can read? This would probably involve the the rust backend talking more with the TS front-end etc.
-- [ ] Rework (or add to) the tests so they actually test all the weird little bits of business logic we've now got in our code. We could have the tests try to a couple of different dummy `content.config.json` and `content/[collection]` directories. Our tests must encode our business logic effectively and not be over-bloated testing obvious things.
-- [ ] Update `CLAUDE.md` with clear descriptions of any new design patterns etc we have introduced, current project structure, examples, npm commands etc.
+  - Move this new structure into `test/dummy-astro-project` and add an `npm run reset:testdata` command to copy this to `/temp-dummy-astro-project`. The temp version should be gitignored - it will be used for local manual testing and can be modified freely via the app interface by the developer. Both of these firectories should be ignored by all linting, testing and build tools, including vite. Look for existing `dummy-astro-project` strings in the project for this bit.
+- [ ] Review all non-shadci React code for opportunities to extract reusable components or simplify to make things more readable/understandable etc. Refactor as needed.
+- [ ] Review all typescript code to ensure we're making full use of the various types and interfaces we've defined in `store/index.ts` and elsewhere. Can we improve simplicity and type safety elsewhere in the app by using typescript types well?
+- [ ] Review our approach to parsing `content.config.js` - I think we currently use RegEx, but if we're able to execute JS/TS in the compiled Tauri app it may be possible to use `zod` to read and understand the schema in a more robust/efficient/safe way. Could we use the md/mdx files and zon schemas to creat our own typesafe objects, which our UI components can read? This would probably involve the the rust backend talking more with the TS front-end etc.
+- [ ] Rework (or add to) the tests so they actually test all the weird little bits of business logic we've now got in our code. Our tests must encode our business logic effectively and not be over-bloated testing obvious things.
+- [ ] Update `CLAUDE.md` with clear descriptions of the new design patterns etc we have introduced, current project structure, examples, npm commands etc. Add instructions to check the shadcn docs when needed (with the appropriate tool calls to do so). Make sure LAUDE.md is the best it can be.
 
 ---
 

@@ -21,6 +21,48 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { DatePicker } from '@/components/ui/date-picker'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { TagInput, type Tag } from '@/components/ui/tag-input'
+
+// Helper functions to convert between string arrays and Tag objects
+const stringArrayToTags = (strings: string[]): Tag[] =>
+  strings.map(str => ({ id: crypto.randomUUID(), text: str }))
+
+const tagsToStringArray = (tags: Tag[]): string[] => tags.map(tag => tag.text)
+
+// Auto-expanding textarea component
+const AutoExpandingTextarea: React.FC<
+  React.ComponentProps<typeof Textarea>
+> = ({ className, ...props }) => {
+  const textareaRef = React.useRef<HTMLTextAreaElement>(null)
+
+  const adjustHeight = React.useCallback(() => {
+    const textarea = textareaRef.current
+    if (textarea) {
+      textarea.style.height = 'auto'
+      textarea.style.height = textarea.scrollHeight + 'px'
+    }
+  }, [])
+
+  React.useEffect(() => {
+    adjustHeight()
+  }, [props.value, adjustHeight])
+
+  return (
+    <Textarea
+      ref={textareaRef}
+      className={className}
+      onInput={adjustHeight}
+      {...props}
+    />
+  )
+}
 
 // Create a flexible form schema that accepts any field as optional string
 const createFormSchema = (fields: ZodField[]) => {
@@ -58,19 +100,16 @@ const FrontmatterField: React.FC<{
       name={name}
       render={({ field: formField }) => (
         <FormItem className="space-y-2">
-          <FormLabel
-            className={`text-sm font-medium ${
-              label.toLowerCase() === 'title' ? 'text-base' : ''
-            }`}
-          >
-            {label}
-            {field && !field.optional && (
-              <span className="text-destructive ml-1">*</span>
-            )}
-          </FormLabel>
-          <FormControl>
-            {inputType === 'checkbox' || field?.type === 'Boolean' ? (
-              <div className="flex items-center justify-end">
+          {inputType === 'checkbox' || field?.type === 'Boolean' ? (
+            // For boolean fields, put label and switch on same line
+            <div className="flex items-center justify-between">
+              <FormLabel className="text-sm font-medium">
+                {label}
+                {field && !field.optional && (
+                  <span className="text-destructive ml-1">*</span>
+                )}
+              </FormLabel>
+              <FormControl>
                 <Switch
                   checked={Boolean(formField.value)}
                   onCheckedChange={checked => {
@@ -78,66 +117,121 @@ const FrontmatterField: React.FC<{
                     onFieldChange(name, checked)
                   }}
                 />
-              </div>
-            ) : inputType === 'number' || field?.type === 'Number' ? (
-              <Input
-                type="number"
-                placeholder={`Enter ${label.toLowerCase()}...`}
-                value={String(formField.value || '')}
-                onChange={e => {
-                  const numValue = e.target.value ? Number(e.target.value) : ''
-                  formField.onChange(numValue)
-                  onFieldChange(name, numValue)
-                }}
-              />
-            ) : inputType === 'date' || field?.type === 'Date' ? (
-              <DatePicker
-                {...(formField.value && {
-                  value: new Date(String(formField.value)),
-                })}
-                onChange={(date: Date | undefined) => {
-                  const dateValue =
-                    date instanceof Date && !isNaN(date.getTime())
-                      ? date.toISOString().split('T')[0]
-                      : ''
-                  formField.onChange(dateValue)
-                  onFieldChange(name, dateValue)
-                }}
-                placeholder="Select date..."
-              />
-            ) : label.toLowerCase() === 'title' ? (
-              <Textarea
-                placeholder={`Enter ${label.toLowerCase()}...`}
-                className="min-h-[2.5rem] resize-none"
-                value={String(formField.value || '')}
-                onChange={e => {
-                  formField.onChange(e.target.value)
-                  onFieldChange(name, e.target.value)
-                }}
-              />
-            ) : label.toLowerCase() === 'description' ? (
-              <Textarea
-                placeholder={`Enter ${label.toLowerCase()}...`}
-                className="min-h-[4rem]"
-                value={String(formField.value || '')}
-                onChange={e => {
-                  formField.onChange(e.target.value)
-                  onFieldChange(name, e.target.value)
-                }}
-              />
-            ) : (
-              <Input
-                type="text"
-                placeholder={`Enter ${label.toLowerCase()}...`}
-                value={String(formField.value || '')}
-                onChange={e => {
-                  formField.onChange(e.target.value)
-                  onFieldChange(name, e.target.value)
-                }}
-              />
-            )}
-          </FormControl>
-          <FormMessage />
+              </FormControl>
+            </div>
+          ) : (
+            <>
+              <FormLabel className="text-sm font-medium">
+                {label}
+                {field && !field.optional && (
+                  <span className="text-destructive ml-1">*</span>
+                )}
+              </FormLabel>
+              <FormControl>
+                {inputType === 'number' || field?.type === 'Number' ? (
+                  <Input
+                    type="number"
+                    placeholder={`Enter ${label.toLowerCase()}...`}
+                    value={String(formField.value || '')}
+                    onChange={e => {
+                      const numValue = e.target.value
+                        ? Number(e.target.value)
+                        : ''
+                      formField.onChange(numValue)
+                      onFieldChange(name, numValue)
+                    }}
+                  />
+                ) : inputType === 'date' || field?.type === 'Date' ? (
+                  <DatePicker
+                    {...(formField.value && {
+                      value: new Date(String(formField.value)),
+                    })}
+                    onChange={(date: Date | undefined) => {
+                      const dateValue =
+                        date instanceof Date && !isNaN(date.getTime())
+                          ? date.toISOString().split('T')[0]
+                          : ''
+                      formField.onChange(dateValue)
+                      onFieldChange(name, dateValue)
+                    }}
+                    placeholder="Select date..."
+                  />
+                ) : field?.type === 'Enum' && field?.options ? (
+                  <Select
+                    value={String(formField.value || '')}
+                    onValueChange={value => {
+                      // Empty string means clear the field
+                      const finalValue = value === '' ? undefined : value
+                      formField.onChange(finalValue)
+                      onFieldChange(name, finalValue)
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue
+                        placeholder={`Select ${label.toLowerCase()}...`}
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">
+                        <span className="text-muted-foreground">(None)</span>
+                      </SelectItem>
+                      {field.options.map(option => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : label.toLowerCase() === 'title' ? (
+                  <AutoExpandingTextarea
+                    placeholder={`Enter ${label.toLowerCase()}...`}
+                    className="min-h-[2.5rem] text-lg resize-none overflow-hidden"
+                    value={String(formField.value || '')}
+                    onChange={e => {
+                      formField.onChange(e.target.value)
+                      onFieldChange(name, e.target.value)
+                    }}
+                  />
+                ) : label.toLowerCase() === 'description' ? (
+                  <AutoExpandingTextarea
+                    placeholder={`Enter ${label.toLowerCase()}...`}
+                    className="min-h-[4rem] resize-none overflow-hidden"
+                    value={String(formField.value || '')}
+                    onChange={e => {
+                      formField.onChange(e.target.value)
+                      onFieldChange(name, e.target.value)
+                    }}
+                  />
+                ) : field?.type === 'Array' ? (
+                  <TagInput
+                    placeholder={`Enter ${label.toLowerCase()}...`}
+                    tags={stringArrayToTags(
+                      Array.isArray(formField.value) && 
+                      formField.value.every((item): item is string => typeof item === 'string')
+                        ? formField.value 
+                        : []
+                    )}
+                    onTagsChange={tags => {
+                      const stringArray = tagsToStringArray(tags)
+                      formField.onChange(stringArray)
+                      onFieldChange(name, stringArray)
+                    }}
+                  />
+                ) : (
+                  <Input
+                    type="text"
+                    placeholder={`Enter ${label.toLowerCase()}...`}
+                    value={String(formField.value || '')}
+                    onChange={e => {
+                      formField.onChange(e.target.value)
+                      onFieldChange(name, e.target.value)
+                    }}
+                  />
+                )}
+              </FormControl>
+              <FormMessage />
+            </>
+          )}
         </FormItem>
       )}
     />
@@ -246,15 +340,6 @@ export const FrontmatterPanel: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="p-4 border-b">
-        <h3 className="font-semibold">Frontmatter</h3>
-        {schema && (
-          <p className="text-sm text-muted-foreground mt-1">
-            Using {currentCollection?.name} schema
-          </p>
-        )}
-      </div>
-
       <div className="flex-1 p-4 overflow-y-auto">
         {currentFile ? (
           allFields.length > 0 ? (
