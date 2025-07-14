@@ -5,7 +5,9 @@
       "Bash(npx shadcn@latest init:*)",
       "mcp__context7__resolve-library-id",
       "mcp__context7__get-library-docs",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(npm run:*)",
+      "Bash(npm install:*)"
     ],
     "deny": []
   }

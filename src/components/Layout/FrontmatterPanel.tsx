@@ -6,6 +6,14 @@ import {
   validateFieldValue,
   ZodField,
 } from '../../lib/schema';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { DatePicker } from '@/components/ui/date-picker';
+import { AutoGrowingInput } from '@/components/ui/auto-growing-input';
+import { TagsInput } from '@/components/ui/tags-input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent } from '@/components/ui/card';
 
 // Helper component for rendering different input types
 const FrontmatterField: React.FC<{
@@ -23,23 +31,21 @@ const FrontmatterField: React.FC<{
 
     if (inputType === 'checkbox' || typeof value === 'boolean') {
       return (
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="checkbox"
+        <div className="flex items-center space-x-2">
+          <Switch
             checked={Boolean(value)}
-            onChange={e => onChange(e.target.checked)}
-            className="rounded border-border"
+            onCheckedChange={onChange}
           />
-          <span className="text-xs text-muted-foreground">
-            {value ? 'True' : 'False'}
+          <span className="text-sm text-muted-foreground">
+            {value ? 'Enabled' : 'Disabled'}
           </span>
-        </label>
+        </div>
       );
     }
 
     if (inputType === 'number' || typeof value === 'number') {
       return (
-        <input
+        <Input
           type="number"
           value={typeof value === 'number' ? value : ''}
           onChange={e => onChange(Number(e.target.value))}
@@ -48,50 +54,80 @@ const FrontmatterField: React.FC<{
               ? `${label} (optional)`
               : `Enter ${label.toLowerCase()}...`
           }
-          className="px-2 py-2 border border-border rounded text-xs bg-background focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       );
     }
 
     if (inputType === 'date') {
+      const dateValue = typeof value === 'string' && value ? new Date(value) : undefined;
       return (
-        <input
-          type="date"
-          value={typeof value === 'string' ? value : ''}
-          onChange={e => onChange(e.target.value)}
-          className="px-2 py-2 border border-border rounded text-xs bg-background focus:outline-none focus:ring-2 focus:ring-blue-500"
+        <DatePicker
+          date={dateValue}
+          onDateChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')}
+          placeholder="Select date..."
         />
       );
     }
 
-    // Handle arrays as comma-separated strings
+    // Handle arrays as tags
     if (field?.type === 'Array' || Array.isArray(value)) {
+      const arrayValue = Array.isArray(value) ? value : [];
       return (
-        <input
-          type="text"
+        <TagsInput
+          value={arrayValue}
+          onChange={onChange as (tags: string[]) => void}
+          placeholder={`Add ${label.toLowerCase()}...`}
+        />
+      );
+    }
+
+    // Special handling for title field - use auto-growing input
+    if (label.toLowerCase() === 'title') {
+      return (
+        <AutoGrowingInput
           value={
-            Array.isArray(value)
-              ? value.join(',')
-              : typeof value === 'string'
-                ? value
+            typeof value === 'string'
+              ? value
+              : typeof value === 'number'
+                ? String(value)
                 : ''
           }
-          onChange={e => {
-            const arrayValue = e.target.value
-              .split(',')
-              .map(item => item.trim())
-              .filter(item => item.length > 0);
-            onChange(arrayValue);
-          }}
-          placeholder={`Enter ${label.toLowerCase()} (comma-separated)${field?.optional ? ' - optional' : ''}...`}
-          className="px-2 py-2 border border-border rounded text-xs bg-background focus:outline-none focus:ring-2 focus:ring-blue-500"
+          onChange={e => onChange(e.target.value)}
+          placeholder={
+            field?.optional
+              ? `${label} (optional)`
+              : `Enter ${label.toLowerCase()}...`
+          }
+          className="text-base font-medium"
+        />
+      );
+    }
+
+    // Special handling for description field - use textarea
+    if (label.toLowerCase() === 'description') {
+      return (
+        <Textarea
+          value={
+            typeof value === 'string'
+              ? value
+              : typeof value === 'number'
+                ? String(value)
+                : ''
+          }
+          onChange={e => onChange(e.target.value)}
+          placeholder={
+            field?.optional
+              ? `${label} (optional)`
+              : `Enter ${label.toLowerCase()}...`
+          }
+          className="min-h-[80px] resize-none"
         />
       );
     }
 
     // Default to string input
     return (
-      <input
+      <Input
         type="text"
         value={
           typeof value === 'string'
@@ -106,24 +142,25 @@ const FrontmatterField: React.FC<{
             ? `${label} (optional)`
             : `Enter ${label.toLowerCase()}...`
         }
-        className="px-2 py-2 border border-border rounded text-xs bg-background focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
     );
   };
 
   return (
-    <div className="flex flex-col gap-1">
-      <label className="text-xs font-medium text-foreground capitalize">
+    <div className="flex flex-col gap-2">
+      <Label className={`text-sm font-medium capitalize ${
+        label.toLowerCase() === 'title' ? 'text-base' : ''
+      }`}>
         {label}
         {field?.optional ? (
-          <span className="text-muted-foreground ml-1">(optional)</span>
+          <span className="text-muted-foreground ml-1 font-normal">(optional)</span>
         ) : field ? (
-          <span className="text-red-500 ml-1">*</span>
+          <span className="text-destructive ml-1">*</span>
         ) : null}
-      </label>
+      </Label>
       {renderInput()}
       {validationError && (
-        <span className="text-xs text-red-500">{validationError}</span>
+        <span className="text-sm text-destructive">{validationError}</span>
       )}
     </div>
   );
@@ -215,12 +252,12 @@ export const FrontmatterPanel: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col bg-muted/20">
-      <div className="p-3 border-b bg-muted/30">
-        <h3 className="text-sm font-semibold text-foreground m-0">
+      <div className="p-4 border-b bg-muted/30">
+        <h3 className="text-base font-semibold text-foreground m-0">
           Frontmatter
         </h3>
         {schema && (
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Using {currentCollection?.name} schema
           </p>
         )}
@@ -228,7 +265,7 @@ export const FrontmatterPanel: React.FC = () => {
 
       <div className="flex-1 p-4 overflow-y-auto">
         {currentFile ? (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-6">
             {allFields.length > 0 ? (
               allFields.map(({ fieldName, schemaField, value }) => (
                 <FrontmatterField
@@ -240,15 +277,23 @@ export const FrontmatterPanel: React.FC = () => {
                 />
               ))
             ) : (
-              <div className="text-center text-muted-foreground text-xs">
-                No frontmatter fields found.
-              </div>
+              <Card>
+                <CardContent className="flex items-center justify-center py-6">
+                  <p className="text-sm text-muted-foreground">
+                    No frontmatter fields found.
+                  </p>
+                </CardContent>
+              </Card>
             )}
           </div>
         ) : (
-          <div className="text-center text-muted-foreground text-xs mt-10">
-            Select a file to edit its frontmatter.
-          </div>
+          <Card>
+            <CardContent className="flex items-center justify-center py-12">
+              <p className="text-sm text-muted-foreground text-center">
+                Select a file to edit its frontmatter.
+              </p>
+            </CardContent>
+          </Card>
         )}
       </div>
     </div>

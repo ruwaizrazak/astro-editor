@@ -417,13 +417,13 @@ Investigate alternatives to regex-based parsing:
   - Toggle ✓
   - Toggle Group ✓
   - Tooltip ✓
-- [ ] Refine frontmatter sidebar panel UI
-  - [ ] Use shadci components
-  - [ ] If there is a field called "title" of type text, use a slightly bigger input field which auto-wraps content and grows vertically if the content wraps to more than one line. Should probably be implemented as a simple react component in case we need to reuse it later? Goal: make the title field stand out more than the others.
-  - [ ] If there is a field called "description" with type text, use a textarea which wraps content and grows with the text in it. The shadcn Textarea component should do this for us.
-  - [ ] Use toggles instead of checkboxes for booleans - use the shadcn component.
-  - [ ] Use shadcn's date picker rather than the native browser one for dates
-  - [ ] Use a better UI component for tags. Should be able to create new tags in it.
+- [x] Refine frontmatter sidebar panel UI
+  - [x] Use shadcn components ✓
+  - [x] If there is a field called "title" of type text, use a slightly bigger input field which auto-wraps content and grows vertically if the content wraps to more than one line. ✓ (Created AutoGrowingInput component)
+  - [x] If there is a field called "description" with type text, use a textarea which wraps content and grows with the text in it. ✓ (Uses shadcn Textarea)
+  - [x] Use toggles instead of checkboxes for booleans ✓ (Uses shadcn Switch)
+  - [x] Use shadcn's date picker rather than the native browser one for dates ✓ (Created custom DatePicker component)
+  - [x] Use a better UI component for tags. ✓ (Created TagsInput component with create/remove functionality)
 - [ ] Left sidebar UI improvements
   - [ ] Consider rebuilding the left sidebar with shadcn's sidebar components (see https://ui.shadcn.com/docs/components/sidebar).
   - [ ] The sidebar header "Collections" should only say "Collections" when not inside a collection. Once the user has clicked into a collection it should use the name of the collection, capitalised. Eg "Articles" or "Notes". When inside a collection there should be a back arrow icon before the collection name which takes you back up to the collections list. We can then remove everything bar the list of items in the collection from the scrollable area of the sidebar. We can maybe use Shadcn's sidebar patterns to make this work a bit better.
