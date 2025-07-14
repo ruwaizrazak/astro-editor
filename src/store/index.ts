@@ -16,6 +16,7 @@ export interface MarkdownContent {
   frontmatter: Record<string, unknown>;
   content: string;
   raw_frontmatter: string;
+  imports: string;
 }
 
 export interface Collection {
@@ -37,9 +38,10 @@ interface AppState {
   selectedCollection: string | null;
 
   // Editor state
-  editorContent: string; // Content without frontmatter
+  editorContent: string; // Content without frontmatter and imports
   frontmatter: Record<string, unknown>; // Parsed frontmatter object
   rawFrontmatter: string; // Original frontmatter string
+  imports: string; // MDX imports (hidden from editor)
   isDirty: boolean;
 
   // Actions
@@ -69,6 +71,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   editorContent: '',
   frontmatter: {},
   rawFrontmatter: '',
+  imports: '',
   isDirty: false,
 
   // Actions
@@ -107,14 +110,18 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   openFile: async (file: FileEntry) => {
     try {
-      const markdownContent = await invoke<MarkdownContent>('parse_markdown_content', {
-        filePath: file.path,
-      });
+      const markdownContent = await invoke<MarkdownContent>(
+        'parse_markdown_content',
+        {
+          filePath: file.path,
+        }
+      );
       set({
         currentFile: file,
         editorContent: markdownContent.content,
         frontmatter: markdownContent.frontmatter,
         rawFrontmatter: markdownContent.raw_frontmatter,
+        imports: markdownContent.imports,
         isDirty: false,
       });
     } catch (error) {
@@ -124,7 +131,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   saveFile: async () => {
-    const { currentFile, editorContent, frontmatter } = get();
+    const { currentFile, editorContent, frontmatter, imports } = get();
     if (!currentFile) return;
 
     try {
@@ -132,6 +139,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         filePath: currentFile.path,
         frontmatter,
         content: editorContent,
+        imports,
       });
       set({ isDirty: false });
     } catch (error) {

@@ -9,6 +9,7 @@ describe('Store Async Operations', () => {
       files: [],
       currentFile: null,
       editorContent: '',
+      imports: '',
       isDirty: false,
     });
     globalThis.mockTauri.reset();
@@ -68,6 +69,7 @@ describe('Store Async Operations', () => {
         frontmatter: { title: 'Hello World', draft: false },
         content: '# Hello World\n\nThis is a test post.',
         raw_frontmatter: 'title: Hello World\ndraft: false',
+        imports: '',
       };
 
       globalThis.mockTauri.invoke.mockResolvedValue(mockMarkdownContent);
@@ -75,15 +77,19 @@ describe('Store Async Operations', () => {
       const { openFile } = useAppStore.getState();
       await openFile(mockFile);
 
-      expect(globalThis.mockTauri.invoke).toHaveBeenCalledWith('parse_markdown_content', {
-        filePath: '/project/posts/hello.md',
-      });
+      expect(globalThis.mockTauri.invoke).toHaveBeenCalledWith(
+        'parse_markdown_content',
+        {
+          filePath: '/project/posts/hello.md',
+        }
+      );
 
       const state = useAppStore.getState();
       expect(state.currentFile).toEqual(mockFile);
       expect(state.editorContent).toBe(mockMarkdownContent.content);
       expect(state.frontmatter).toEqual(mockMarkdownContent.frontmatter);
       expect(state.rawFrontmatter).toBe(mockMarkdownContent.raw_frontmatter);
+      expect(state.imports).toBe(mockMarkdownContent.imports);
       expect(state.isDirty).toBe(false);
     });
 
@@ -127,6 +133,7 @@ describe('Store Async Operations', () => {
         currentFile: mockFile,
         editorContent: '# Updated Content',
         frontmatter: mockFrontmatter,
+        imports: '',
         isDirty: true,
       });
 
@@ -135,11 +142,15 @@ describe('Store Async Operations', () => {
       const { saveFile } = useAppStore.getState();
       await saveFile();
 
-      expect(globalThis.mockTauri.invoke).toHaveBeenCalledWith('save_markdown_content', {
-        filePath: '/project/posts/test.md',
-        frontmatter: mockFrontmatter,
-        content: '# Updated Content',
-      });
+      expect(globalThis.mockTauri.invoke).toHaveBeenCalledWith(
+        'save_markdown_content',
+        {
+          filePath: '/project/posts/test.md',
+          frontmatter: mockFrontmatter,
+          content: '# Updated Content',
+          imports: '',
+        }
+      );
       expect(useAppStore.getState().isDirty).toBe(false);
     });
 
@@ -156,6 +167,7 @@ describe('Store Async Operations', () => {
       useAppStore.setState({
         currentFile: mockFile,
         editorContent: '# Updated Content',
+        imports: '',
         isDirty: true,
       });
 
@@ -174,6 +186,7 @@ describe('Store Async Operations', () => {
       useAppStore.setState({
         currentFile: null,
         editorContent: '# Content',
+        imports: '',
         isDirty: true,
       });
 

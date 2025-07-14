@@ -39,6 +39,7 @@ pub struct MarkdownContent {
     pub frontmatter: HashMap<String, Value>,
     pub content: String,
     pub raw_frontmatter: String,
+    pub imports: String, // MDX imports to hide from editor
 }
 
 #[tauri::command]
@@ -68,8 +69,10 @@ pub async fn save_markdown_content(
     file_path: String,
     frontmatter: HashMap<String, Value>,
     content: String,
+    imports: String,
 ) -> Result<(), String> {
-    let new_content = rebuild_markdown_with_frontmatter(&frontmatter, &content)?;
+    let new_content =
+        rebuild_markdown_with_frontmatter_and_imports(&frontmatter, &imports, &content)?;
     std::fs::write(&file_path, new_content).map_err(|e| format!("Failed to write file: {e}"))
 }
 
@@ -78,10 +81,13 @@ fn parse_frontmatter(content: &str) -> Result<MarkdownContent, String> {
 
     // Check if file starts with frontmatter
     if lines.is_empty() || lines[0] != "---" {
+        // No frontmatter, but might have imports at the top
+        let (imports, content_without_imports) = extract_imports_from_content(&lines);
         return Ok(MarkdownContent {
             frontmatter: HashMap::new(),
-            content: content.to_string(),
+            content: content_without_imports,
             raw_frontmatter: String::new(),
+            imports,
         });
     }
 
@@ -109,19 +115,105 @@ fn parse_frontmatter(content: &str) -> Result<MarkdownContent, String> {
         parse_yaml_to_json(&raw_frontmatter)?
     };
 
-    // Extract content (everything after the closing ---)
-    let content_lines: Vec<&str> = if end_index + 1 < lines.len() {
-        lines[end_index + 1..].to_vec()
+    // Extract content after frontmatter and process imports
+    let content_start = end_index + 1;
+    let remaining_lines: Vec<&str> = if content_start < lines.len() {
+        lines[content_start..].to_vec()
     } else {
         vec![]
     };
-    let content = content_lines.join("\n");
+
+    let (imports, content) = extract_imports_from_content(&remaining_lines);
 
     Ok(MarkdownContent {
         frontmatter,
         content,
         raw_frontmatter,
+        imports,
     })
+}
+
+fn extract_imports_from_content(lines: &[&str]) -> (String, String) {
+    let mut imports = Vec::new();
+    let mut content_start_idx = 0;
+
+    // Skip empty lines at the beginning
+    while content_start_idx < lines.len() && lines[content_start_idx].trim().is_empty() {
+        content_start_idx += 1;
+    }
+
+    // Extract import statements
+    while content_start_idx < lines.len() {
+        let line = lines[content_start_idx].trim();
+
+        // Check if this line is an import statement
+        if line.starts_with("import ") || line.starts_with("export ") {
+            imports.push(lines[content_start_idx]);
+            content_start_idx += 1;
+
+            // Handle multi-line imports (lines that don't end with semicolon)
+            let last_import = imports.last().unwrap_or(&"").trim();
+            while content_start_idx < lines.len()
+                && !last_import.ends_with(';')
+                && !last_import.ends_with("';")
+                && !last_import.ends_with("\";")
+            {
+                let current_line = lines[content_start_idx].trim();
+                if current_line.is_empty() {
+                    // Empty line might separate imports from content
+                    break;
+                } else {
+                    // This is a continuation of the previous import
+                    imports.push(lines[content_start_idx]);
+                    content_start_idx += 1;
+                    if current_line.ends_with(';')
+                        || current_line.ends_with("';")
+                        || current_line.ends_with("\";")
+                    {
+                        break;
+                    }
+                }
+            }
+        } else if line.is_empty() {
+            // Check if there are more imports after this empty line
+            let mut next_idx = content_start_idx + 1;
+            while next_idx < lines.len() && lines[next_idx].trim().is_empty() {
+                next_idx += 1;
+            }
+
+            if next_idx < lines.len() {
+                let next_line = lines[next_idx].trim();
+                if next_line.starts_with("import ") || next_line.starts_with("export ") {
+                    // More imports coming, skip empty line
+                    content_start_idx += 1;
+                } else {
+                    // No more imports, this empty line separates imports from content
+                    break;
+                }
+            } else {
+                // End of file
+                break;
+            }
+        } else {
+            // Found non-import content, stop processing imports
+            break;
+        }
+    }
+
+    // Skip any remaining empty lines after imports
+    while content_start_idx < lines.len() && lines[content_start_idx].trim().is_empty() {
+        content_start_idx += 1;
+    }
+
+    let imports_string = imports.join("\n");
+    let content_lines: Vec<&str> = if content_start_idx < lines.len() {
+        lines[content_start_idx..].to_vec()
+    } else {
+        vec![]
+    };
+    let content_string = content_lines.join("\n");
+
+    (imports_string, content_string)
 }
 
 fn parse_yaml_to_json(yaml_str: &str) -> Result<HashMap<String, Value>, String> {
@@ -168,8 +260,17 @@ fn rebuild_markdown_with_frontmatter(
     frontmatter: &HashMap<String, Value>,
     content: &str,
 ) -> Result<String, String> {
+    rebuild_markdown_with_frontmatter_and_imports(frontmatter, "", content)
+}
+
+fn rebuild_markdown_with_frontmatter_and_imports(
+    frontmatter: &HashMap<String, Value>,
+    imports: &str,
+    content: &str,
+) -> Result<String, String> {
     let mut result = String::new();
 
+    // Add frontmatter if present
     if !frontmatter.is_empty() {
         result.push_str("---\n");
 
@@ -194,8 +295,20 @@ fn rebuild_markdown_with_frontmatter(
         result.push_str("---\n");
     }
 
-    if !content.is_empty() {
+    // Add imports if present
+    if !imports.trim().is_empty() {
         if !frontmatter.is_empty() {
+            result.push('\n');
+        }
+        result.push_str(imports);
+        if !imports.ends_with('\n') {
+            result.push('\n');
+        }
+    }
+
+    // Add content if present
+    if !content.is_empty() {
+        if !frontmatter.is_empty() || !imports.trim().is_empty() {
             result.push('\n');
         }
         result.push_str(content);
@@ -391,7 +504,10 @@ This is just regular markdown content without frontmatter."#;
         let test_file = temp_dir.join("test_save_markdown.md");
 
         let mut frontmatter = HashMap::new();
-        frontmatter.insert("title".to_string(), Value::String("Test Article".to_string()));
+        frontmatter.insert(
+            "title".to_string(),
+            Value::String("Test Article".to_string()),
+        );
         frontmatter.insert("draft".to_string(), Value::Bool(false));
 
         let content = "# Test Article\n\nThis is the article content.";
@@ -400,6 +516,7 @@ This is just regular markdown content without frontmatter."#;
             test_file.to_string_lossy().to_string(),
             frontmatter,
             content.to_string(),
+            String::new(), // No imports for this test
         )
         .await;
 
@@ -415,5 +532,108 @@ This is just regular markdown content without frontmatter."#;
 
         // Clean up
         let _ = fs::remove_file(&test_file);
+    }
+
+    #[test]
+    fn test_extract_imports_from_content() {
+        let lines = vec![
+            "import React from 'react';",
+            "import { Component } from './Component';",
+            "",
+            "# Heading",
+            "",
+            "Some content here.",
+        ];
+
+        let (imports, content) = extract_imports_from_content(&lines);
+
+        assert_eq!(
+            imports,
+            "import React from 'react';\nimport { Component } from './Component';"
+        );
+        assert_eq!(content, "# Heading\n\nSome content here.");
+    }
+
+    #[test]
+    fn test_extract_multiline_imports() {
+        let lines = vec![
+            "import {",
+            "  Component1,",
+            "  Component2",
+            "} from './components';",
+            "",
+            "# Content starts here",
+        ];
+
+        let (imports, content) = extract_imports_from_content(&lines);
+
+        assert!(imports.contains("import {"));
+        assert!(imports.contains("} from './components';"));
+        assert_eq!(content, "# Content starts here");
+    }
+
+    #[test]
+    fn test_parse_mdx_with_imports() {
+        let content = r#"---
+title: Test Post
+draft: false
+---
+
+import React from 'react';
+import { Callout } from '../components/Callout';
+
+# Test Post
+
+<Callout type="info">
+This is a callout component.
+</Callout>
+
+Regular markdown content here."#;
+
+        let result = parse_frontmatter(content).unwrap();
+
+        assert_eq!(result.frontmatter.len(), 2);
+        assert_eq!(result.frontmatter.get("title").unwrap(), "Test Post");
+        assert!(result.imports.contains("import React from 'react';"));
+        assert!(result
+            .imports
+            .contains("import { Callout } from '../components/Callout';"));
+        assert!(result.content.contains("# Test Post"));
+        assert!(result.content.contains("<Callout"));
+        assert!(!result.content.contains("import React"));
+    }
+
+    #[test]
+    fn test_rebuild_with_imports() {
+        let mut frontmatter = HashMap::new();
+        frontmatter.insert("title".to_string(), Value::String("Test".to_string()));
+
+        let imports = "import React from 'react';\nimport { Component } from './Component';";
+        let content = "# Test\n\n<Component />";
+
+        let result =
+            rebuild_markdown_with_frontmatter_and_imports(&frontmatter, imports, content).unwrap();
+
+        assert!(result.starts_with("---\n"));
+        assert!(result.contains("title: Test"));
+        assert!(result.contains("import React from 'react';"));
+        assert!(result.contains("import { Component } from './Component';"));
+        assert!(result.contains("# Test"));
+        assert!(result.contains("<Component />"));
+
+        // Ensure proper spacing
+        let lines: Vec<&str> = result.lines().collect();
+        let frontmatter_end = lines.iter().position(|&line| line == "---").unwrap();
+        let second_frontmatter_end = lines[frontmatter_end + 1..]
+            .iter()
+            .position(|&line| line == "---")
+            .unwrap()
+            + frontmatter_end
+            + 1;
+
+        // Should have a blank line after frontmatter before imports
+        assert_eq!(lines[second_frontmatter_end + 1], "");
+        // Should have imports next
+        assert!(lines[second_frontmatter_end + 2].starts_with("import"));
     }
 }

@@ -335,7 +335,7 @@ _Goal: Beautiful, iA Writer-inspired editing experience_
 - [ ] Implement iA Writer-inspired typography and colors
 - [ ] Create hanging hash marks for headings
 - [ ] Custom CodeMirror theme matching iA Writer aesthetic
-- [ ] Hide MDX imports for MDX files
+- [x] Hide MDX imports for MDX files
 - [ ] Improve markdown syntax highlighting
 
 **Week 6:**
