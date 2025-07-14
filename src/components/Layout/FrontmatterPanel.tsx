@@ -6,6 +6,7 @@ import {
   ZodField,
   getDefaultValueForField,
 } from '../../lib/schema'
+import { camelCaseToTitleCase } from '../../lib/utils'
 import { Input } from '@/components/ui/input'
 import { AutoExpandingTextarea } from '@/components/ui/auto-expanding-textarea'
 import { Switch } from '@/components/ui/switch'
@@ -353,7 +354,7 @@ export const FrontmatterPanel: React.FC = () => {
                 <FrontmatterField
                   key={fieldName}
                   name={fieldName}
-                  label={fieldName}
+                  label={camelCaseToTitleCase(fieldName)}
                   field={schemaField}
                 />
               ))}
