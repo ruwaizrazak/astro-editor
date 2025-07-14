@@ -72,8 +72,12 @@ pub async fn save_markdown_content(
     imports: String,
     schema_field_order: Option<Vec<String>>,
 ) -> Result<(), String> {
-    let new_content =
-        rebuild_markdown_with_frontmatter_and_imports_ordered(&frontmatter, &imports, &content, schema_field_order)?;
+    let new_content = rebuild_markdown_with_frontmatter_and_imports_ordered(
+        &frontmatter,
+        &imports,
+        &content,
+        schema_field_order,
+    )?;
     std::fs::write(&file_path, new_content).map_err(|e| format!("Failed to write file: {e}"))
 }
 
@@ -286,7 +290,8 @@ fn rebuild_markdown_with_frontmatter_and_imports_ordered(
 
         // Create an ordered list of keys
         let mut ordered_keys = Vec::new();
-        let mut remaining_keys: std::collections::HashSet<String> = frontmatter.keys().cloned().collect();
+        let mut remaining_keys: std::collections::HashSet<String> =
+            frontmatter.keys().cloned().collect();
 
         // First, add keys in schema order (if provided)
         if let Some(schema_order) = schema_field_order {
@@ -308,8 +313,29 @@ fn rebuild_markdown_with_frontmatter_and_imports_ordered(
             if let Some(value) = frontmatter.get(&key) {
                 let value_str = match value {
                     Value::String(s) => {
-                        // Quote strings that contain special characters or spaces
-                        if s.contains(' ') || s.contains(':') || s.contains('\n') {
+                        // Convert ISO datetime strings to date-only format
+                        if s.len() > 10
+                            && s.contains('T')
+                            && (s.ends_with('Z') || s.contains('+') || s.contains('-'))
+                        {
+                            // This looks like an ISO datetime string, extract just the date part
+                            if let Some(date_part) = s.split('T').next() {
+                                if date_part.len() == 10 && date_part.matches('-').count() == 2 {
+                                    date_part.to_string()
+                                } else {
+                                    s.clone()
+                                }
+                            } else {
+                                s.clone()
+                            }
+                        } else if s.len() == 10
+                            && s.matches('-').count() == 2
+                            && s.chars().all(|c| c.is_ascii_digit() || c == '-')
+                        {
+                            // This looks like a date string (YYYY-MM-DD), don't quote it
+                            s.clone()
+                        } else if s.contains(' ') || s.contains(':') || s.contains('\n') {
+                            // Quote strings that contain special characters or spaces
                             format!("\"{}\"", s.replace('"', "\\\""))
                         } else {
                             s.clone()
@@ -549,6 +575,7 @@ This is just regular markdown content without frontmatter."#;
             frontmatter,
             content.to_string(),
             String::new(), // No imports for this test
+            None,          // No schema field order for this test
         )
         .await;
 

@@ -1,10 +1,10 @@
-import React from 'react';
-import { useAppStore } from '../../store';
-import { EditorView } from './index';
-import { StatusBar } from './StatusBar';
+import React from 'react'
+import { useAppStore } from '../../store'
+import { EditorView } from './index'
+import { StatusBar } from './StatusBar'
 
 export const MainEditor: React.FC = () => {
-  const { currentFile } = useAppStore();
+  const { currentFile } = useAppStore()
 
   return (
     <div className="flex flex-col h-full">
@@ -28,5 +28,5 @@ export const MainEditor: React.FC = () => {
 
       <StatusBar />
     </div>
-  );
-};
+  )
+}

@@ -1,7 +1,7 @@
-import React from 'react';
-import { useAppStore } from '../../store';
-import { Button } from '../ui/button';
-import { Save, PanelRight } from 'lucide-react';
+import React from 'react'
+import { useAppStore } from '../../store'
+import { Button } from '../ui/button'
+import { Save, PanelRight } from 'lucide-react'
 
 export const ToolBar: React.FC = () => {
   const {
@@ -11,13 +11,13 @@ export const ToolBar: React.FC = () => {
     saveFile,
     isDirty,
     currentFile,
-  } = useAppStore();
+  } = useAppStore()
 
   const handleSave = () => {
     if (currentFile && isDirty) {
-      void saveFile();
+      void saveFile()
     }
-  };
+  }
 
   return (
     <div className="flex items-center justify-between px-4 py-2 bg-background border-b border-border h-11">
@@ -57,5 +57,5 @@ export const ToolBar: React.FC = () => {
         )}
       </div>
     </div>
-  );
-};
+  )
+}

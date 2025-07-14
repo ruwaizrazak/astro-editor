@@ -1,14 +1,14 @@
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useAppStore } from '../../store';
+import React from 'react'
+import { useForm, Control, FieldValues } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { useAppStore } from '../../store'
 import {
   parseSchemaJson,
   getInputTypeForZodField,
   ZodField,
   getDefaultValueForField,
-} from '../../lib/schema';
+} from '../../lib/schema'
 import {
   Form,
   FormControl,
@@ -16,41 +16,41 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import { DatePicker } from '@/components/ui/date-picker';
+} from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Switch } from '@/components/ui/switch'
+import { DatePicker } from '@/components/ui/date-picker'
 
 // Create a flexible form schema that accepts any field as optional string
 const createFormSchema = (fields: ZodField[]) => {
-  const schemaObject: Record<string, z.ZodTypeAny> = {};
+  const schemaObject: Record<string, z.ZodTypeAny> = {}
 
   fields.forEach(field => {
     switch (field.type) {
       case 'Boolean':
-        schemaObject[field.name] = z.boolean().optional();
-        break;
+        schemaObject[field.name] = z.boolean().optional()
+        break
       case 'Number':
-        schemaObject[field.name] = z.coerce.number().optional();
-        break;
+        schemaObject[field.name] = z.coerce.number().optional()
+        break
       default:
-        schemaObject[field.name] = z.string().optional();
+        schemaObject[field.name] = z.string().optional()
     }
-  });
+  })
 
-  return z.object(schemaObject);
-};
+  return z.object(schemaObject)
+}
 
 // Helper component for rendering different input types
 const FrontmatterField: React.FC<{
-  name: string;
-  label: string;
-  field?: ZodField;
-  control: ReturnType<typeof useForm>['control'];
-  onFieldChange: (name: string, value: unknown) => void;
+  name: string
+  label: string
+  field?: ZodField | undefined
+  control: Control<FieldValues>
+  onFieldChange: (name: string, value: unknown) => void
 }> = ({ name, label, field, control, onFieldChange }) => {
-  const inputType = field ? getInputTypeForZodField(field.type) : 'text';
+  const inputType = field ? getInputTypeForZodField(field.type) : 'text'
 
   return (
     <FormField
@@ -74,8 +74,8 @@ const FrontmatterField: React.FC<{
                 <Switch
                   checked={Boolean(formField.value)}
                   onCheckedChange={checked => {
-                    formField.onChange(checked);
-                    onFieldChange(name, checked);
+                    formField.onChange(checked)
+                    onFieldChange(name, checked)
                   }}
                 />
               </div>
@@ -85,9 +85,9 @@ const FrontmatterField: React.FC<{
                 placeholder={`Enter ${label.toLowerCase()}...`}
                 value={String(formField.value || '')}
                 onChange={e => {
-                  const numValue = e.target.value ? Number(e.target.value) : '';
-                  formField.onChange(numValue);
-                  onFieldChange(name, numValue);
+                  const numValue = e.target.value ? Number(e.target.value) : ''
+                  formField.onChange(numValue)
+                  onFieldChange(name, numValue)
                 }}
               />
             ) : inputType === 'date' || field?.type === 'Date' ? (
@@ -99,9 +99,9 @@ const FrontmatterField: React.FC<{
                   const dateValue =
                     date instanceof Date && !isNaN(date.getTime())
                       ? date.toISOString().split('T')[0]
-                      : '';
-                  formField.onChange(dateValue);
-                  onFieldChange(name, dateValue);
+                      : ''
+                  formField.onChange(dateValue)
+                  onFieldChange(name, dateValue)
                 }}
                 placeholder="Select date..."
               />
@@ -111,8 +111,8 @@ const FrontmatterField: React.FC<{
                 className="min-h-[2.5rem] resize-none"
                 value={String(formField.value || '')}
                 onChange={e => {
-                  formField.onChange(e.target.value);
-                  onFieldChange(name, e.target.value);
+                  formField.onChange(e.target.value)
+                  onFieldChange(name, e.target.value)
                 }}
               />
             ) : label.toLowerCase() === 'description' ? (
@@ -121,8 +121,8 @@ const FrontmatterField: React.FC<{
                 className="min-h-[4rem]"
                 value={String(formField.value || '')}
                 onChange={e => {
-                  formField.onChange(e.target.value);
-                  onFieldChange(name, e.target.value);
+                  formField.onChange(e.target.value)
+                  onFieldChange(name, e.target.value)
                 }}
               />
             ) : (
@@ -131,8 +131,8 @@ const FrontmatterField: React.FC<{
                 placeholder={`Enter ${label.toLowerCase()}...`}
                 value={String(formField.value || '')}
                 onChange={e => {
-                  formField.onChange(e.target.value);
-                  onFieldChange(name, e.target.value);
+                  formField.onChange(e.target.value)
+                  onFieldChange(name, e.target.value)
                 }}
               />
             )}
@@ -141,21 +141,21 @@ const FrontmatterField: React.FC<{
         </FormItem>
       )}
     />
-  );
-};
+  )
+}
 
 export const FrontmatterPanel: React.FC = () => {
-  const { currentFile, frontmatter, updateFrontmatter, collections } =
-    useAppStore();
+  const { currentFile, frontmatter, collections, updateFrontmatter } =
+    useAppStore()
 
   // Get schema for current collection
   const currentCollection = currentFile
     ? collections.find(c => c.name === currentFile.collection)
-    : null;
+    : null
 
   const schema = currentCollection?.schema
     ? parseSchemaJson(currentCollection.schema)
-    : null;
+    : null
 
   // Get all fields to display
   const allFields = React.useMemo(() => {
@@ -165,10 +165,10 @@ export const FrontmatterPanel: React.FC = () => {
         fieldName: field.name,
         schemaField: field,
         value: frontmatter[field.name] || getDefaultValueForField(field),
-      }));
+      }))
 
       // Add any extra frontmatter fields that aren't in the schema
-      const schemaFieldNames = new Set(schema.fields.map(f => f.name));
+      const schemaFieldNames = new Set(schema.fields.map(f => f.name))
       const extraFields = Object.keys(frontmatter)
         .filter(key => !schemaFieldNames.has(key))
         .sort()
@@ -176,73 +176,73 @@ export const FrontmatterPanel: React.FC = () => {
           fieldName,
           schemaField: undefined,
           value: frontmatter[fieldName],
-        }));
+        }))
 
-      return [...schemaFields, ...extraFields];
+      return [...schemaFields, ...extraFields]
     } else {
       // No schema available, just show existing frontmatter fields
       return Object.keys(frontmatter).map(fieldName => ({
         fieldName,
         schemaField: undefined,
         value: frontmatter[fieldName],
-      }));
+      }))
     }
-  }, [frontmatter, schema]);
+  }, [frontmatter, schema])
 
   // Create form schema and default values
   const formSchema = React.useMemo(() => {
-    const fields = schema?.fields || [];
-    return createFormSchema(fields);
-  }, [schema]);
+    const fields = schema?.fields || []
+    return createFormSchema(fields)
+  }, [schema])
 
   const defaultValues = React.useMemo(() => {
-    const values: Record<string, unknown> = {};
+    const values: Record<string, unknown> = {}
     allFields.forEach(({ fieldName, value, schemaField }) => {
       if (value !== undefined && value !== null && value !== '') {
-        values[fieldName] = value;
+        values[fieldName] = value
       } else if (schemaField) {
-        const defaultVal = getDefaultValueForField(schemaField);
+        const defaultVal = getDefaultValueForField(schemaField)
         if (defaultVal !== '' && defaultVal !== 0 && defaultVal !== false) {
-          values[fieldName] = defaultVal;
+          values[fieldName] = defaultVal
         }
       }
-    });
-    return values;
-  }, [allFields]);
+    })
+    return values
+  }, [allFields])
 
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues,
     mode: 'onChange',
-  });
+  })
 
-  // Update form when frontmatter changes (but only when currentFile changes)
+  // Update form when file changes
   React.useEffect(() => {
-    form.reset(defaultValues);
-  }, [currentFile?.path]); // Only reset when file changes, not when frontmatter changes
+    form.reset(defaultValues)
+  }, [currentFile?.path, form, defaultValues])
 
-  // Handle individual field changes
+  // Handle individual field changes - update store directly
   const handleFieldChange = React.useCallback(
     (key: string, value: unknown) => {
-      const newFrontmatter = { ...frontmatter };
+      const newFrontmatter = { ...frontmatter }
 
       // Remove field if value is empty
       const isEmpty =
         value === null ||
         value === undefined ||
         value === '' ||
-        (Array.isArray(value) && value.length === 0);
+        (Array.isArray(value) && value.length === 0)
 
       if (isEmpty) {
-        delete newFrontmatter[key];
+        delete newFrontmatter[key]
       } else {
-        newFrontmatter[key] = value;
+        newFrontmatter[key] = value
       }
 
-      updateFrontmatter(newFrontmatter);
+      updateFrontmatter(newFrontmatter)
     },
     [frontmatter, updateFrontmatter]
-  );
+  )
 
   return (
     <div className="h-full flex flex-col">
@@ -288,5 +288,5 @@ export const FrontmatterPanel: React.FC = () => {
         )}
       </div>
     </div>
-  );
-};
+  )
+}

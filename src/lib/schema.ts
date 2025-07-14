@@ -1,8 +1,8 @@
 export interface ZodField {
-  name: string;
-  type: ZodFieldType;
-  optional: boolean;
-  default?: string;
+  name: string
+  type: ZodFieldType
+  optional: boolean
+  default?: string
 }
 
 export type ZodFieldType =
@@ -12,21 +12,21 @@ export type ZodFieldType =
   | 'Date'
   | 'Array'
   | 'Enum'
-  | 'Unknown';
+  | 'Unknown'
 
 export interface ParsedSchema {
-  type: 'zod';
-  fields: ZodField[];
+  type: 'zod'
+  fields: ZodField[]
 }
 
 interface ParsedSchemaJson {
-  type: 'zod';
+  type: 'zod'
   fields: Array<{
-    name: string;
-    type: string;
-    optional: boolean;
-    default?: string;
-  }>;
+    name: string
+    type: string
+    optional: boolean
+    default?: string
+  }>
 }
 
 /**
@@ -34,11 +34,11 @@ interface ParsedSchemaJson {
  */
 export function parseSchemaJson(schemaJson: string): ParsedSchema | null {
   try {
-    const parsed: unknown = JSON.parse(schemaJson);
+    const parsed: unknown = JSON.parse(schemaJson)
 
     // Type guard to check if parsed object has expected structure
     if (!isValidParsedSchema(parsed)) {
-      return null;
+      return null
     }
 
     const fields: ZodField[] = parsed.fields.map(field => ({
@@ -46,19 +46,19 @@ export function parseSchemaJson(schemaJson: string): ParsedSchema | null {
       type: field.type as ZodFieldType,
       optional: field.optional || false,
       ...(field.default !== undefined && { default: field.default }),
-    }));
+    }))
 
     return {
       type: 'zod',
       fields,
-    };
+    }
   } catch (error) {
     // Use a more specific error handling approach for production
     if (import.meta.env.DEV) {
       // eslint-disable-next-line no-console
-      console.error('Failed to parse schema JSON:', error);
+      console.error('Failed to parse schema JSON:', error)
     }
-    return null;
+    return null
   }
 }
 
@@ -81,7 +81,7 @@ function isValidParsedSchema(obj: unknown): obj is ParsedSchemaJson {
         'optional' in field &&
         typeof field.optional === 'boolean'
     )
-  );
+  )
 }
 
 /**
@@ -90,19 +90,19 @@ function isValidParsedSchema(obj: unknown): obj is ParsedSchemaJson {
 export function getInputTypeForZodField(fieldType: ZodFieldType): string {
   switch (fieldType) {
     case 'String':
-      return 'text';
+      return 'text'
     case 'Number':
-      return 'number';
+      return 'number'
     case 'Boolean':
-      return 'checkbox';
+      return 'checkbox'
     case 'Date':
-      return 'date';
+      return 'date'
     case 'Array':
-      return 'text'; // Will handle as comma-separated values
+      return 'text' // Will handle as comma-separated values
     case 'Enum':
-      return 'select';
+      return 'select'
     default:
-      return 'text';
+      return 'text'
   }
 }
 
@@ -113,22 +113,22 @@ export function getDefaultValueForField(
   field: ZodField
 ): string | number | boolean | string[] {
   if (field.default !== undefined) {
-    return field.default;
+    return field.default
   }
 
   switch (field.type) {
     case 'String':
-      return '';
+      return ''
     case 'Number':
-      return 0;
+      return 0
     case 'Boolean':
-      return false;
+      return false
     case 'Date':
-      return new Date().toISOString().split('T')[0] || ''; // YYYY-MM-DD format
+      return new Date().toISOString().split('T')[0] || '' // YYYY-MM-DD format
     case 'Array':
-      return [];
+      return []
     default:
-      return '';
+      return ''
   }
 }
 
@@ -144,7 +144,7 @@ export function validateFieldValue(
     field.optional &&
     (value === '' || value === null || value === undefined)
   ) {
-    return null;
+    return null
   }
 
   // Required field validation
@@ -152,27 +152,27 @@ export function validateFieldValue(
     !field.optional &&
     (value === '' || value === null || value === undefined)
   ) {
-    return `${field.name} is required`;
+    return `${field.name} is required`
   }
 
   // Type-specific validation
   switch (field.type) {
     case 'Number':
       if (isNaN(Number(value))) {
-        return `${field.name} must be a number`;
+        return `${field.name} must be a number`
       }
-      break;
+      break
     case 'Boolean':
       if (typeof value !== 'boolean') {
-        return `${field.name} must be a boolean`;
+        return `${field.name} must be a boolean`
       }
-      break;
+      break
     case 'Date':
       if (value && typeof value === 'string' && isNaN(Date.parse(value))) {
-        return `${field.name} must be a valid date`;
+        return `${field.name} must be a valid date`
       }
-      break;
+      break
   }
 
-  return null;
+  return null
 }

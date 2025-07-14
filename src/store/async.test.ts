@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { useAppStore } from './index';
+import { describe, it, expect, beforeEach } from 'vitest'
+import { useAppStore } from './index'
 
 describe('Store Async Operations', () => {
   beforeEach(() => {
@@ -11,49 +11,49 @@ describe('Store Async Operations', () => {
       editorContent: '',
       imports: '',
       isDirty: false,
-    });
-    globalThis.mockTauri.reset();
-  });
+    })
+    globalThis.mockTauri.reset()
+  })
 
   describe('loadCollections', () => {
     it('should load collections successfully', async () => {
       const mockCollections = [
         { name: 'posts', path: '/project/posts', schema: null },
         { name: 'blog', path: '/project/blog', schema: null },
-      ];
+      ]
 
-      globalThis.mockTauri.invoke.mockResolvedValue(mockCollections);
-      useAppStore.setState({ projectPath: '/test/project' });
+      globalThis.mockTauri.invoke.mockResolvedValue(mockCollections)
+      useAppStore.setState({ projectPath: '/test/project' })
 
-      const { loadCollections } = useAppStore.getState();
-      await loadCollections();
+      const { loadCollections } = useAppStore.getState()
+      await loadCollections()
 
       expect(globalThis.mockTauri.invoke).toHaveBeenCalledWith('scan_project', {
         projectPath: '/test/project',
-      });
-      expect(useAppStore.getState().collections).toEqual(mockCollections);
-    });
+      })
+      expect(useAppStore.getState().collections).toEqual(mockCollections)
+    })
 
     it('should handle loadCollections error gracefully', async () => {
       globalThis.mockTauri.invoke.mockRejectedValue(
         new Error('Project not found')
-      );
-      useAppStore.setState({ projectPath: '/invalid/project' });
+      )
+      useAppStore.setState({ projectPath: '/invalid/project' })
 
-      const { loadCollections } = useAppStore.getState();
-      await loadCollections();
+      const { loadCollections } = useAppStore.getState()
+      await loadCollections()
 
       // Should not throw and collections should remain empty
-      expect(useAppStore.getState().collections).toEqual([]);
-    });
+      expect(useAppStore.getState().collections).toEqual([])
+    })
 
     it('should not load collections when no project path is set', async () => {
-      const { loadCollections } = useAppStore.getState();
-      await loadCollections();
+      const { loadCollections } = useAppStore.getState()
+      await loadCollections()
 
-      expect(globalThis.mockTauri.invoke).not.toHaveBeenCalled();
-    });
-  });
+      expect(globalThis.mockTauri.invoke).not.toHaveBeenCalled()
+    })
+  })
 
   describe('openFile', () => {
     it('should open file and update editor state', async () => {
@@ -64,34 +64,34 @@ describe('Store Async Operations', () => {
         extension: 'md',
         is_draft: false,
         collection: 'posts',
-      };
+      }
       const mockMarkdownContent = {
         frontmatter: { title: 'Hello World', draft: false },
         content: '# Hello World\n\nThis is a test post.',
         raw_frontmatter: 'title: Hello World\ndraft: false',
         imports: '',
-      };
+      }
 
-      globalThis.mockTauri.invoke.mockResolvedValue(mockMarkdownContent);
+      globalThis.mockTauri.invoke.mockResolvedValue(mockMarkdownContent)
 
-      const { openFile } = useAppStore.getState();
-      await openFile(mockFile);
+      const { openFile } = useAppStore.getState()
+      await openFile(mockFile)
 
       expect(globalThis.mockTauri.invoke).toHaveBeenCalledWith(
         'parse_markdown_content',
         {
           filePath: '/project/posts/hello.md',
         }
-      );
+      )
 
-      const state = useAppStore.getState();
-      expect(state.currentFile).toEqual(mockFile);
-      expect(state.editorContent).toBe(mockMarkdownContent.content);
-      expect(state.frontmatter).toEqual(mockMarkdownContent.frontmatter);
-      expect(state.rawFrontmatter).toBe(mockMarkdownContent.raw_frontmatter);
-      expect(state.imports).toBe(mockMarkdownContent.imports);
-      expect(state.isDirty).toBe(false);
-    });
+      const state = useAppStore.getState()
+      expect(state.currentFile).toEqual(mockFile)
+      expect(state.editorContent).toBe(mockMarkdownContent.content)
+      expect(state.frontmatter).toEqual(mockMarkdownContent.frontmatter)
+      expect(state.rawFrontmatter).toBe(mockMarkdownContent.raw_frontmatter)
+      expect(state.imports).toBe(mockMarkdownContent.imports)
+      expect(state.isDirty).toBe(false)
+    })
 
     it('should handle file read error gracefully', async () => {
       const mockFile = {
@@ -101,20 +101,18 @@ describe('Store Async Operations', () => {
         extension: 'md',
         is_draft: false,
         collection: 'posts',
-      };
+      }
 
-      globalThis.mockTauri.invoke.mockRejectedValue(
-        new Error('File not found')
-      );
+      globalThis.mockTauri.invoke.mockRejectedValue(new Error('File not found'))
 
-      const { openFile } = useAppStore.getState();
-      await openFile(mockFile);
+      const { openFile } = useAppStore.getState()
+      await openFile(mockFile)
 
       // Should not update currentFile or content on error
-      expect(useAppStore.getState().currentFile).toBeNull();
-      expect(useAppStore.getState().editorContent).toBe('');
-    });
-  });
+      expect(useAppStore.getState().currentFile).toBeNull()
+      expect(useAppStore.getState().editorContent).toBe('')
+    })
+  })
 
   describe('saveFile', () => {
     it('should save file and clear dirty state', async () => {
@@ -125,9 +123,9 @@ describe('Store Async Operations', () => {
         extension: 'md',
         is_draft: false,
         collection: 'posts',
-      };
+      }
 
-      const mockFrontmatter = { title: 'Test Post', draft: false };
+      const mockFrontmatter = { title: 'Test Post', draft: false }
 
       useAppStore.setState({
         currentFile: mockFile,
@@ -135,12 +133,12 @@ describe('Store Async Operations', () => {
         frontmatter: mockFrontmatter,
         imports: '',
         isDirty: true,
-      });
+      })
 
-      globalThis.mockTauri.invoke.mockResolvedValue(undefined);
+      globalThis.mockTauri.invoke.mockResolvedValue(undefined)
 
-      const { saveFile } = useAppStore.getState();
-      await saveFile();
+      const { saveFile } = useAppStore.getState()
+      await saveFile()
 
       expect(globalThis.mockTauri.invoke).toHaveBeenCalledWith(
         'save_markdown_content',
@@ -149,10 +147,11 @@ describe('Store Async Operations', () => {
           frontmatter: mockFrontmatter,
           content: '# Updated Content',
           imports: '',
+          schemaFieldOrder: null,
         }
-      );
-      expect(useAppStore.getState().isDirty).toBe(false);
-    });
+      )
+      expect(useAppStore.getState().isDirty).toBe(false)
+    })
 
     it('should handle save error gracefully', async () => {
       const mockFile = {
@@ -162,25 +161,25 @@ describe('Store Async Operations', () => {
         extension: 'md',
         is_draft: false,
         collection: 'posts',
-      };
+      }
 
       useAppStore.setState({
         currentFile: mockFile,
         editorContent: '# Updated Content',
         imports: '',
         isDirty: true,
-      });
+      })
 
       globalThis.mockTauri.invoke.mockRejectedValue(
         new Error('Permission denied')
-      );
+      )
 
-      const { saveFile } = useAppStore.getState();
-      await saveFile();
+      const { saveFile } = useAppStore.getState()
+      await saveFile()
 
       // Should remain dirty on error
-      expect(useAppStore.getState().isDirty).toBe(true);
-    });
+      expect(useAppStore.getState().isDirty).toBe(true)
+    })
 
     it('should not save when no current file', async () => {
       useAppStore.setState({
@@ -188,14 +187,14 @@ describe('Store Async Operations', () => {
         editorContent: '# Content',
         imports: '',
         isDirty: true,
-      });
+      })
 
-      const { saveFile } = useAppStore.getState();
-      await saveFile();
+      const { saveFile } = useAppStore.getState()
+      await saveFile()
 
-      expect(globalThis.mockTauri.invoke).not.toHaveBeenCalled();
-    });
-  });
+      expect(globalThis.mockTauri.invoke).not.toHaveBeenCalled()
+    })
+  })
 
   describe('loadCollectionFiles', () => {
     it('should load files for collection', async () => {
@@ -216,31 +215,31 @@ describe('Store Async Operations', () => {
           is_draft: true,
           collection: 'posts',
         },
-      ];
+      ]
 
-      globalThis.mockTauri.invoke.mockResolvedValue(mockFiles);
+      globalThis.mockTauri.invoke.mockResolvedValue(mockFiles)
 
-      const { loadCollectionFiles } = useAppStore.getState();
-      await loadCollectionFiles('/project/posts');
+      const { loadCollectionFiles } = useAppStore.getState()
+      await loadCollectionFiles('/project/posts')
 
       expect(globalThis.mockTauri.invoke).toHaveBeenCalledWith(
         'scan_collection_files',
         {
           collectionPath: '/project/posts',
         }
-      );
-      expect(useAppStore.getState().files).toEqual(mockFiles);
-    });
+      )
+      expect(useAppStore.getState().files).toEqual(mockFiles)
+    })
 
     it('should handle collection scan error gracefully', async () => {
       globalThis.mockTauri.invoke.mockRejectedValue(
         new Error('Directory not found')
-      );
+      )
 
-      const { loadCollectionFiles } = useAppStore.getState();
-      await loadCollectionFiles('/invalid/path');
+      const { loadCollectionFiles } = useAppStore.getState()
+      await loadCollectionFiles('/invalid/path')
 
-      expect(useAppStore.getState().files).toEqual([]);
-    });
-  });
-});
+      expect(useAppStore.getState().files).toEqual([])
+    })
+  })
+})

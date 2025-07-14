@@ -1,14 +1,14 @@
-import React from 'react';
-import { getCurrentWindow } from '@tauri-apps/api/window';
-import { useAppStore } from '../../store';
-import { Button } from '../ui/button';
+import React from 'react'
+import { getCurrentWindow } from '@tauri-apps/api/window'
+import { useAppStore } from '../../store'
+import { Button } from '../ui/button'
 import {
   Save,
   PanelRight,
   PanelLeft,
   PanelLeftClose,
   PanelRightClose,
-} from 'lucide-react';
+} from 'lucide-react'
 
 export const UnifiedTitleBar: React.FC = () => {
   const {
@@ -20,29 +20,29 @@ export const UnifiedTitleBar: React.FC = () => {
     saveFile,
     isDirty,
     currentFile,
-  } = useAppStore();
+  } = useAppStore()
 
   const handleSave = () => {
     if (currentFile && isDirty) {
-      void saveFile();
+      void saveFile()
     }
-  };
+  }
 
   const handleMinimize = async () => {
-    const window = getCurrentWindow();
-    await window.minimize();
-  };
+    const window = getCurrentWindow()
+    await window.minimize()
+  }
 
   const handleToggleMaximize = async () => {
-    const window = getCurrentWindow();
-    const isFullscreen = await window.isFullscreen();
-    await window.setFullscreen(!isFullscreen);
-  };
+    const window = getCurrentWindow()
+    const isFullscreen = await window.isFullscreen()
+    await window.setFullscreen(!isFullscreen)
+  }
 
   const handleClose = async () => {
-    const window = getCurrentWindow();
-    await window.hide();
-  };
+    const window = getCurrentWindow()
+    await window.hide()
+  }
 
   return (
     <div
@@ -139,5 +139,5 @@ export const UnifiedTitleBar: React.FC = () => {
         </Button>
       </div>
     </div>
-  );
-};
+  )
+}

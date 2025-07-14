@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import { StatusBar } from './StatusBar';
-import { useAppStore } from '../../store';
+import { describe, it, expect, beforeEach } from 'vitest'
+import { render, screen } from '@testing-library/react'
+import { StatusBar } from './StatusBar'
+import { useAppStore } from '../../store'
 
 describe('StatusBar Component', () => {
   beforeEach(() => {
@@ -9,16 +9,16 @@ describe('StatusBar Component', () => {
       currentFile: null,
       editorContent: '',
       isDirty: false,
-    });
-  });
+    })
+  })
 
   it('should render empty when no file is selected', () => {
-    render(<StatusBar />);
+    render(<StatusBar />)
 
     // Should not show file info or stats when no file
-    expect(screen.queryByText(/words/)).not.toBeInTheDocument();
-    expect(screen.queryByText(/characters/)).not.toBeInTheDocument();
-  });
+    expect(screen.queryByText(/words/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/characters/)).not.toBeInTheDocument()
+  })
 
   it('should display file name and extension when file is selected', () => {
     useAppStore.setState({
@@ -32,12 +32,12 @@ describe('StatusBar Component', () => {
       },
       editorContent: 'Hello world',
       isDirty: false,
-    });
+    })
 
-    render(<StatusBar />);
+    render(<StatusBar />)
 
-    expect(screen.getByText('example.md')).toBeInTheDocument();
-  });
+    expect(screen.getByText('example.md')).toBeInTheDocument()
+  })
 
   it('should show dirty indicator when file has unsaved changes', () => {
     useAppStore.setState({
@@ -51,12 +51,12 @@ describe('StatusBar Component', () => {
       },
       editorContent: 'Hello world',
       isDirty: true,
-    });
+    })
 
-    render(<StatusBar />);
+    render(<StatusBar />)
 
-    expect(screen.getByText('•')).toBeInTheDocument();
-  });
+    expect(screen.getByText('•')).toBeInTheDocument()
+  })
 
   it('should display correct word and character counts', () => {
     useAppStore.setState({
@@ -70,13 +70,13 @@ describe('StatusBar Component', () => {
       },
       editorContent: 'Hello world this is a test',
       isDirty: false,
-    });
+    })
 
-    render(<StatusBar />);
+    render(<StatusBar />)
 
-    expect(screen.getByText('6 words')).toBeInTheDocument();
-    expect(screen.getByText('26 characters')).toBeInTheDocument();
-  });
+    expect(screen.getByText('6 words')).toBeInTheDocument()
+    expect(screen.getByText('26 characters')).toBeInTheDocument()
+  })
 
   it('should handle empty content correctly', () => {
     useAppStore.setState({
@@ -90,11 +90,11 @@ describe('StatusBar Component', () => {
       },
       editorContent: '',
       isDirty: false,
-    });
+    })
 
-    render(<StatusBar />);
+    render(<StatusBar />)
 
-    expect(screen.getByText('0 words')).toBeInTheDocument();
-    expect(screen.getByText('0 characters')).toBeInTheDocument();
-  });
-});
+    expect(screen.getByText('0 words')).toBeInTheDocument()
+    expect(screen.getByText('0 characters')).toBeInTheDocument()
+  })
+})

@@ -1,6 +1,6 @@
-import React from 'react';
-import { useAppStore, Collection } from '../../store';
-import { parseSchemaJson } from '../../lib/schema';
+import React from 'react'
+import { useAppStore, Collection } from '../../store'
+import { parseSchemaJson } from '../../lib/schema'
 
 export const CollectionsList: React.FC = () => {
   const {
@@ -8,21 +8,21 @@ export const CollectionsList: React.FC = () => {
     setSelectedCollection,
     loadCollectionFiles,
     selectedCollection,
-  } = useAppStore();
+  } = useAppStore()
 
   const handleCollectionClick = (collection: Collection) => {
-    setSelectedCollection(collection.name);
-    void loadCollectionFiles(collection.path);
-  };
+    setSelectedCollection(collection.name)
+    void loadCollectionFiles(collection.path)
+  }
 
   return (
     <div>
       {collections.map(collection => {
-        const isSelected = selectedCollection === collection.name;
+        const isSelected = selectedCollection === collection.name
         const schema = collection.schema
           ? parseSchemaJson(collection.schema)
-          : null;
-        const fieldCount = schema?.fields.length || 0;
+          : null
+        const fieldCount = schema?.fields.length || 0
 
         return (
           <div
@@ -56,7 +56,7 @@ export const CollectionsList: React.FC = () => {
               </div>
             )}
           </div>
-        );
+        )
       })}
 
       {collections.length === 0 && (
@@ -65,5 +65,5 @@ export const CollectionsList: React.FC = () => {
         </div>
       )}
     </div>
-  );
-};
+  )
+}

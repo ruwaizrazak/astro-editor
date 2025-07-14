@@ -1,25 +1,25 @@
-import React from 'react';
-import { invoke } from '@tauri-apps/api/core';
-import { useAppStore } from '../../store';
-import { CollectionsList } from './CollectionsList';
-import { FilesList } from './FilesList';
-import { Button } from '../ui/button';
-import { FolderOpen } from 'lucide-react';
+import React from 'react'
+import { invoke } from '@tauri-apps/api/core'
+import { useAppStore } from '../../store'
+import { CollectionsList } from './CollectionsList'
+import { FilesList } from './FilesList'
+import { Button } from '../ui/button'
+import { FolderOpen } from 'lucide-react'
 
 export const Sidebar: React.FC = () => {
-  const { selectedCollection, setProject } = useAppStore();
+  const { selectedCollection, setProject } = useAppStore()
 
   const handleOpenProject = async () => {
     try {
-      const result = await invoke<string | null>('select_project_folder');
+      const result = await invoke<string | null>('select_project_folder')
       if (result) {
-        setProject(result);
+        setProject(result)
       }
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.error('Failed to open project:', error);
+      console.error('Failed to open project:', error)
     }
-  };
+  }
 
   return (
     <div className="h-full flex flex-col">
@@ -40,5 +40,5 @@ export const Sidebar: React.FC = () => {
         {!selectedCollection ? <CollectionsList /> : <FilesList />}
       </div>
     </div>
-  );
-};
+  )
+}

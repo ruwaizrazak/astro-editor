@@ -1,13 +1,13 @@
-import React from 'react';
-import { useAppStore } from '../../store';
+import React from 'react'
+import { useAppStore } from '../../store'
 
 export const StatusBar: React.FC = () => {
-  const { currentFile, editorContent, isDirty } = useAppStore();
+  const { currentFile, editorContent, isDirty } = useAppStore()
 
   const wordCount = editorContent
     .split(/\s+/)
-    .filter(word => word.length > 0).length;
-  const charCount = editorContent.length;
+    .filter(word => word.length > 0).length
+  const charCount = editorContent.length
 
   return (
     <div className="flex justify-between items-center px-4 py-1 bg-muted/50 border-t text-xs text-muted-foreground h-6">
@@ -29,5 +29,5 @@ export const StatusBar: React.FC = () => {
         )}
       </div>
     </div>
-  );
-};
+  )
+}

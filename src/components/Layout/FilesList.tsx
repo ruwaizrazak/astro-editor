@@ -1,8 +1,8 @@
-import React from 'react';
-import { useAppStore, FileEntry } from '../../store';
-import { cn } from '@/lib/utils';
-import { Button } from '../ui/button';
-import { ArrowLeft } from 'lucide-react';
+import React from 'react'
+import { useAppStore, FileEntry } from '../../store'
+import { cn } from '@/lib/utils'
+import { Button } from '../ui/button'
+import { ArrowLeft } from 'lucide-react'
 
 export const FilesList: React.FC = () => {
   const {
@@ -11,15 +11,15 @@ export const FilesList: React.FC = () => {
     selectedCollection,
     setSelectedCollection,
     openFile,
-  } = useAppStore();
+  } = useAppStore()
 
   const handleBackClick = () => {
-    setSelectedCollection(null);
-  };
+    setSelectedCollection(null)
+  }
 
   const handleFileClick = (file: FileEntry) => {
-    void openFile(file);
-  };
+    void openFile(file)
+  }
 
   return (
     <div>
@@ -68,5 +68,5 @@ export const FilesList: React.FC = () => {
         </div>
       )}
     </div>
-  );
-};
+  )
+}

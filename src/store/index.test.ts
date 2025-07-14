@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { useAppStore } from './index';
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { useAppStore } from './index'
 
 describe('App Store', () => {
   beforeEach(() => {
@@ -14,131 +14,133 @@ describe('App Store', () => {
       selectedCollection: null,
       editorContent: '',
       isDirty: false,
-    });
+    })
     // Clear localStorage
-    localStorage.clear();
-    globalThis.mockTauri.reset();
-  });
+    localStorage.clear()
+    globalThis.mockTauri.reset()
+  })
 
   it('should initialize with default state', () => {
-    const state = useAppStore.getState();
-    expect(state.projectPath).toBeNull();
-    expect(state.collections).toEqual([]);
-    expect(state.sidebarVisible).toBe(true);
-    expect(state.frontmatterPanelVisible).toBe(true);
-    expect(state.editorContent).toBe('');
-    expect(state.isDirty).toBe(false);
-  });
+    const state = useAppStore.getState()
+    expect(state.projectPath).toBeNull()
+    expect(state.collections).toEqual([])
+    expect(state.sidebarVisible).toBe(true)
+    expect(state.frontmatterPanelVisible).toBe(true)
+    expect(state.editorContent).toBe('')
+    expect(state.isDirty).toBe(false)
+  })
 
   it('should set project path', () => {
-    const { setProject } = useAppStore.getState();
-    setProject('/test/project/path');
+    const { setProject } = useAppStore.getState()
+    setProject('/test/project/path')
 
-    const state = useAppStore.getState();
-    expect(state.projectPath).toBe('/test/project/path');
-  });
+    const state = useAppStore.getState()
+    expect(state.projectPath).toBe('/test/project/path')
+  })
 
   it('should toggle sidebar visibility', () => {
-    const { toggleSidebar } = useAppStore.getState();
+    const { toggleSidebar } = useAppStore.getState()
 
-    expect(useAppStore.getState().sidebarVisible).toBe(true);
-    toggleSidebar();
-    expect(useAppStore.getState().sidebarVisible).toBe(false);
-    toggleSidebar();
-    expect(useAppStore.getState().sidebarVisible).toBe(true);
-  });
+    expect(useAppStore.getState().sidebarVisible).toBe(true)
+    toggleSidebar()
+    expect(useAppStore.getState().sidebarVisible).toBe(false)
+    toggleSidebar()
+    expect(useAppStore.getState().sidebarVisible).toBe(true)
+  })
 
   it('should toggle frontmatter panel visibility', () => {
-    const { toggleFrontmatterPanel } = useAppStore.getState();
+    const { toggleFrontmatterPanel } = useAppStore.getState()
 
-    expect(useAppStore.getState().frontmatterPanelVisible).toBe(true);
-    toggleFrontmatterPanel();
-    expect(useAppStore.getState().frontmatterPanelVisible).toBe(false);
-    toggleFrontmatterPanel();
-    expect(useAppStore.getState().frontmatterPanelVisible).toBe(true);
-  });
+    expect(useAppStore.getState().frontmatterPanelVisible).toBe(true)
+    toggleFrontmatterPanel()
+    expect(useAppStore.getState().frontmatterPanelVisible).toBe(false)
+    toggleFrontmatterPanel()
+    expect(useAppStore.getState().frontmatterPanelVisible).toBe(true)
+  })
 
   it('should set editor content and mark as dirty', () => {
-    const { setEditorContent } = useAppStore.getState();
+    const { setEditorContent } = useAppStore.getState()
 
-    setEditorContent('# Test Content');
+    setEditorContent('# Test Content')
 
-    const state = useAppStore.getState();
-    expect(state.editorContent).toBe('# Test Content');
-    expect(state.isDirty).toBe(true);
-  });
+    const state = useAppStore.getState()
+    expect(state.editorContent).toBe('# Test Content')
+    expect(state.isDirty).toBe(true)
+  })
 
   it('should set selected collection', () => {
-    const { setSelectedCollection } = useAppStore.getState();
+    const { setSelectedCollection } = useAppStore.getState()
 
-    setSelectedCollection('blog');
-    expect(useAppStore.getState().selectedCollection).toBe('blog');
+    setSelectedCollection('blog')
+    expect(useAppStore.getState().selectedCollection).toBe('blog')
 
-    setSelectedCollection(null);
-    expect(useAppStore.getState().selectedCollection).toBeNull();
-  });
+    setSelectedCollection(null)
+    expect(useAppStore.getState().selectedCollection).toBeNull()
+  })
 
   it('should persist project path to localStorage when setting project', () => {
-    const testPath = '/test/project';
-    
-    useAppStore.getState().setProject(testPath);
-    
-    expect(localStorage.getItem('astro-editor-last-project')).toBe(testPath);
-    expect(useAppStore.getState().projectPath).toBe(testPath);
-  });
+    const testPath = '/test/project'
+
+    useAppStore.getState().setProject(testPath)
+
+    expect(localStorage.getItem('astro-editor-last-project')).toBe(testPath)
+    expect(useAppStore.getState().projectPath).toBe(testPath)
+  })
 
   it('should handle localStorage errors gracefully when setting project', () => {
-    const testPath = '/test/project';
+    const testPath = '/test/project'
     // Mock localStorage to throw an error
-    const originalSetItem = localStorage.setItem;
+    const originalSetItem = localStorage.setItem.bind(localStorage)
     localStorage.setItem = vi.fn(() => {
-      throw new Error('Storage quota exceeded');
-    });
-    
+      throw new Error('Storage quota exceeded')
+    })
+
     // Should not throw error
-    expect(() => useAppStore.getState().setProject(testPath)).not.toThrow();
-    expect(useAppStore.getState().projectPath).toBe(testPath);
-    
+    expect(() => useAppStore.getState().setProject(testPath)).not.toThrow()
+    expect(useAppStore.getState().projectPath).toBe(testPath)
+
     // Restore original function
-    localStorage.setItem = originalSetItem;
-  });
+    localStorage.setItem = originalSetItem
+  })
 
   it('should load persisted project when valid', async () => {
-    const testPath = '/test/valid/project';
-    localStorage.setItem('astro-editor-last-project', testPath);
-    
+    const testPath = '/test/valid/project'
+    localStorage.setItem('astro-editor-last-project', testPath)
+
     // Mock successful project scan
-    globalThis.mockTauri.invoke.mockResolvedValue([]);
-    
-    await useAppStore.getState().loadPersistedProject();
-    
-    expect(useAppStore.getState().projectPath).toBe(testPath);
+    globalThis.mockTauri.invoke.mockResolvedValue([])
+
+    await useAppStore.getState().loadPersistedProject()
+
+    expect(useAppStore.getState().projectPath).toBe(testPath)
     expect(globalThis.mockTauri.invoke).toHaveBeenCalledWith('scan_project', {
       projectPath: testPath,
-    });
-  });
+    })
+  })
 
   it('should remove invalid persisted project path', async () => {
-    const testPath = '/test/invalid/project';
-    localStorage.setItem('astro-editor-last-project', testPath);
-    
+    const testPath = '/test/invalid/project'
+    localStorage.setItem('astro-editor-last-project', testPath)
+
     // Mock failed project scan
-    globalThis.mockTauri.invoke.mockRejectedValue(new Error('Project not found'));
-    
-    await useAppStore.getState().loadPersistedProject();
-    
-    expect(useAppStore.getState().projectPath).toBeNull();
-    expect(localStorage.getItem('astro-editor-last-project')).toBeNull();
+    globalThis.mockTauri.invoke.mockRejectedValue(
+      new Error('Project not found')
+    )
+
+    await useAppStore.getState().loadPersistedProject()
+
+    expect(useAppStore.getState().projectPath).toBeNull()
+    expect(localStorage.getItem('astro-editor-last-project')).toBeNull()
     expect(globalThis.mockTauri.invoke).toHaveBeenCalledWith('scan_project', {
       projectPath: testPath,
-    });
-  });
+    })
+  })
 
   it('should handle loadPersistedProject when no saved path exists', async () => {
-    localStorage.removeItem('astro-editor-last-project');
-    
-    await useAppStore.getState().loadPersistedProject();
-    
-    expect(useAppStore.getState().projectPath).toBeNull();
-  });
-});
+    localStorage.removeItem('astro-editor-last-project')
+
+    await useAppStore.getState().loadPersistedProject()
+
+    expect(useAppStore.getState().projectPath).toBeNull()
+  })
+})

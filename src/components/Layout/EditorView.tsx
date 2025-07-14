@@ -1,52 +1,31 @@
-import React, { useCallback, useEffect, useRef } from 'react';
-import CodeMirror from '@uiw/react-codemirror';
-import { markdown } from '@codemirror/lang-markdown';
-import { EditorView } from '@codemirror/view';
-import { keymap } from '@codemirror/view';
-import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
-import { searchKeymap } from '@codemirror/search';
-import { useAppStore } from '../../store';
-import './EditorView.css';
+import React, { useCallback } from 'react'
+import CodeMirror from '@uiw/react-codemirror'
+import { markdown } from '@codemirror/lang-markdown'
+import { EditorView } from '@codemirror/view'
+import { keymap } from '@codemirror/view'
+import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
+import { searchKeymap } from '@codemirror/search'
+import { useAppStore } from '../../store'
+import './EditorView.css'
 
 export const EditorViewComponent: React.FC = () => {
   const { editorContent, setEditorContent, currentFile, saveFile, isDirty } =
-    useAppStore();
-  const autoSaveTimeoutRef = useRef<number | null>(null);
+    useAppStore()
 
+  // Store handles auto-save, just update content
   const onChange = useCallback(
     (value: string) => {
-      setEditorContent(value);
-
-      // Clear existing timeout
-      if (autoSaveTimeoutRef.current) {
-        clearTimeout(autoSaveTimeoutRef.current);
-      }
-
-      // Set new auto-save timeout (30 seconds)
-      autoSaveTimeoutRef.current = window.setTimeout(() => {
-        if (currentFile && isDirty) {
-          void saveFile();
-        }
-      }, 30000);
+      setEditorContent(value)
     },
-    [setEditorContent, saveFile, currentFile, isDirty]
-  );
+    [setEditorContent]
+  )
 
-  // Auto-save on blur (when editor loses focus)
+  // Manual save on blur for immediate feedback
   const handleBlur = useCallback(() => {
     if (currentFile && isDirty) {
-      void saveFile();
+      void saveFile()
     }
-  }, [saveFile, currentFile, isDirty]);
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (autoSaveTimeoutRef.current) {
-        clearTimeout(autoSaveTimeoutRef.current);
-      }
-    };
-  }, []);
+  }, [saveFile, currentFile, isDirty])
 
   // Enhanced extensions for better writing experience
   const extensions = [
@@ -61,21 +40,21 @@ export const EditorViewComponent: React.FC = () => {
         key: 'Mod-b',
         run: () => {
           // Bold shortcut - will implement markdown formatting
-          return true;
+          return true
         },
       },
       {
         key: 'Mod-i',
         run: () => {
           // Italic shortcut - will implement markdown formatting
-          return true;
+          return true
         },
       },
       {
         key: 'Mod-k',
         run: () => {
           // Link shortcut - will implement markdown link creation
-          return true;
+          return true
         },
       },
       {
@@ -83,9 +62,9 @@ export const EditorViewComponent: React.FC = () => {
         run: () => {
           // Save shortcut
           if (currentFile && isDirty) {
-            void saveFile();
+            void saveFile()
           }
-          return true;
+          return true
         },
       },
     ]),
@@ -156,7 +135,7 @@ export const EditorViewComponent: React.FC = () => {
       },
     }),
     EditorView.lineWrapping,
-  ];
+  ]
 
   return (
     <div className="editor-view">
@@ -179,5 +158,5 @@ export const EditorViewComponent: React.FC = () => {
         className="editor-codemirror"
       />
     </div>
-  );
-};
+  )
+}

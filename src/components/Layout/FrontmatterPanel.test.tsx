@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { FrontmatterPanel } from './FrontmatterPanel';
-import { useAppStore } from '../../store';
+import { describe, it, expect, beforeEach } from 'vitest'
+import { render, screen, fireEvent } from '@testing-library/react'
+import { FrontmatterPanel } from './FrontmatterPanel'
+import { useAppStore } from '../../store'
 
 describe('FrontmatterPanel Component', () => {
   beforeEach(() => {
@@ -10,18 +10,18 @@ describe('FrontmatterPanel Component', () => {
       frontmatter: {},
       collections: [],
       updateFrontmatter: (frontmatter: Record<string, unknown>) => {
-        useAppStore.setState({ frontmatter });
+        useAppStore.setState({ frontmatter })
       },
-    });
-  });
+    })
+  })
 
   it('should show placeholder when no file is selected', () => {
-    render(<FrontmatterPanel />);
+    render(<FrontmatterPanel />)
 
     expect(
       screen.getByText('Select a file to edit its frontmatter.')
-    ).toBeInTheDocument();
-  });
+    ).toBeInTheDocument()
+  })
 
   it('should show frontmatter fields when file is selected', () => {
     const mockFile = {
@@ -31,7 +31,7 @@ describe('FrontmatterPanel Component', () => {
       extension: 'md',
       is_draft: false,
       collection: 'posts',
-    };
+    }
 
     const mockFrontmatter = {
       title: 'Test Post',
@@ -39,22 +39,22 @@ describe('FrontmatterPanel Component', () => {
       tags: ['test', 'demo'],
       publishDate: '2023-12-01',
       rating: 5,
-    };
+    }
 
     useAppStore.setState({
       currentFile: mockFile,
       frontmatter: mockFrontmatter,
-    });
+    })
 
-    render(<FrontmatterPanel />);
+    render(<FrontmatterPanel />)
 
-    expect(screen.getByDisplayValue('Test Post')).toBeInTheDocument();
-    expect(screen.getByRole('switch')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Test Post')).toBeInTheDocument()
+    expect(screen.getByRole('switch')).toBeInTheDocument()
     // Arrays are now rendered as text inputs, not individual badges
-    expect(screen.getByPlaceholderText('Enter tags...')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('2023-12-01')).toBeInTheDocument(); // Date shows as input value
-    expect(screen.getByDisplayValue('5')).toBeInTheDocument();
-  });
+    expect(screen.getByPlaceholderText('Enter tags...')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('2023-12-01')).toBeInTheDocument() // Date shows as input value
+    expect(screen.getByDisplayValue('5')).toBeInTheDocument()
+  })
 
   it('should handle text input changes', () => {
     const mockFile = {
@@ -64,20 +64,20 @@ describe('FrontmatterPanel Component', () => {
       extension: 'md',
       is_draft: false,
       collection: 'posts',
-    };
+    }
 
     useAppStore.setState({
       currentFile: mockFile,
       frontmatter: { title: 'Original Title' },
-    });
+    })
 
-    render(<FrontmatterPanel />);
+    render(<FrontmatterPanel />)
 
-    const titleInput = screen.getByDisplayValue('Original Title');
-    fireEvent.change(titleInput, { target: { value: 'New Title' } });
+    const titleInput = screen.getByDisplayValue('Original Title')
+    fireEvent.change(titleInput, { target: { value: 'New Title' } })
 
-    expect(useAppStore.getState().frontmatter.title).toBe('New Title');
-  });
+    expect(useAppStore.getState().frontmatter.title).toBe('New Title')
+  })
 
   it('should handle boolean input changes', () => {
     const mockFile = {
@@ -87,22 +87,22 @@ describe('FrontmatterPanel Component', () => {
       extension: 'md',
       is_draft: false,
       collection: 'posts',
-    };
+    }
 
     useAppStore.setState({
       currentFile: mockFile,
       frontmatter: { draft: false },
-    });
+    })
 
-    render(<FrontmatterPanel />);
+    render(<FrontmatterPanel />)
 
-    const draftSwitch = screen.getByRole('switch');
-    expect(draftSwitch).not.toBeChecked();
+    const draftSwitch = screen.getByRole('switch')
+    expect(draftSwitch).not.toBeChecked()
 
-    fireEvent.click(draftSwitch);
+    fireEvent.click(draftSwitch)
 
-    expect(useAppStore.getState().frontmatter.draft).toBe(true);
-  });
+    expect(useAppStore.getState().frontmatter.draft).toBe(true)
+  })
 
   it('should handle number input changes', () => {
     const mockFile = {
@@ -112,20 +112,20 @@ describe('FrontmatterPanel Component', () => {
       extension: 'md',
       is_draft: false,
       collection: 'posts',
-    };
+    }
 
     useAppStore.setState({
       currentFile: mockFile,
       frontmatter: { rating: 3 },
-    });
+    })
 
-    render(<FrontmatterPanel />);
+    render(<FrontmatterPanel />)
 
-    const ratingInput = screen.getByDisplayValue('3');
-    fireEvent.change(ratingInput, { target: { value: '5' } });
+    const ratingInput = screen.getByDisplayValue('3')
+    fireEvent.change(ratingInput, { target: { value: '5' } })
 
-    expect(useAppStore.getState().frontmatter.rating).toBe(5);
-  });
+    expect(useAppStore.getState().frontmatter.rating).toBe(5)
+  })
 
   it('should show message when no frontmatter fields exist', () => {
     const mockFile = {
@@ -135,19 +135,17 @@ describe('FrontmatterPanel Component', () => {
       extension: 'md',
       is_draft: false,
       collection: 'posts',
-    };
+    }
 
     useAppStore.setState({
       currentFile: mockFile,
       frontmatter: {},
-    });
+    })
 
-    render(<FrontmatterPanel />);
+    render(<FrontmatterPanel />)
 
-    expect(
-      screen.getByText('No frontmatter fields found.')
-    ).toBeInTheDocument();
-  });
+    expect(screen.getByText('No frontmatter fields found.')).toBeInTheDocument()
+  })
 
   it('should use schema information when available', () => {
     const mockFile = {
@@ -157,7 +155,7 @@ describe('FrontmatterPanel Component', () => {
       extension: 'md',
       is_draft: false,
       collection: 'posts',
-    };
+    }
 
     const mockCollection = {
       name: 'posts',
@@ -171,27 +169,27 @@ describe('FrontmatterPanel Component', () => {
           { name: 'tags', type: 'Array', optional: true },
         ],
       }),
-    };
+    }
 
     useAppStore.setState({
       currentFile: mockFile,
       frontmatter: { title: 'Test Post' },
       collections: [mockCollection],
-    });
+    })
 
-    render(<FrontmatterPanel />);
+    render(<FrontmatterPanel />)
 
     // Should show schema indicator
-    expect(screen.getByText('Using posts schema')).toBeInTheDocument();
+    expect(screen.getByText('Using posts schema')).toBeInTheDocument()
 
     // Should show all schema fields, even if not in frontmatter
-    expect(screen.getByDisplayValue('Test Post')).toBeInTheDocument();
-    expect(screen.getByRole('switch')).toBeInTheDocument(); // Boolean field
-    expect(screen.getByPlaceholderText('Enter tags...')).toBeInTheDocument(); // Array field
+    expect(screen.getByDisplayValue('Test Post')).toBeInTheDocument()
+    expect(screen.getByRole('switch')).toBeInTheDocument() // Boolean field
+    expect(screen.getByPlaceholderText('Enter tags...')).toBeInTheDocument() // Array field
 
     // Should show required indicator for title field (1 required field: title)
-    expect(screen.getAllByText('*')).toHaveLength(1);
-  });
+    expect(screen.getAllByText('*')).toHaveLength(1)
+  })
 
   it('should show validation errors for invalid fields', () => {
     const mockFile = {
@@ -201,7 +199,7 @@ describe('FrontmatterPanel Component', () => {
       extension: 'md',
       is_draft: false,
       collection: 'posts',
-    };
+    }
 
     const mockCollection = {
       name: 'posts',
@@ -210,19 +208,19 @@ describe('FrontmatterPanel Component', () => {
         type: 'zod',
         fields: [{ name: 'title', type: 'String', optional: false }],
       }),
-    };
+    }
 
     useAppStore.setState({
       currentFile: mockFile,
       frontmatter: { title: '' }, // Empty required field
       collections: [mockCollection],
-    });
+    })
 
-    render(<FrontmatterPanel />);
+    render(<FrontmatterPanel />)
 
     // Should show validation error for empty required field
-    expect(screen.getByText('title is required')).toBeInTheDocument();
-  });
+    expect(screen.getByText('title is required')).toBeInTheDocument()
+  })
 
   it('should show all schema fields even when not in frontmatter', () => {
     const mockFile = {
@@ -232,7 +230,7 @@ describe('FrontmatterPanel Component', () => {
       extension: 'md',
       is_draft: false,
       collection: 'posts',
-    };
+    }
 
     const mockCollection = {
       name: 'posts',
@@ -245,26 +243,26 @@ describe('FrontmatterPanel Component', () => {
           { name: 'publishDate', type: 'Date', optional: true },
         ],
       }),
-    };
+    }
 
     useAppStore.setState({
       currentFile: mockFile,
       frontmatter: { title: 'Test Post' }, // Only has title, missing description and publishDate
       collections: [mockCollection],
-    });
+    })
 
-    render(<FrontmatterPanel />);
+    render(<FrontmatterPanel />)
 
     // Should show all schema fields
-    expect(screen.getByDisplayValue('Test Post')).toBeInTheDocument(); // title
+    expect(screen.getByDisplayValue('Test Post')).toBeInTheDocument() // title
     expect(
       screen.getByPlaceholderText('Enter description...')
-    ).toBeInTheDocument(); // description (empty)
+    ).toBeInTheDocument() // description (empty)
 
     // Both description and publishDate have empty values, so check for empty inputs
-    const emptyInputs = screen.getAllByDisplayValue('');
-    expect(emptyInputs.length).toBeGreaterThanOrEqual(1); // At least description
-  });
+    const emptyInputs = screen.getAllByDisplayValue('')
+    expect(emptyInputs.length).toBeGreaterThanOrEqual(1) // At least description
+  })
 
   it('should remove field from frontmatter when emptied', () => {
     const mockFile = {
@@ -274,21 +272,21 @@ describe('FrontmatterPanel Component', () => {
       extension: 'md',
       is_draft: false,
       collection: 'posts',
-    };
+    }
 
     useAppStore.setState({
       currentFile: mockFile,
       frontmatter: { title: 'Test Post', description: 'Some description' },
-    });
+    })
 
-    render(<FrontmatterPanel />);
+    render(<FrontmatterPanel />)
 
-    const descriptionInput = screen.getByDisplayValue('Some description');
-    fireEvent.change(descriptionInput, { target: { value: '' } });
+    const descriptionInput = screen.getByDisplayValue('Some description')
+    fireEvent.change(descriptionInput, { target: { value: '' } })
 
     // Field should be removed from frontmatter when emptied
-    const state = useAppStore.getState();
-    expect(state.frontmatter).toEqual({ title: 'Test Post' });
-    expect(state.frontmatter.description).toBeUndefined();
-  });
-});
+    const state = useAppStore.getState()
+    expect(state.frontmatter).toEqual({ title: 'Test Post' })
+    expect(state.frontmatter.description).toBeUndefined()
+  })
+})

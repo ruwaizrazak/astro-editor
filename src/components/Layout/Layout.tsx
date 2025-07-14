@@ -1,11 +1,11 @@
-import React, { useEffect } from 'react';
-import { useAppStore } from '../../store';
-import { listen } from '@tauri-apps/api/event';
-import { invoke } from '@tauri-apps/api/core';
-import { UnifiedTitleBar } from './UnifiedTitleBar';
-import { Sidebar } from './Sidebar';
-import { MainEditor } from './MainEditor';
-import { FrontmatterPanel } from './FrontmatterPanel';
+import React, { useEffect } from 'react'
+import { useAppStore } from '../../store'
+import { listen } from '@tauri-apps/api/event'
+import { invoke } from '@tauri-apps/api/core'
+import { UnifiedTitleBar } from './UnifiedTitleBar'
+import { Sidebar } from './Sidebar'
+import { MainEditor } from './MainEditor'
+import { FrontmatterPanel } from './FrontmatterPanel'
 
 export const Layout: React.FC = () => {
   const {
@@ -19,7 +19,7 @@ export const Layout: React.FC = () => {
     toggleSidebar,
     toggleFrontmatterPanel,
     loadPersistedProject,
-  } = useAppStore();
+  } = useAppStore()
 
   // macOS keyboard shortcuts
   useEffect(() => {
@@ -28,28 +28,28 @@ export const Layout: React.FC = () => {
       if (e.metaKey) {
         switch (e.key) {
           case 's':
-            e.preventDefault();
+            e.preventDefault()
             // Cmd+S: Save File
             if (currentFile && isDirty) {
-              void saveFile();
+              void saveFile()
             }
-            break;
+            break
           case '1':
-            e.preventDefault();
+            e.preventDefault()
             // Cmd+1: Toggle Sidebar
-            toggleSidebar();
-            break;
+            toggleSidebar()
+            break
           case '2':
-            e.preventDefault();
+            e.preventDefault()
             // Cmd+2: Toggle Frontmatter Panel
-            toggleFrontmatterPanel();
-            break;
+            toggleFrontmatterPanel()
+            break
         }
       }
-    };
+    }
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
   }, [
     currentFile,
     editorContent,
@@ -57,52 +57,54 @@ export const Layout: React.FC = () => {
     saveFile,
     toggleSidebar,
     toggleFrontmatterPanel,
-  ]);
+  ])
 
   // Load persisted project on app start
   useEffect(() => {
-    console.log('=== APP INITIALIZATION ===');
-    console.log('Loading persisted project...');
-    void loadPersistedProject();
-  }, [loadPersistedProject]);
+    // eslint-disable-next-line no-console
+    console.log('=== APP INITIALIZATION ===')
+    // eslint-disable-next-line no-console
+    console.log('Loading persisted project...')
+    void loadPersistedProject()
+  }, [loadPersistedProject])
 
   // Menu event listeners
   useEffect(() => {
     const handleOpenProject = async () => {
       try {
-        const projectPath = await invoke<string>('select_project_folder');
+        const projectPath = await invoke<string>('select_project_folder')
         if (projectPath) {
-          setProject(projectPath);
+          setProject(projectPath)
         }
       } catch (error) {
         // Handle error in production apps appropriately
         if (import.meta.env.DEV) {
           // eslint-disable-next-line no-console
-          console.error('Failed to open project:', error);
+          console.error('Failed to open project:', error)
         }
       }
-    };
+    }
 
     const unlistenOpenProject = listen('menu-open-project', () => {
-      void handleOpenProject();
-    });
+      void handleOpenProject()
+    })
     const unlistenSave = listen('menu-save', () => {
       if (currentFile && isDirty) {
-        void saveFile();
+        void saveFile()
       }
-    });
-    const unlistenToggleSidebar = listen('menu-toggle-sidebar', toggleSidebar);
+    })
+    const unlistenToggleSidebar = listen('menu-toggle-sidebar', toggleSidebar)
     const unlistenToggleFrontmatter = listen(
       'menu-toggle-frontmatter',
       toggleFrontmatterPanel
-    );
+    )
 
     return () => {
-      void unlistenOpenProject.then(fn => fn());
-      void unlistenSave.then(fn => fn());
-      void unlistenToggleSidebar.then(fn => fn());
-      void unlistenToggleFrontmatter.then(fn => fn());
-    };
+      void unlistenOpenProject.then(fn => fn())
+      void unlistenSave.then(fn => fn())
+      void unlistenToggleSidebar.then(fn => fn())
+      void unlistenToggleFrontmatter.then(fn => fn())
+    }
   }, [
     currentFile,
     isDirty,
@@ -110,7 +112,7 @@ export const Layout: React.FC = () => {
     setProject,
     toggleSidebar,
     toggleFrontmatterPanel,
-  ]);
+  ])
 
   return (
     <div className="h-screen w-screen bg-background font-sans flex flex-col rounded-xl overflow-hidden">
@@ -152,5 +154,5 @@ export const Layout: React.FC = () => {
         )}
       </div>
     </div>
-  );
-};
+  )
+}

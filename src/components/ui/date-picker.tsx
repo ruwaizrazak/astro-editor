@@ -1,21 +1,21 @@
-'use client';
+'use client'
 
-import * as React from 'react';
-import { ChevronDownIcon } from 'lucide-react';
+import * as React from 'react'
+import { ChevronDownIcon } from 'lucide-react'
 
-import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
+import { Button } from '@/components/ui/button'
+import { Calendar } from '@/components/ui/calendar'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
+} from '@/components/ui/popover'
 
 interface DatePickerProps {
-  value?: Date;
-  onChange?: (date: Date | undefined) => void;
-  placeholder?: string;
-  className?: string;
+  value?: Date
+  onChange?: (date: Date | undefined) => void
+  placeholder?: string
+  className?: string
 }
 
 function DatePicker({
@@ -24,7 +24,7 @@ function DatePicker({
   placeholder = 'Select date',
   className,
 }: DatePickerProps) {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = React.useState(false)
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -43,13 +43,13 @@ function DatePicker({
           selected={value}
           captionLayout="dropdown"
           onSelect={date => {
-            onChange?.(date);
-            setOpen(false);
+            onChange?.(date)
+            setOpen(false)
           }}
         />
       </PopoverContent>
     </Popover>
-  );
+  )
 }
 
-export { DatePicker };
+export { DatePicker }
