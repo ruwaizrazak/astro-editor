@@ -92,6 +92,32 @@ const FrontmatterField: React.FC<{
 }> = ({ name, label, field, control, onFieldChange, frontmatter }) => {
   const inputType = field ? getInputTypeForZodField(field.type) : 'text'
 
+  // Helper function to get boolean value considering schema defaults
+  const getBooleanValue = React.useCallback(
+    (value: unknown) => {
+      // If field has a value, use it (handling both boolean and string values)
+      if (value !== undefined && value !== null && value !== '') {
+        return value === true || value === 'true'
+      }
+
+      // If no value, check schema default
+      if (field?.default !== undefined) {
+        if (field.default === 'true') {
+          return true
+        }
+        if (field.default === 'false') {
+          return false
+        }
+        // For other values, convert to boolean
+        return Boolean(field.default)
+      }
+
+      // Fallback to false for boolean fields
+      return false
+    },
+    [field?.default]
+  )
+
   return (
     <FormField
       control={control}
@@ -109,7 +135,7 @@ const FrontmatterField: React.FC<{
               </FormLabel>
               <FormControl>
                 <Switch
-                  checked={Boolean(formField.value)}
+                  checked={getBooleanValue(formField.value)}
                   onCheckedChange={checked => {
                     formField.onChange(checked)
                     onFieldChange(name, checked)
@@ -206,19 +232,26 @@ const FrontmatterField: React.FC<{
                     tags={React.useMemo(() => {
                       // Get value directly from frontmatter instead of form
                       const currentValue = frontmatter[name]
-                      if (Array.isArray(currentValue) && 
-                          currentValue.every((item): item is string => typeof item === 'string')) {
-                        return currentValue.map((str, index) => ({ 
-                          id: `${name}-${str}-${index}`, 
-                          text: str 
+                      if (
+                        Array.isArray(currentValue) &&
+                        currentValue.every(
+                          (item): item is string => typeof item === 'string'
+                        )
+                      ) {
+                        return currentValue.map((str, index) => ({
+                          id: `${name}-${str}-${index}`,
+                          text: str,
                         }))
                       }
                       return []
                     }, [frontmatter, name])}
-                    onTagsChange={React.useCallback((tags: Tag[]) => {
-                      const stringArray = tagsToStringArray(tags)
-                      onFieldChange(name, stringArray)
-                    }, [onFieldChange, name])}
+                    onTagsChange={React.useCallback(
+                      (tags: Tag[]) => {
+                        const stringArray = tagsToStringArray(tags)
+                        onFieldChange(name, stringArray)
+                      },
+                      [onFieldChange, name]
+                    )}
                   />
                 ) : (
                   <Input
