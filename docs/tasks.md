@@ -136,42 +136,22 @@ Investigate alternatives to regex-based parsing:
 
 ### Tasks List
 
-- [x] Pull in basic shadui components we're probably gonna need so they're available for us to use (see https://ui.shadcn.com/docs/components). Suggestions:
-  - Badge ✓
-  - Breadcrumb ✓
-  - Card ✓
-  - Checkbox ✓
-  - DatePicker ✓ (created custom component using Calendar + Popover)
-  - Dialog ✓
-  - (maybe) React Hook Form - skipped for now
-  - Input ✓
-  - RadioGroup ✓
-  - (maybe) Scroll-area ✓
-  - Select ✓
-  - Separator ✓
-  - Sonner (for toasts - position them bottom right of editor) ✓
-  - Switch ✓
-  - Textarea ✓
-  - Toggle ✓
-  - Toggle Group ✓
-  - Tooltip ✓
+- [x] Pull in basic shadui components we're probably gonna need so they're available for us to use (see https://ui.shadcn.com/docs/components).
+- [x] Manual refactoring and cleaning up of codebase, upgrade to React 19 and Tailwind 4. Reinstall all shadCN packages manually.
+- [ ] Ensure we are set up for Tailwind v4 in accordance with this guide: https://ui.shadcn.com/docs/tailwind-v4
+- [ ] Bug: When saving, the whole app refreshes back to its initial state (but the save works)
+- [ ] Bug: When saving changes to frontmatter, the frontmatter is reordered in the markdown docs. The easiest solution here is to ensure it is always ordered as per the order in the schema, with any extra fields not in the schema in their original order.
 - [x] Refine frontmatter sidebar panel UI
-  - [x] Use shadcn components ✓
-  - [x] Title field: auto-growing input with larger text ✓ (AutoGrowingInput component)
-  - [x] Description field: auto-resizing textarea ✓ (Enhanced shadcn Textarea with dynamic height)
-  - [x] Boolean fields: Switch components positioned right of label ✓
-  - [x] Date fields: Custom DatePicker with Calendar + Popover ✓
-  - [x] Array/Tags fields: TagsInput with visual badges and add/remove ✓
-  - [x] Error states: Red borders on focused invalid fields ✓
-  - [x] Removed optional labels, kept only required field asterisks ✓
-  - [x] Added comprehensive test coverage for new components ✓
-  - [x] Removed Card wrapper from empty states (no drop shadows) ✓
-  - [x] Fixed description field to use native shadcn Textarea auto-grow ✓
-  - [x] Removed "Enabled/Disabled" text from boolean switches ✓
-  - [x] Switch toggles now right-aligned without extra text ✓
+  - [x] Use shadcn components and refactor to use the shadcn Form structures
+  - [ ] Remove the header completely - we don't need it (frontmatter using X schema)
+  - [ ] If title field exists, make it a slightly bigger text size
+  - [ ] Ensure the switches work properly with the labels - the labels for these should not be above the input but next to them. Likle in most settings apps.
+  - [ ] The two textareas do not expand vetically with their content. I think this should be the default behaviour of shadcn's <Textarea> so let's work out what's preventing it working.
+  - [ ] Add a way to clear datepicker fields - currently if a date is set it cannot be removed.
+  - [ ] Implement https://github.com/JaleelB/emblor for handling array fields. Make it work with the latest tailwind and shadcn if needed (more at https://emblor.jaleelbennett.com/introduction).
+  - [ ] Platform is an enum field in the astro schema. So it shuold render a dropdown not a textbox. The dropdown should have a blank option which removes the property (same behavior as blank fields for other things.)
 - [ ] Left sidebar UI improvements
-  - [ ] Consider rebuilding the left sidebar with shadcn's sidebar components (see https://ui.shadcn.com/docs/components/sidebar).
-  - [ ] The sidebar header "Collections" should only say "Collections" when not inside a collection. Once the user has clicked into a collection it should use the name of the collection, capitalised. Eg "Articles" or "Notes". When inside a collection there should be a back arrow icon before the collection name which takes you back up to the collections list. We can then remove everything bar the list of items in the collection from the scrollable area of the sidebar. We can maybe use Shadcn's sidebar patterns to make this work a bit better.
+  - [ ] Completely rebuild the left sidebar with shadcn's components (see https://ui.shadcn.com/docs/components/sidebar). The sidebar header "Collections" should only say "Collections" when not inside a collection. Once the user has clicked into a collection it should use the name of the collection, capitalised. Eg "Articles" or "Notes". When inside a collection there should be a back arrow which takes you back up to the collections list. We can then remove everything bar the list of items in the collection from the scrollable area of the sidebar. We can maybe use Shadcn's sidebar patterns to make this UI work a bit better.
   - [ ] Each content item in the left sidebar should display:
     - Title: use the "title" frontmatter field if it exists, otherwise use the filename
     - Filename (small, subdued, in monospace font)
@@ -183,11 +163,10 @@ Investigate alternatives to regex-based parsing:
 - [ ] Improve the dummy data in `dummy-astro-project` so its's easier for us to test (both manually and automated):
   - Keep a few of the real examples and the styleguides but clear out some of theother stuff.
   - Add some more dummy content pieces into the two collections with differring frontmatter, content, filename formats etc. Ensure all features of (GitHub-flavoured) markdown are present so we can easily test the markdown editor later on. Maybe add another collection? Do not change the `notes` or `articles` collection schemas in `content.config.json` - they are exact copies of the schema for my personal blog.
-- [ ] Review all React code for opportunities to extract components. Refactor as needed.
-- [ ] Review all typescript code for opportunities to leverage typescript for better type safety in our front-end - are there opportunities to create custom types for things like `Collection`, `Project`, `Document`, `FrontMatterField` etc **without overcomplicateing the codebase**.
+- [ ] Review all React code for opportunities to extract into reusable components. Refactor as needed.
+- [ ] Review all typescript code to ensure we're making full use of the various types and interfaces we've defined in `store/index.ts` and elsewhere. Can we improve simplicity and type safety elsewhere in the app?
 - [ ] Review our approach to parsing `content.config.js` - We currently use RegEx, but if we're able to execute JS/TS in the compiled Tauri app it may be possible to use `zod` to read and understand the schema in a more robust/efficient/safe way. Could we use the md/mdx files and zon schemas to creat our own typesafe objects, which our UI components can read? This would probably involve the the rust backend talking more with the TS front-end etc.
-- [ ] Rework (or add to) the tests so they actually test all the weird little bits of business logic we've now got in our code. We could have the tests try to a couple of different dummy `content.config.json` and `content/[collection]` directories. Our tests must encode our business logic effectively.
-- [ ] Refactor the `npm run` commands in `package.json` so there is consistency in their naming etc.
+- [ ] Rework (or add to) the tests so they actually test all the weird little bits of business logic we've now got in our code. We could have the tests try to a couple of different dummy `content.config.json` and `content/[collection]` directories. Our tests must encode our business logic effectively and not be over-bloated testing obvious things.
 - [ ] Update `CLAUDE.md` with clear descriptions of any new design patterns etc we have introduced, current project structure, examples, npm commands etc.
 
 ---
