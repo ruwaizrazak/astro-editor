@@ -44,6 +44,7 @@ interface AppState {
   rawFrontmatter: string; // Original frontmatter string
   imports: string; // MDX imports (hidden from editor)
   isDirty: boolean;
+  isSaving: boolean; // Flag to track internal saves
 
   // Actions
   setProject: (path: string) => void;
@@ -75,6 +76,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   rawFrontmatter: '',
   imports: '',
   isDirty: false,
+  isSaving: false,
 
   // Actions
   setProject: (path: string) => {
@@ -176,6 +178,9 @@ export const useAppStore = create<AppState>((set, get) => ({
     const { currentFile, editorContent, frontmatter, imports, collections } = get();
     if (!currentFile) return;
 
+    // Set saving flag to prevent file watcher from refreshing
+    set({ isSaving: true });
+
     // Validate frontmatter before saving
     const currentCollection = collections.find(c => c.name === currentFile.collection);
     const schema = currentCollection?.schema ? parseSchemaJson(currentCollection.schema) : null;
@@ -196,21 +201,32 @@ export const useAppStore = create<AppState>((set, get) => ({
         // eslint-disable-next-line no-console
         console.error('Cannot save: Validation errors:', validationErrors);
         // TODO: Show user-friendly error dialog instead of console.error
+        set({ isSaving: false });
         return;
       }
     }
 
     try {
+      // Extract schema field order if available
+      const schemaFieldOrder = schema?.fields.map(field => field.name) || null;
+      
       await invoke('save_markdown_content', {
         filePath: currentFile.path,
         frontmatter,
         content: editorContent,
         imports,
+        schemaFieldOrder,
       });
       set({ isDirty: false });
+      
+      // Clear saving flag after a brief delay to allow file watcher to settle
+      setTimeout(() => {
+        set({ isSaving: false });
+      }, 500);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Failed to save file:', error);
+      set({ isSaving: false });
     }
   },
 
@@ -246,8 +262,14 @@ export const useAppStore = create<AppState>((set, get) => ({
         // eslint-disable-next-line no-console
         console.log('File changed:', event.payload);
 
+        // Skip refresh if we're currently saving (internal change)
+        const { isSaving, selectedCollection } = get();
+        if (isSaving) {
+          console.log('Skipping file watcher refresh during internal save');
+          return;
+        }
+
         // Refresh collections if a file was changed
-        const { selectedCollection } = get();
         if (selectedCollection) {
           void get().loadCollections();
           // Reload files for current collection

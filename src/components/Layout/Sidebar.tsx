@@ -28,10 +28,10 @@ export const Sidebar: React.FC = () => {
           onClick={() => void handleOpenProject()}
           variant="ghost"
           size="sm"
-          className="h-6 w-6 p-0"
+          className="size-6 p-0"
           title="Open Project"
         >
-          <FolderOpen className="h-4 w-4" />
+          <FolderOpen className="size-4" />
         </Button>
         <span className="text-sm font-medium text-foreground">Collections</span>
       </div>

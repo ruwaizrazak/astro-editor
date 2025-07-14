@@ -29,7 +29,7 @@ export const FilesList: React.FC = () => {
         className="justify-start w-full h-auto px-4 py-2 text-xs text-primary border-b border-border/50 rounded-none hover:bg-accent/50"
         onClick={handleBackClick}
       >
-        <ArrowLeft className="h-3 w-3 mr-1" />
+        <ArrowLeft className="size-3 mr-1" />
         Back to Collections
       </Button>
 

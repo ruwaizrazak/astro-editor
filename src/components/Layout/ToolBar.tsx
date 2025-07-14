@@ -39,20 +39,20 @@ export const ToolBar: React.FC = () => {
           variant={isDirty ? 'default' : 'ghost'}
           size="sm"
           disabled={!currentFile || !isDirty}
-          className="h-8 w-8 p-0"
+          className="size-8 p-0"
           title={`Save${isDirty ? ' (unsaved changes)' : ''}`}
         >
-          <Save className="h-4 w-4" />
+          <Save className="size-4" />
         </Button>
         {!frontmatterPanelVisible && (
           <Button
             onClick={toggleFrontmatterPanel}
             variant="ghost"
             size="sm"
-            className="h-8 w-8 p-0"
+            className="size-8 p-0"
             title="Open Frontmatter Panel"
           >
-            <PanelRight className="h-4 w-4" />
+            <PanelRight className="size-4" />
           </Button>
         )}
       </div>

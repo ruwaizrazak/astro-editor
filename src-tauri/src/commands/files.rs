@@ -70,9 +70,10 @@ pub async fn save_markdown_content(
     frontmatter: HashMap<String, Value>,
     content: String,
     imports: String,
+    schema_field_order: Option<Vec<String>>,
 ) -> Result<(), String> {
     let new_content =
-        rebuild_markdown_with_frontmatter_and_imports(&frontmatter, &imports, &content)?;
+        rebuild_markdown_with_frontmatter_and_imports_ordered(&frontmatter, &imports, &content, schema_field_order)?;
     std::fs::write(&file_path, new_content).map_err(|e| format!("Failed to write file: {e}"))
 }
 
@@ -268,28 +269,59 @@ fn rebuild_markdown_with_frontmatter_and_imports(
     imports: &str,
     content: &str,
 ) -> Result<String, String> {
+    rebuild_markdown_with_frontmatter_and_imports_ordered(frontmatter, imports, content, None)
+}
+
+fn rebuild_markdown_with_frontmatter_and_imports_ordered(
+    frontmatter: &HashMap<String, Value>,
+    imports: &str,
+    content: &str,
+    schema_field_order: Option<Vec<String>>,
+) -> Result<String, String> {
     let mut result = String::new();
 
     // Add frontmatter if present
     if !frontmatter.is_empty() {
         result.push_str("---\n");
 
-        for (key, value) in frontmatter {
-            let value_str = match value {
-                Value::String(s) => {
-                    // Quote strings that contain special characters or spaces
-                    if s.contains(' ') || s.contains(':') || s.contains('\n') {
-                        format!("\"{}\"", s.replace('"', "\\\""))
-                    } else {
-                        s.clone()
-                    }
-                }
-                Value::Bool(b) => b.to_string(),
-                Value::Number(n) => n.to_string(),
-                _ => format!("\"{value}\""),
-            };
+        // Create an ordered list of keys
+        let mut ordered_keys = Vec::new();
+        let mut remaining_keys: std::collections::HashSet<String> = frontmatter.keys().cloned().collect();
 
-            result.push_str(&format!("{key}: {value_str}\n"));
+        // First, add keys in schema order (if provided)
+        if let Some(schema_order) = schema_field_order {
+            for key in schema_order {
+                if frontmatter.contains_key(&key) {
+                    ordered_keys.push(key.clone());
+                    remaining_keys.remove(&key);
+                }
+            }
+        }
+
+        // Then add any remaining keys in alphabetical order to maintain consistency
+        let mut remaining_sorted: Vec<String> = remaining_keys.into_iter().collect();
+        remaining_sorted.sort();
+        ordered_keys.extend(remaining_sorted);
+
+        // Write frontmatter in the determined order
+        for key in ordered_keys {
+            if let Some(value) = frontmatter.get(&key) {
+                let value_str = match value {
+                    Value::String(s) => {
+                        // Quote strings that contain special characters or spaces
+                        if s.contains(' ') || s.contains(':') || s.contains('\n') {
+                            format!("\"{}\"", s.replace('"', "\\\""))
+                        } else {
+                            s.clone()
+                        }
+                    }
+                    Value::Bool(b) => b.to_string(),
+                    Value::Number(n) => n.to_string(),
+                    _ => format!("\"{value}\""),
+                };
+
+                result.push_str(&format!("{key}: {value_str}\n"));
+            }
         }
 
         result.push_str("---\n");

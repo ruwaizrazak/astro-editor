@@ -34,7 +34,7 @@ function DatePicker({
           className={`w-full justify-between font-normal ${className || ''}`}
         >
           {value ? value.toLocaleDateString() : placeholder}
-          <ChevronDownIcon className="h-4 w-4" />
+          <ChevronDownIcon className="size-4" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto overflow-hidden p-0" align="start">

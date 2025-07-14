@@ -78,13 +78,13 @@ export const UnifiedTitleBar: React.FC = () => {
           onClick={toggleSidebar}
           variant="ghost"
           size="sm"
-          className="h-7 w-7 p-0"
+          className="size-7 p-0"
           title={sidebarVisible ? 'Close Sidebar' : 'Open Sidebar'}
         >
           {sidebarVisible ? (
-            <PanelLeftClose className="h-4 w-4" />
+            <PanelLeftClose className="size-4" />
           ) : (
-            <PanelLeft className="h-4 w-4" />
+            <PanelLeft className="size-4" />
           )}
         </Button>
       </div>
@@ -113,10 +113,10 @@ export const UnifiedTitleBar: React.FC = () => {
           variant={isDirty ? 'default' : 'ghost'}
           size="sm"
           disabled={!currentFile || !isDirty}
-          className="h-7 w-7 p-0"
+          className="size-7 p-0"
           title={`Save${isDirty ? ' (unsaved changes)' : ''}`}
         >
-          <Save className="h-4 w-4" />
+          <Save className="size-4" />
         </Button>
 
         {/* Right sidebar toggle - no drag region */}
@@ -124,7 +124,7 @@ export const UnifiedTitleBar: React.FC = () => {
           onClick={toggleFrontmatterPanel}
           variant="ghost"
           size="sm"
-          className="h-7 w-7 p-0"
+          className="size-7 p-0"
           title={
             frontmatterPanelVisible
               ? 'Close Frontmatter Panel'
@@ -132,9 +132,9 @@ export const UnifiedTitleBar: React.FC = () => {
           }
         >
           {frontmatterPanelVisible ? (
-            <PanelRightClose className="h-4 w-4" />
+            <PanelRightClose className="size-4" />
           ) : (
-            <PanelRight className="h-4 w-4" />
+            <PanelRight className="size-4" />
           )}
         </Button>
       </div>
