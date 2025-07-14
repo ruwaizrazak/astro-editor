@@ -38,12 +38,16 @@ const StringField: React.FC<{
   label: string
   placeholder?: string
   className?: string
-}> = ({ name, label, placeholder, className }) => {
+  required?: boolean
+}> = ({ name, label, placeholder, className, required }) => {
   const { frontmatter, updateFrontmatterField } = useAppStore()
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium">{label}</label>
+      <label className="text-sm font-medium">
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+      </label>
       <Input
         type="text"
         placeholder={placeholder || `Enter ${label.toLowerCase()}...`}
@@ -62,12 +66,24 @@ const TextareaField: React.FC<{
   className?: string
   minRows?: number
   maxRows?: number
-}> = ({ name, label, placeholder, className, minRows = 2, maxRows = 6 }) => {
+  required?: boolean
+}> = ({
+  name,
+  label,
+  placeholder,
+  className,
+  minRows = 2,
+  maxRows = 6,
+  required,
+}) => {
   const { frontmatter, updateFrontmatterField } = useAppStore()
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium">{label}</label>
+      <label className="text-sm font-medium">
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+      </label>
       <AutoExpandingTextarea
         placeholder={placeholder || `Enter ${label.toLowerCase()}...`}
         className={className}
@@ -84,12 +100,16 @@ const NumberField: React.FC<{
   name: string
   label: string
   placeholder?: string
-}> = ({ name, label, placeholder }) => {
+  required?: boolean
+}> = ({ name, label, placeholder, required }) => {
   const { frontmatter, updateFrontmatterField } = useAppStore()
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium">{label}</label>
+      <label className="text-sm font-medium">
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+      </label>
       <Input
         type="number"
         placeholder={placeholder || `Enter ${label.toLowerCase()}...`}
@@ -152,12 +172,16 @@ const BooleanField: React.FC<{
 const DateField: React.FC<{
   name: string
   label: string
-}> = ({ name, label }) => {
+  required?: boolean
+}> = ({ name, label, required }) => {
   const { frontmatter, updateFrontmatterField } = useAppStore()
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium">{label}</label>
+      <label className="text-sm font-medium">
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+      </label>
       <DatePicker
         value={
           frontmatter[name] && typeof frontmatter[name] === 'string'
@@ -181,12 +205,16 @@ const EnumField: React.FC<{
   name: string
   label: string
   options: string[]
-}> = ({ name, label, options }) => {
+  required?: boolean
+}> = ({ name, label, options, required }) => {
   const { frontmatter, updateFrontmatterField } = useAppStore()
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium">{label}</label>
+      <label className="text-sm font-medium">
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+      </label>
       <Select
         value={
           frontmatter[name] && typeof frontmatter[name] === 'string'
@@ -220,7 +248,8 @@ const EnumField: React.FC<{
 const ArrayField: React.FC<{
   name: string
   label: string
-}> = ({ name, label }) => {
+  required?: boolean
+}> = ({ name, label, required }) => {
   const { frontmatter, updateFrontmatterField } = useAppStore()
 
   // Convert frontmatter array to tags
@@ -236,7 +265,10 @@ const ArrayField: React.FC<{
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium">{label}</label>
+      <label className="text-sm font-medium">
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+      </label>
       <TagInput
         placeholder={`Enter ${label.toLowerCase()}...`}
         tags={tags}
@@ -259,21 +291,29 @@ const FrontmatterField: React.FC<{
   field?: ZodField | undefined
 }> = ({ name, label, field }) => {
   const inputType = field ? getInputTypeForZodField(field.type) : 'text'
+  const required = field ? !field.optional : false
 
   if (inputType === 'checkbox' || field?.type === 'Boolean') {
     return <BooleanField name={name} label={label} field={field} />
   }
 
   if (inputType === 'number' || field?.type === 'Number') {
-    return <NumberField name={name} label={label} />
+    return <NumberField name={name} label={label} required={required} />
   }
 
   if (inputType === 'date' || field?.type === 'Date') {
-    return <DateField name={name} label={label} />
+    return <DateField name={name} label={label} required={required} />
   }
 
   if (field?.type === 'Enum' && field?.options) {
-    return <EnumField name={name} label={label} options={field.options} />
+    return (
+      <EnumField
+        name={name}
+        label={label}
+        options={field.options}
+        required={required}
+      />
+    )
   }
 
   if (label.toLowerCase() === 'title') {
@@ -284,20 +324,29 @@ const FrontmatterField: React.FC<{
         className="text-lg font-bold"
         minRows={1}
         maxRows={3}
+        required={required}
       />
     )
   }
 
   if (label.toLowerCase() === 'description') {
-    return <TextareaField name={name} label={label} minRows={3} maxRows={16} />
+    return (
+      <TextareaField
+        name={name}
+        label={label}
+        minRows={3}
+        maxRows={16}
+        required={required}
+      />
+    )
   }
 
   if (field?.type === 'Array') {
-    return <ArrayField name={name} label={label} />
+    return <ArrayField name={name} label={label} required={required} />
   }
 
   // Default to string field
-  return <StringField name={name} label={label} />
+  return <StringField name={name} label={label} required={required} />
 }
 
 export const FrontmatterPanel: React.FC = () => {

@@ -190,37 +190,46 @@ fn parse_collection_definitions(
     println!("Collections block: {collections_block}");
 
     // For new format, extract collection names from export block: { articles, notes }
-    let export_names_re = Regex::new(r"\{\s*([^}]+)\s*\}").unwrap();
+    // This regex matches only simple name lists, not defineCollection definitions
+    let export_names_re =
+        Regex::new(r"\{\s*([a-zA-Z_][a-zA-Z0-9_]*(?:\s*,\s*[a-zA-Z_][a-zA-Z0-9_]*)*)\s*\}")
+            .unwrap();
 
     if let Some(cap) = export_names_re.captures(collections_block) {
         let names_str = cap.get(1).unwrap().as_str();
-        println!("Found collection names: {names_str}");
+        // Additional check: if the names_str contains "defineCollection" or ":", it's the old format
+        if !names_str.contains("defineCollection") && !names_str.contains(":") {
+            println!("Found collection names: {names_str}");
 
-        // Split by comma and clean up names
-        for name in names_str.split(',') {
-            let collection_name = name.trim();
-            println!("Processing collection: {collection_name}");
+            // Split by comma and clean up names
+            for name in names_str.split(',') {
+                let collection_name = name.trim();
+                println!("Processing collection: {collection_name}");
 
-            let collection_path = content_dir.join(collection_name);
-            println!("Collection path: {collection_path:?}");
+                let collection_path = content_dir.join(collection_name);
+                println!("Collection path: {collection_path:?}");
 
-            // Only include collections that have actual directories
-            if collection_path.exists() && collection_path.is_dir() {
-                println!("Directory exists for collection: {collection_name}");
-                let mut collection = Collection::new(collection_name.to_string(), collection_path);
+                // Only include collections that have actual directories
+                if collection_path.exists() && collection_path.is_dir() {
+                    println!("Directory exists for collection: {collection_name}");
+                    let mut collection =
+                        Collection::new(collection_name.to_string(), collection_path);
 
-                // For new format, we need to look in the full content for the schema
-                if let Some(schema) = extract_basic_schema(full_content, collection_name) {
-                    println!("Found schema for collection: {collection_name}");
-                    collection.schema = Some(schema);
+                    // For new format, we need to look in the full content for the schema
+                    if let Some(schema) = extract_basic_schema(full_content, collection_name) {
+                        println!("Found schema for collection: {collection_name}");
+                        collection.schema = Some(schema);
+                    } else {
+                        println!("No schema found for collection: {collection_name}");
+                    }
+
+                    collections.push(collection);
                 } else {
-                    println!("No schema found for collection: {collection_name}");
+                    println!("Directory does not exist for collection: {collection_name}");
                 }
-
-                collections.push(collection);
-            } else {
-                println!("Directory does not exist for collection: {collection_name}");
             }
+        } else {
+            println!("Detected old format, falling back to old parsing logic");
         }
     } else {
         // Fallback to old format: collection_name: defineCollection(...)
@@ -252,11 +261,18 @@ fn parse_collection_definitions(
 fn extract_basic_schema(content: &str, collection_name: &str) -> Option<String> {
     println!("=== EXTRACTING SCHEMA FOR {collection_name} ===");
 
-    // First, find the defineCollection block for this collection
-    let collection_pattern = format!(r"const\s+{collection_name}\s*=\s*defineCollection\s*\(");
-    let collection_re = Regex::new(&collection_pattern).unwrap();
+    // Try both formats:
+    // 1. const blog = defineCollection(...)
+    // 2. blog: defineCollection(...)
+    let const_pattern = format!(r"const\s+{collection_name}\s*=\s*defineCollection\s*\(");
+    let object_pattern = format!(r"{collection_name}\s*:\s*defineCollection\s*\(");
 
-    if let Some(start_match) = collection_re.find(content) {
+    let const_re = Regex::new(&const_pattern).unwrap();
+    let object_re = Regex::new(&object_pattern).unwrap();
+
+    let start_match = const_re.find(content).or_else(|| object_re.find(content));
+
+    if let Some(start_match) = start_match {
         println!(
             "Found collection definition starting at: {}",
             start_match.start()
@@ -446,12 +462,12 @@ fn parse_schema_fields(schema_text: &str) -> Option<String> {
                     "optional": f.optional,
                     "default": f.default_value
                 });
-                
+
                 // Add enum options if field is an enum
                 if let ZodFieldType::Enum(options) = &f.field_type {
                     field_json["options"] = serde_json::json!(options);
                 }
-                
+
                 field_json
             }).collect::<Vec<_>>()
         });
@@ -466,19 +482,14 @@ fn parse_schema_fields(schema_text: &str) -> Option<String> {
 fn extract_enum_values(field_definition: &str) -> Vec<String> {
     // Extract values from z.enum(['value1', 'value2']) or z.enum(["value1", "value2"])
     let enum_re = Regex::new(r"z\.enum\s*\(\s*\[\s*([^\]]+)\s*\]\s*\)").unwrap();
-    
+
     if let Some(cap) = enum_re.captures(field_definition) {
         let values_str = cap.get(1).unwrap().as_str();
-        
+
         // Split by comma and clean up quotes
         values_str
             .split(',')
-            .map(|v| {
-                v.trim()
-                    .trim_matches('"')
-                    .trim_matches('\'')
-                    .to_string()
-            })
+            .map(|v| v.trim().trim_matches('"').trim_matches('\'').to_string())
             .filter(|v| !v.is_empty())
             .collect()
     } else {

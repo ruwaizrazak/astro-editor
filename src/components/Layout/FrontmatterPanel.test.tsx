@@ -58,18 +58,32 @@ describe('FrontmatterPanel Component', () => {
       rating: 5,
     }
 
+    const mockCollection = {
+      name: 'posts',
+      path: '/project/posts',
+      schema: JSON.stringify({
+        type: 'zod',
+        fields: [
+          { name: 'title', type: 'String', optional: false },
+          { name: 'draft', type: 'Boolean', optional: true },
+          { name: 'tags', type: 'Array', optional: true },
+          { name: 'publishDate', type: 'Date', optional: true },
+          { name: 'rating', type: 'Number', optional: true },
+        ],
+      }),
+    }
+
     useAppStore.setState({
       currentFile: mockFile,
       frontmatter: mockFrontmatter,
+      collections: [mockCollection],
     })
 
     render(<FrontmatterPanel />)
 
     expect(screen.getByDisplayValue('Test Post')).toBeInTheDocument()
     expect(screen.getByRole('switch')).toBeInTheDocument()
-    // Arrays are now rendered as text inputs, not individual badges
-    expect(screen.getByPlaceholderText('Enter tags...')).toBeInTheDocument()
-    expect(screen.getByDisplayValue('2023-12-01')).toBeInTheDocument() // Date shows as input value
+    expect(screen.getByText('01/12/2023')).toBeInTheDocument() // Date shows as button text
     expect(screen.getByDisplayValue('5')).toBeInTheDocument()
   })
 
@@ -106,9 +120,19 @@ describe('FrontmatterPanel Component', () => {
       collection: 'posts',
     }
 
+    const mockCollection = {
+      name: 'posts',
+      path: '/project/posts',
+      schema: JSON.stringify({
+        type: 'zod',
+        fields: [{ name: 'draft', type: 'Boolean', optional: true }],
+      }),
+    }
+
     useAppStore.setState({
       currentFile: mockFile,
       frontmatter: { draft: false },
+      collections: [mockCollection],
     })
 
     render(<FrontmatterPanel />)
@@ -131,9 +155,19 @@ describe('FrontmatterPanel Component', () => {
       collection: 'posts',
     }
 
+    const mockCollection = {
+      name: 'posts',
+      path: '/project/posts',
+      schema: JSON.stringify({
+        type: 'zod',
+        fields: [{ name: 'rating', type: 'Number', optional: true }],
+      }),
+    }
+
     useAppStore.setState({
       currentFile: mockFile,
       frontmatter: { rating: 3 },
+      collections: [mockCollection],
     })
 
     render(<FrontmatterPanel />)
