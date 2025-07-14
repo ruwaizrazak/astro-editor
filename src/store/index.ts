@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
+import { parseSchemaJson, validateFieldValue } from '../lib/schema';
 
 export interface FileEntry {
   id: string;
@@ -57,6 +58,7 @@ interface AppState {
   setSelectedCollection: (collection: string | null) => void;
   startFileWatcher: () => Promise<void>;
   stopFileWatcher: () => Promise<void>;
+  loadPersistedProject: () => Promise<void>;
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -77,18 +79,41 @@ export const useAppStore = create<AppState>((set, get) => ({
   // Actions
   setProject: (path: string) => {
     set({ projectPath: path });
+    // Persist project path to localStorage
+    try {
+      localStorage.setItem('astro-editor-last-project', path);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.warn('Failed to persist project path:', error);
+    }
     void get().loadCollections();
     void get().startFileWatcher();
   },
 
   loadCollections: async () => {
     const { projectPath } = get();
-    if (!projectPath) return;
+    console.log('=== LOADING COLLECTIONS ===');
+    console.log('Project path:', projectPath);
+    
+    if (!projectPath) {
+      console.log('No project path set, skipping collection load');
+      return;
+    }
 
     try {
+      console.log('Scanning project for collections...');
       const collections = await invoke<Collection[]>('scan_project', {
         projectPath,
       });
+      console.log('Collections loaded:', collections);
+      console.log('Collection details:', collections.map(c => ({
+        name: c.name,
+        path: c.path,
+        hasSchema: !!c.schema,
+        schemaLength: c.schema?.length || 0,
+        schemaPreview: c.schema?.substring(0, 100) + '...'
+      })));
+      
       set({ collections });
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -109,6 +134,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   openFile: async (file: FileEntry) => {
+    console.log('=== OPENING FILE ===');
+    console.log('File:', file);
+    
     try {
       const markdownContent = await invoke<MarkdownContent>(
         'parse_markdown_content',
@@ -116,6 +144,13 @@ export const useAppStore = create<AppState>((set, get) => ({
           filePath: file.path,
         }
       );
+      console.log('Parsed markdown content:', {
+        frontmatter: markdownContent.frontmatter,
+        contentLength: markdownContent.content.length,
+        rawFrontmatterLength: markdownContent.raw_frontmatter.length,
+        importsLength: markdownContent.imports.length,
+      });
+      
       set({
         currentFile: file,
         editorContent: markdownContent.content,
@@ -124,6 +159,13 @@ export const useAppStore = create<AppState>((set, get) => ({
         imports: markdownContent.imports,
         isDirty: false,
       });
+      
+      // Log state after setting
+      const { collections } = get();
+      const currentCollection = collections.find(c => c.name === file.collection);
+      console.log('Current collection after opening file:', currentCollection);
+      console.log('Schema available:', !!currentCollection?.schema);
+      
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Failed to open file:', error);
@@ -131,8 +173,32 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   saveFile: async () => {
-    const { currentFile, editorContent, frontmatter, imports } = get();
+    const { currentFile, editorContent, frontmatter, imports, collections } = get();
     if (!currentFile) return;
+
+    // Validate frontmatter before saving
+    const currentCollection = collections.find(c => c.name === currentFile.collection);
+    const schema = currentCollection?.schema ? parseSchemaJson(currentCollection.schema) : null;
+    
+    if (schema) {
+      const validationErrors: string[] = [];
+      
+      // Check all schema fields for validation errors
+      schema.fields.forEach(field => {
+        const value = frontmatter[field.name];
+        const error = validateFieldValue(field, value);
+        if (error) {
+          validationErrors.push(error);
+        }
+      });
+      
+      if (validationErrors.length > 0) {
+        // eslint-disable-next-line no-console
+        console.error('Cannot save: Validation errors:', validationErrors);
+        // TODO: Show user-friendly error dialog instead of console.error
+        return;
+      }
+    }
 
     try {
       await invoke('save_markdown_content', {
@@ -209,6 +275,36 @@ export const useAppStore = create<AppState>((set, get) => ({
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Failed to stop file watcher:', error);
+    }
+  },
+
+  loadPersistedProject: async () => {
+    try {
+      const savedPath = localStorage.getItem('astro-editor-last-project');
+      console.log('Persisted project path from localStorage:', savedPath);
+      
+      if (savedPath) {
+        // Verify the project path still exists before setting it
+        try {
+          console.log('Verifying project path exists...');
+          const collections = await invoke('scan_project', { projectPath: savedPath });
+          console.log('Project scan successful, collections found:', collections);
+          
+          // If no error, the project path is valid, so restore it
+          console.log('Setting project path:', savedPath);
+          get().setProject(savedPath);
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.warn('Saved project path no longer valid:', savedPath, error);
+          // Remove invalid path from storage
+          localStorage.removeItem('astro-editor-last-project');
+        }
+      } else {
+        console.log('No persisted project path found');
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.warn('Failed to load persisted project:', error);
     }
   },
 }));

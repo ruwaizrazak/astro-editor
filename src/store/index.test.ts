@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useAppStore } from './index';
 
 describe('App Store', () => {
@@ -15,6 +15,8 @@ describe('App Store', () => {
       editorContent: '',
       isDirty: false,
     });
+    // Clear localStorage
+    localStorage.clear();
     globalThis.mockTauri.reset();
   });
 
@@ -74,5 +76,69 @@ describe('App Store', () => {
 
     setSelectedCollection(null);
     expect(useAppStore.getState().selectedCollection).toBeNull();
+  });
+
+  it('should persist project path to localStorage when setting project', () => {
+    const testPath = '/test/project';
+    
+    useAppStore.getState().setProject(testPath);
+    
+    expect(localStorage.getItem('astro-editor-last-project')).toBe(testPath);
+    expect(useAppStore.getState().projectPath).toBe(testPath);
+  });
+
+  it('should handle localStorage errors gracefully when setting project', () => {
+    const testPath = '/test/project';
+    // Mock localStorage to throw an error
+    const originalSetItem = localStorage.setItem;
+    localStorage.setItem = vi.fn(() => {
+      throw new Error('Storage quota exceeded');
+    });
+    
+    // Should not throw error
+    expect(() => useAppStore.getState().setProject(testPath)).not.toThrow();
+    expect(useAppStore.getState().projectPath).toBe(testPath);
+    
+    // Restore original function
+    localStorage.setItem = originalSetItem;
+  });
+
+  it('should load persisted project when valid', async () => {
+    const testPath = '/test/valid/project';
+    localStorage.setItem('astro-editor-last-project', testPath);
+    
+    // Mock successful project scan
+    globalThis.mockTauri.invoke.mockResolvedValue([]);
+    
+    await useAppStore.getState().loadPersistedProject();
+    
+    expect(useAppStore.getState().projectPath).toBe(testPath);
+    expect(globalThis.mockTauri.invoke).toHaveBeenCalledWith('scan_project', {
+      projectPath: testPath,
+    });
+  });
+
+  it('should remove invalid persisted project path', async () => {
+    const testPath = '/test/invalid/project';
+    localStorage.setItem('astro-editor-last-project', testPath);
+    
+    // Mock failed project scan
+    globalThis.mockTauri.invoke.mockRejectedValue(new Error('Project not found'));
+    
+    await useAppStore.getState().loadPersistedProject();
+    
+    expect(useAppStore.getState().projectPath).toBeNull();
+    expect(localStorage.getItem('astro-editor-last-project')).toBeNull();
+    expect(globalThis.mockTauri.invoke).toHaveBeenCalledWith('scan_project', {
+      projectPath: testPath,
+    });
+  });
+
+  it('should handle loadPersistedProject when no saved path exists', async () => {
+    localStorage.removeItem('astro-editor-last-project');
+    
+    await useAppStore.getState().loadPersistedProject();
+    
+    expect(useAppStore.getState().projectPath).toBeNull();
   });
 });

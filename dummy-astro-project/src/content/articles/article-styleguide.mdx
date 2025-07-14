@@ -1,0 +1,198 @@
+---
+title: Article Styleguide
+pubDate: 2024-05-01
+cover: ../../assets/articles/styleguide-image.jpg
+coverAlt: Cover Image
+styleguide: true
+---
+
+import { Image, Picture } from 'astro:assets';
+import { Notion, Grid, BookmarkCard, Callout, Embed } from '@components/mdx';
+import image1 from '@assets/articles/styleguide-image.jpg';
+
+This Article Styleguide demonstrates how all key Markdown/MDX features, Astro components, and prose styles render in an Article context. Use it to check typography, component appearance, and real-world content. The first paragraph is intentionally long to show drop cap and first-paragraph styling. This page is a reference for designers, developers, and content authors to see how headings, lists, blockquotes, code, tables, images, embeds, and custom components appear in a real article. For a full component reference, see the [main styleguide](/styleguide/). You'll also find examples of footnotes, abbr, and other advanced markdown features. The goal is to ensure every element looks beautiful, readable, and consistent in the context of long-form writing. Feel free to add new examples as you add new features or components to the site. For more information, see the [main styleguide](/styleguide/).[^intro]
+
+---
+
+## Component Demos
+
+This section demonstrates custom MDX components in context.
+
+### BookmarkCard
+<BookmarkCard url="https://justinjackson.ca/calm-company" />
+<BookmarkCard url="https://dannysmith.notion.site/Meetings-2c4bd8d7ba31427cb1294a008a9df21f" />
+
+### Notion Links in Context
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. <Notion href="https://dannysmith.notion.site/Meetings-2c4bd8d7ba31427cb1294a008a9df21f?pvs=4">Meetings link</Notion> Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. <Notion href="https://dannysmith.notion.site/Meeting-Checkouts-870b7ecca989419b8f0d3047bad89d05?pvs=4">elementum</Notion> Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. <Notion href="https://dannysmith.notion.site/Loom-4a6ebae015494adbbec07bf3f7912b03?pvs=4">consequat</Notion>
+
+### Callout
+<Callout icon="💡" type="blue">
+  Lorem ipsum dolor sit amet consectetur adipisicing elit. Earum hic a dolorem ipsa labore cum.
+</Callout>
+
+### Grid Example
+<Grid columns={2} rows={2} gap="1rem">
+  <Image src={image1} alt="Grid Example 1" height="120" width="200" />
+  <Image src={image1} alt="Grid Example 2" height="120" width="200" />
+  <Image src={image1} alt="Grid Example 3" height="120" width="200" />
+  <Image src={image1} alt="Grid Example 4" height="120" width="200" />
+</Grid>
+
+---
+
+## Images
+
+This section shows different image layouts and treatments.
+
+### A normal image
+<Image src={image1} alt="Example image" />
+
+### A normal image with height and width set
+<Image src={image1} alt="Example image" height="200" width="500" />
+
+### A normal image with a border
+<Image src={image1} alt="Example image" class="border" />
+
+### An image at left-bleed
+<Image src={image1} alt="Example image" class="bleed-left" />
+
+### An image at right-bleed
+<Image src={image1} alt="Example image" class="bleed-right" />
+
+### An image at full-bleed
+<Image src={image1} alt="Example image" class="bleed-full" />
+
+---
+
+## Typography & Inline Styles
+
+This section demonstrates headings, inline styles, and other markdown features.
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque euismod, nisi eu consectetur consectetur, nisl nisi consectetur nisi, euismod euismod nisi nisi euismod.
+
+# Heading One (H1)
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque euismod, nisi eu consectetur consectetur, nisl nisi consectetur nisi, euismod euismod nisi nisi euismod.
+
+## Heading Two (H2)
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque euismod, nisi eu consectetur consectetur, nisl nisi consectetur nisi, euismod euismod nisi nisi euismod.
+
+### Heading Three (H3)
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque euismod, nisi eu consectetur consectetur, nisl nisi consectetur nisi, euismod euismod nisi nisi euismod.
+
+#### Heading Four (H4)
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque euismod, nisi eu consectetur consectetur, nisl nisi consectetur nisi, euismod euismod nisi nisi euismod.
+
+##### Heading Five (H5)
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque euismod, nisi eu consectetur consectetur, nisl nisi consectetur nisi, euismod euismod nisi nisi euismod.
+
+**This is bold text**, ==this is highlighted==, ~~this is strikethrough~~, <u>this is underlined</u>, _this is italic_, and here is some `inline code` all in one sentence for demonstration purposes.
+
+---
+
+## Other Markdown Features
+
+This section shows additional markdown features like superscript, subscript, abbreviation, and horizontal rules.
+
+This is a superscript: 2<sup>nd</sup> and a subscript: H<sub>2</sub>O.
+
+This is an abbreviation: <abbr title="HyperText Markup Language">HTML</abbr>.
+
+---
+
+## Lists
+
+This section demonstrates unordered, ordered, and task lists in context.
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent **sit amet felis** sollicitudin, ullamcorper nunc ac, suscipit metus. Maecenas tempor _nisl non nunc pulvinar_, nec faucibus quam consectetur. Cras commodo eros et magna ornare, non efficitur velit sodales. Aenean rhoncus magna quis ex cursus, in tincidunt tortor egestas. Cras vulputate eu enim eget pulvinar.
+
+- This is a thing which is the first point
+- And another thing which I need to consider where here.
+- And so the cold shrew cried out in alarm, for his twig had forsaken him.
+- Shortly, thus.
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque euismod, nisi eu consectetur consectetur, nisl nisi consectetur nisi, euismod euismod nisi nisi euismod.
+
+1. This is a thing which is the first point
+2. And another [thing](#) which I need to consider where here.
+3. And so the cold shrew cried out in alarm, for his twig had forsaken him.
+4. Shortly, thus.
+
+---
+
+## Task List Example
+
+- [x] Write styleguide intro
+- [x] Add component demos
+- [ ] Polish prose and add more examples
+- [ ] Review for accessibility
+
+---
+
+## Blockquotes
+
+This section demonstrates blockquotes in context.
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque euismod, nisi eu consectetur consectetur, nisl nisi consectetur nisi, euismod euismod nisi nisi euismod.
+
+> Proin non pellentesque felis, et sollicitudin ante. In ultricies lorem magna, eget pretium lacus vestibulum ut. Fusce in interdum sapien - _Socrates_, 1AD
+> Donec feugiat sagittis velit non molestie. Nullam mattis erat eget elit faucibus, ac tincidunt ligula bibendum. Suspendisse potenti. Nunc et aliquet nunc. Proin ullamcorper justo id scelerisque efficitur. Proin non pellentesque felis, et sollicitudin ante. In ultricies lorem magna, eget pretium lacus vestibulum ut. Fusce in interdum sapien.
+
+---
+
+## Code Blocks
+
+This section demonstrates code blocks in context.
+
+### Code Block Example
+```ruby
+def thing
+  return "Hello" if @thing === 1 && other >= 5
+end
+```
+
+---
+
+## Tables
+
+This section demonstrates markdown tables.
+
+### Table Example
+| Syntax    | Description |
+| --------- | ----------- |
+| Header    | Title 12345 |
+| Paragraph | Text        |
+
+---
+
+## Embed Example
+
+This section demonstrates an embedded Loom video in context.
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque euismod, nisi eu consectetur consectetur, nisl nisi consectetur nisi, euismod euismod nisi nisi euismod. For more info, see [MDN Web Docs](https://developer.mozilla.org/).
+
+<Embed url="https://www.loom.com/share/0132dbe661b24dd28f42e2ce040f78cc" />
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque euismod, nisi eu consectetur consectetur, nisl nisi consectetur nisi, euismod euismod nisi nisi euismod. Visit [Astro documentation](https://docs.astro.build/) for details.
+
+---
+
+## Long-Form Content & Footnotes
+
+This section demonstrates long-form prose and footnotes.
+
+Donec leo libero, sodales a quam non, ullamcorper facilisis est. Nam id est fermentum, eleifend mi quis, ultrices elit. Nullam iaculis tellus neque, eu volutpat ex elementum ac. Nulla non consequat mauris, vel placerat risus. Sed mattis ac velit a eleifend. Nulla tempor hendrerit tristique. Integer luctus, sapien pulvinar euismod pharetra, dolor lorem lacinia nisl, non cursus ex nibh sed magna. Etiam pharetra accumsan nulla id suscipit. Nulla malesuada eleifend aliquet. Praesent sit amet felis sollicitudin, ullamcorper nunc ac, suscipit metus. Maecenas tempor nisl non nunc pulvinar, nec faucibus quam consectetur. Cras commodo eros et magna ornare, non efficitur velit sodales. Aenean rhoncus magna quis ex cursus, in tincidunt tortor egestas. Cras vulputate eu enim eget pulvinar.[^1]
+
+[^1]: This is the footnote, here.
+
+[^2]: This is the second [footnote, here](http://google.com) isa link to it. It is much longer and nicer than you think. Ere are some longer words to make it work better etc.
+
+---
+
+[Back to Main Styleguide](/styleguide/)
+
+[^intro]: This styleguide is maintained to help ensure visual and typographic consistency across all articles.

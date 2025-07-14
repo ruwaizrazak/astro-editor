@@ -18,6 +18,7 @@ export const Layout: React.FC = () => {
     setProject,
     toggleSidebar,
     toggleFrontmatterPanel,
+    loadPersistedProject,
   } = useAppStore();
 
   // macOS keyboard shortcuts
@@ -57,6 +58,13 @@ export const Layout: React.FC = () => {
     toggleSidebar,
     toggleFrontmatterPanel,
   ]);
+
+  // Load persisted project on app start
+  useEffect(() => {
+    console.log('=== APP INITIALIZATION ===');
+    console.log('Loading persisted project...');
+    void loadPersistedProject();
+  }, [loadPersistedProject]);
 
   // Menu event listeners
   useEffect(() => {

@@ -19,7 +19,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    
+
     /* Path mapping */
     "baseUrl": ".",
     "paths": {
@@ -27,5 +27,6 @@
     }
   },
   "include": ["src"],
+  "exclude": ["dummy-astro-project"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
