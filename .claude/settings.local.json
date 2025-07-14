@@ -1,13 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm install:*)",
-      "Bash(npm run:*)",
-      "Bash(cargo check:*)",
-      "Bash(npx tailwindcss init:*)",
-      "Bash(mkdir:*)",
-      "Bash(rm:*)",
-      "Bash(find:*)"
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(npx shadcn@latest init:*)",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__get-library-docs",
+      "Bash(ls:*)"
     ],
     "deny": []
   }

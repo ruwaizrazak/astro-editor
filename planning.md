@@ -333,25 +333,90 @@ _Goal: Parse Astro config and handle content collections_
 
 **Phase 2.3 - End of Phase Two Additional Tasks**
 
-- [ ] Pull in basic shadui components we're probably gonna need so they're available for us to use (see https://ui.shadcn.com/docs/components). Suggestions:
-  - Badge
-  - Breadcrumb
-  - Card
-  - Checkbox
-  - DatePicker
-  - Dialog
-  - (maybe) React Hook Form
-  - Input
-  - RadioGroup
-  - (maybe) Scroll-area
-  - Select
-  - Separator
-  - Sonner (for toasts - position them bottom right of editor)
-  - Switch
-  - Textarea
-  - Toggle
-  - Toggle Group
-  - Tooltip
+### Phase 2.3 Implementation Plan
+
+This phase focuses on UI refinement, code quality improvements, and setting up the foundation for a more polished application. Here's the execution order:
+
+#### Step 1: shadcn/ui Components Setup (Foundation)
+Install the required shadcn/ui components that will be used throughout the UI improvements:
+- Badge, Card, Input, Select, Separator, Switch, Textarea, Tooltip (basic UI elements)
+- Dialog (for modals and confirmations)
+- DatePicker (for date frontmatter fields)
+- RadioGroup, Toggle, Toggle Group (for various field types)
+- Sonner (for toast notifications)
+- Breadcrumb (for navigation)
+- Scroll-area (potentially for long lists)
+
+#### Step 2: Frontmatter Panel UI Refinement
+Using the newly available components, enhance the frontmatter editing experience:
+- Create custom AutoGrowingInput component for title fields
+- Implement auto-growing Textarea for description fields
+- Replace checkboxes with Switch components for booleans
+- Integrate DatePicker for date fields
+- Build a custom Tags input component with create/remove functionality
+
+#### Step 3: Left Sidebar Improvements
+Enhance the file browser experience:
+- Implement collection navigation with breadcrumb-style header
+- Create rich file list items showing title, filename, date, and badges
+- Add MDX and Draft badges using the Badge component
+- Implement date-based sorting with undated items at top
+- Polish hover and selected states
+
+#### Step 4: Test Data Enhancement
+Improve dummy-astro-project for better testing:
+- Clean up existing content while keeping useful examples
+- Add diverse content with various frontmatter configurations
+- Include all GitHub Flavored Markdown features
+- Consider adding a third collection for testing
+
+#### Step 5: Code Quality Review
+- Extract reusable React components where beneficial
+- Create proper TypeScript types for domain objects (Collection, Document, etc.)
+- Review and improve type safety throughout the codebase
+
+#### Step 6: Config Parsing Enhancement
+Investigate alternatives to regex-based parsing:
+- Research executing TypeScript in Tauri for direct Zod schema access
+- Consider hybrid approach with better type safety
+- Evaluate trade-offs and implementation complexity
+
+#### Step 7: Test Suite Enhancement
+- Add comprehensive unit tests for business logic
+- Create test fixtures with various content configurations
+- Ensure edge cases are covered
+
+#### Step 8: Build System Cleanup
+- Standardize npm script naming conventions
+- Group related commands logically
+- Ensure consistency across all scripts
+
+#### Step 9: Documentation Update
+- Update CLAUDE.md with new patterns and conventions
+- Document component usage guidelines
+- Add examples of new UI patterns
+
+### Tasks List
+
+- [x] Pull in basic shadui components we're probably gonna need so they're available for us to use (see https://ui.shadcn.com/docs/components). Suggestions:
+  - Badge ✓
+  - Breadcrumb ✓
+  - Card ✓
+  - Checkbox ✓
+  - DatePicker ✓ (created custom component using Calendar + Popover)
+  - Dialog ✓
+  - (maybe) React Hook Form - skipped for now
+  - Input ✓
+  - RadioGroup ✓
+  - (maybe) Scroll-area ✓
+  - Select ✓
+  - Separator ✓
+  - Sonner (for toasts - position them bottom right of editor) ✓
+  - Switch ✓
+  - Textarea ✓
+  - Toggle ✓
+  - Toggle Group ✓
+  - Tooltip ✓
 - [ ] Refine frontmatter sidebar panel UI
   - [ ] Use shadci components
   - [ ] If there is a field called "title" of type text, use a slightly bigger input field which auto-wraps content and grows vertically if the content wraps to more than one line. Should probably be implemented as a simple react component in case we need to reuse it later? Goal: make the title field stand out more than the others.
