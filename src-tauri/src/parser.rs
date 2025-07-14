@@ -331,44 +331,73 @@ fn parse_schema_fields(schema_text: &str) -> Option<String> {
     println!("Schema text to parse: {}", schema_text);
     
     let mut schema_fields = Vec::new();
+    let mut processed_fields = std::collections::HashSet::new();
 
-    // Look for common Zod patterns with more comprehensive matching
-    let field_patterns = [
-        (r"(\w+)\s*:\s*z\.string\(\)(?:\.(\w+)\([^)]*\))*", ZodFieldType::String),
-        (r"(\w+)\s*:\s*z\.number\(\)(?:\.(\w+)\([^)]*\))*", ZodFieldType::Number), 
-        (r"(\w+)\s*:\s*z\.boolean\(\)(?:\.(\w+)\([^)]*\))*", ZodFieldType::Boolean),
-        (r"(\w+)\s*:\s*z\.coerce\.date\(\)(?:\.(\w+)\([^)]*\))*", ZodFieldType::Date),
-        (r"(\w+)\s*:\s*z\.date\(\)(?:\.(\w+)\([^)]*\))*", ZodFieldType::Date),
-        (r"(\w+)\s*:\s*z\.array\([^)]+\)(?:\.(\w+)\([^)]*\))*", ZodFieldType::Array(Box::new(ZodFieldType::String))),
-        (r"(\w+)\s*:\s*z\.enum\(\[[^\]]+\]\)(?:\.(\w+)\([^)]*\))*", ZodFieldType::Enum(vec![])),
-        (r"(\w+)\s*:\s*image\(\)(?:\.(\w+)\([^)]*\))*", ZodFieldType::String), // Astro image() helper
-        (r"(\w+)\s*:\s*z\.string\(\)\.url\(\)(?:\.(\w+)\([^)]*\))*", ZodFieldType::String), // URL strings
-    ];
-
-    for (pattern, field_type) in field_patterns {
-        let re = Regex::new(pattern).unwrap();
-        for cap in re.captures_iter(schema_text) {
-            let field_name = cap.get(1).unwrap().as_str();
-            println!("Found field: {} of type: {:?}", field_name, field_type);
+    // Parse fields line by line to preserve order
+    for line in schema_text.lines() {
+        let line = line.trim();
+        if line.is_empty() || line == "}" || line == "{" {
+            continue;
+        }
+        
+        // Remove trailing comma if present
+        let line = line.trim_end_matches(',');
+        
+        println!("Processing line: {}", line);
+        
+        // Extract field name first
+        if let Some(colon_pos) = line.find(':') {
+            let field_name = line[..colon_pos].trim();
             
-            // Check if field is optional by looking for .optional() call
-            let field_def = format!(r"{field_name}\s*:[^,\n}}]+");
-            let field_re = Regex::new(&field_def).unwrap();
-            let is_optional = if let Some(field_match) = field_re.find(schema_text) {
-                let field_line = field_match.as_str();
-                println!("Field line: {}", field_line);
-                field_line.contains(".optional()")
+            // Skip if we've already processed this field
+            if processed_fields.contains(field_name) {
+                continue;
+            }
+            processed_fields.insert(field_name.to_string());
+            
+            let field_definition = &line[colon_pos + 1..].trim();
+            println!("Field name: {}, definition: {}", field_name, field_definition);
+            
+            // Determine field type (order matters - check most specific first)
+            let field_type = if field_definition.contains("z.array(") {
+                ZodFieldType::Array(Box::new(ZodFieldType::String))
+            } else if field_definition.contains("z.enum(") {
+                ZodFieldType::Enum(vec![])
+            } else if field_definition.contains("z.coerce.date()") || field_definition.contains("z.date()") {
+                ZodFieldType::Date
+            } else if field_definition.contains("z.string()") {
+                ZodFieldType::String
+            } else if field_definition.contains("z.number()") {
+                ZodFieldType::Number
+            } else if field_definition.contains("z.boolean()") {
+                ZodFieldType::Boolean
+            } else if field_definition.contains("image()") {
+                ZodFieldType::String
             } else {
-                false
+                ZodFieldType::Unknown
             };
             
-            println!("Field {} is optional: {}", field_name, is_optional);
+            // Check if field is optional or has default
+            let has_optional = field_definition.contains(".optional()");
+            let has_default = field_definition.contains(".default(");
+            
+            // If field has a default, treat it as optional for UI purposes
+            let is_optional = has_optional || has_default;
+            
+            println!("Field {}: type={:?}, has_optional={}, has_default={}, final_optional={}", 
+                     field_name, field_type, has_optional, has_default, is_optional);
+
+            let default_value = if has_default {
+                extract_default_value(schema_text, field_name)
+            } else {
+                None
+            };
 
             schema_fields.push(ZodField {
                 name: field_name.to_string(),
-                field_type: field_type.clone(),
+                field_type,
                 optional: is_optional,
-                default_value: extract_default_value(schema_text, field_name),
+                default_value,
             });
         }
     }
