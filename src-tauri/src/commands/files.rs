@@ -222,12 +222,15 @@ fn extract_imports_from_content(lines: &[&str]) -> (String, String) {
 }
 
 fn parse_yaml_to_json(yaml_str: &str) -> Result<HashMap<String, Value>, String> {
-    // Simple YAML parser - handles basic key-value pairs
+    // Enhanced YAML parser - handles basic key-value pairs and arrays
     let mut result = HashMap::new();
+    let lines: Vec<&str> = yaml_str.lines().collect();
+    let mut i = 0;
 
-    for line in yaml_str.lines() {
-        let line = line.trim();
+    while i < lines.len() {
+        let line = lines[i].trim();
         if line.is_empty() || line.starts_with('#') {
+            i += 1;
             continue;
         }
 
@@ -237,7 +240,24 @@ fn parse_yaml_to_json(yaml_str: &str) -> Result<HashMap<String, Value>, String> 
 
             // Parse different value types
             let parsed_value = if value.is_empty() {
-                Value::String(String::new())
+                // Check if this is a multi-line array
+                let (array_value, lines_consumed) = parse_yaml_array(&lines, i + 1)?;
+                if !array_value.is_empty() {
+                    i += lines_consumed;
+                    Value::Array(array_value)
+                } else {
+                    Value::String(String::new())
+                }
+            } else if value.starts_with('[') && value.ends_with(']') {
+                // Parse inline array like [one, two, three]
+                let array_content = &value[1..value.len() - 1];
+                let items: Vec<Value> = array_content
+                    .split(',')
+                    .map(|s| {
+                        Value::String(s.trim().trim_matches('"').trim_matches('\'').to_string())
+                    })
+                    .collect();
+                Value::Array(items)
             } else if value == "true" {
                 Value::Bool(true)
             } else if value == "false" {
@@ -256,9 +276,38 @@ fn parse_yaml_to_json(yaml_str: &str) -> Result<HashMap<String, Value>, String> 
 
             result.insert(key, parsed_value);
         }
+        i += 1;
     }
 
     Ok(result)
+}
+
+fn parse_yaml_array(lines: &[&str], start_index: usize) -> Result<(Vec<Value>, usize), String> {
+    let mut array = Vec::new();
+    let mut i = start_index;
+
+    while i < lines.len() {
+        let line = lines[i].trim();
+
+        // Skip empty lines
+        if line.is_empty() {
+            i += 1;
+            continue;
+        }
+
+        // Check if this is an array item
+        if let Some(stripped) = line.strip_prefix("- ") {
+            let item_value = stripped.trim();
+            let cleaned = item_value.trim_matches('"').trim_matches('\'');
+            array.push(Value::String(cleaned.to_string()));
+            i += 1;
+        } else {
+            // Not an array item, stop parsing
+            break;
+        }
+    }
+
+    Ok((array, i - start_index))
 }
 
 fn rebuild_markdown_with_frontmatter(
@@ -343,6 +392,22 @@ fn rebuild_markdown_with_frontmatter_and_imports_ordered(
                     }
                     Value::Bool(b) => b.to_string(),
                     Value::Number(n) => n.to_string(),
+                    Value::Array(arr) => {
+                        // Format array as YAML array
+                        if arr.is_empty() {
+                            "[]".to_string()
+                        } else {
+                            let mut array_str = String::new();
+                            for item in arr {
+                                let item_str = match item {
+                                    Value::String(s) => s.clone(),
+                                    _ => item.to_string(),
+                                };
+                                array_str.push_str(&format!("\n  - {item_str}"));
+                            }
+                            array_str
+                        }
+                    }
                     _ => format!("\"{value}\""),
                 };
 
@@ -538,6 +603,51 @@ This is just regular markdown content without frontmatter."#;
         assert!(result.frontmatter.is_empty());
         assert_eq!(result.content, content);
         assert!(result.raw_frontmatter.is_empty());
+    }
+
+    #[test]
+    fn test_parse_frontmatter_with_arrays() {
+        let content = r#"---
+title: Test Post
+tags:
+  - javascript
+  - typescript
+  - react
+categories: [tech, programming]
+---
+
+# Content
+
+This is a test post with arrays."#;
+
+        let result = parse_frontmatter(content).unwrap();
+
+        assert_eq!(result.frontmatter.len(), 3);
+        assert_eq!(result.frontmatter.get("title").unwrap(), "Test Post");
+
+        // Check multi-line array
+        let tags = result.frontmatter.get("tags").unwrap();
+        if let Value::Array(tags_array) = tags {
+            assert_eq!(tags_array.len(), 3);
+            assert_eq!(tags_array[0], Value::String("javascript".to_string()));
+            assert_eq!(tags_array[1], Value::String("typescript".to_string()));
+            assert_eq!(tags_array[2], Value::String("react".to_string()));
+        } else {
+            panic!("Expected tags to be an array");
+        }
+
+        // Check inline array
+        let categories = result.frontmatter.get("categories").unwrap();
+        if let Value::Array(categories_array) = categories {
+            assert_eq!(categories_array.len(), 2);
+            assert_eq!(categories_array[0], Value::String("tech".to_string()));
+            assert_eq!(
+                categories_array[1],
+                Value::String("programming".to_string())
+            );
+        } else {
+            panic!("Expected categories to be an array");
+        }
     }
 
     #[test]

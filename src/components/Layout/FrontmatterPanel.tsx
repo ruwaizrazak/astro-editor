@@ -29,6 +29,7 @@ const valueToString = (value: unknown): string => {
   if (typeof value === 'string') return value
   if (typeof value === 'number') return String(value)
   if (typeof value === 'boolean') return String(value)
+  if (Array.isArray(value)) return value.join(',')
   return ''
 }
 
@@ -290,8 +291,16 @@ const FrontmatterField: React.FC<{
   label: string
   field?: ZodField | undefined
 }> = ({ name, label, field }) => {
+  const { frontmatter } = useAppStore()
   const inputType = field ? getInputTypeForZodField(field.type) : 'text'
   const required = field ? !field.optional : false
+
+  // Check if this field should be treated as an array based on schema or frontmatter value
+  const shouldUseArrayField =
+    field?.type === 'Array' ||
+    (!field &&
+      Array.isArray(frontmatter[name]) &&
+      frontmatter[name].every((item: unknown) => typeof item === 'string'))
 
   if (inputType === 'checkbox' || field?.type === 'Boolean') {
     return <BooleanField name={name} label={label} field={field} />
@@ -314,6 +323,10 @@ const FrontmatterField: React.FC<{
         required={required}
       />
     )
+  }
+
+  if (shouldUseArrayField) {
+    return <ArrayField name={name} label={label} required={required} />
   }
 
   if (label.toLowerCase() === 'title') {
@@ -339,10 +352,6 @@ const FrontmatterField: React.FC<{
         required={required}
       />
     )
-  }
-
-  if (field?.type === 'Array') {
-    return <ArrayField name={name} label={label} required={required} />
   }
 
   // Default to string field

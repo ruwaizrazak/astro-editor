@@ -306,4 +306,144 @@ describe('FrontmatterPanel Component', () => {
     expect(state.frontmatter).toEqual({ title: 'Test Post' })
     expect(state.frontmatter.description).toBeUndefined()
   })
+
+  it('should use TagInput for array fields defined in schema', () => {
+    const mockFile = {
+      id: 'posts/test',
+      path: '/project/posts/test.md',
+      name: 'test',
+      extension: 'md',
+      is_draft: false,
+      collection: 'posts',
+    }
+
+    const mockCollection = {
+      name: 'posts',
+      path: '/project/posts',
+      schema: JSON.stringify({
+        type: 'zod',
+        fields: [{ name: 'tags', type: 'Array', optional: true }],
+      }),
+    }
+
+    useAppStore.setState({
+      currentFile: mockFile,
+      frontmatter: { tags: ['react', 'typescript'] },
+      collections: [mockCollection],
+    })
+
+    render(<FrontmatterPanel />)
+
+    // Should render as TagInput with existing tags
+    expect(screen.getByText('react')).toBeInTheDocument()
+    expect(screen.getByText('typescript')).toBeInTheDocument()
+
+    // Should have tag removal buttons
+    expect(screen.getByLabelText('Remove react tag')).toBeInTheDocument()
+    expect(screen.getByLabelText('Remove typescript tag')).toBeInTheDocument()
+  })
+
+  it('should use TagInput for array fields not in schema but present in frontmatter', () => {
+    const mockFile = {
+      id: 'posts/test',
+      path: '/project/posts/test.md',
+      name: 'test',
+      extension: 'md',
+      is_draft: false,
+      collection: 'posts',
+    }
+
+    const mockCollection = {
+      name: 'posts',
+      path: '/project/posts',
+      schema: JSON.stringify({
+        type: 'zod',
+        fields: [{ name: 'title', type: 'String', optional: false }],
+      }),
+    }
+
+    useAppStore.setState({
+      currentFile: mockFile,
+      frontmatter: {
+        title: 'Test Post',
+        categories: ['tech', 'programming'], // Not in schema but is array of strings
+      },
+      collections: [mockCollection],
+    })
+
+    render(<FrontmatterPanel />)
+
+    // Should render title as textarea (from schema)
+    expect(screen.getByDisplayValue('Test Post')).toBeInTheDocument()
+
+    // Should render categories as TagInput (inferred from frontmatter)
+    expect(screen.getByText('tech')).toBeInTheDocument()
+    expect(screen.getByText('programming')).toBeInTheDocument()
+    expect(screen.getByLabelText('Remove tech tag')).toBeInTheDocument()
+    expect(screen.getByLabelText('Remove programming tag')).toBeInTheDocument()
+  })
+
+  it('should not use TagInput for non-string arrays in frontmatter', () => {
+    const mockFile = {
+      id: 'posts/test',
+      path: '/project/posts/test.md',
+      name: 'test',
+      extension: 'md',
+      is_draft: false,
+      collection: 'posts',
+    }
+
+    useAppStore.setState({
+      currentFile: mockFile,
+      frontmatter: {
+        numbers: [1, 2, 3], // Array but not strings
+        mixed: ['string', 123], // Mixed array
+      },
+    })
+
+    render(<FrontmatterPanel />)
+
+    // Should render as text inputs, not TagInput
+    expect(screen.getByDisplayValue('1,2,3')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('string,123')).toBeInTheDocument()
+
+    // Should not have tag removal buttons
+    expect(screen.queryByLabelText(/Remove.*tag/)).not.toBeInTheDocument()
+  })
+
+  it('should handle proper arrays from backend parsing', () => {
+    const mockFile = {
+      id: 'posts/test',
+      path: '/project/posts/test.md',
+      name: 'test',
+      extension: 'md',
+      is_draft: false,
+      collection: 'posts',
+    }
+
+    useAppStore.setState({
+      currentFile: mockFile,
+      frontmatter: {
+        title: 'Test Post',
+        tags: ['javascript', 'typescript', 'react'], // Proper array from backend
+        categories: ['tech', 'programming'], // Another proper array
+      },
+    })
+
+    render(<FrontmatterPanel />)
+
+    // Should render title as text input
+    expect(screen.getByDisplayValue('Test Post')).toBeInTheDocument()
+
+    // Should render tags as TagInput
+    expect(screen.getByText('javascript')).toBeInTheDocument()
+    expect(screen.getByText('typescript')).toBeInTheDocument()
+    expect(screen.getByText('react')).toBeInTheDocument()
+    expect(screen.getByLabelText('Remove javascript tag')).toBeInTheDocument()
+
+    // Should render categories as TagInput
+    expect(screen.getByText('tech')).toBeInTheDocument()
+    expect(screen.getByText('programming')).toBeInTheDocument()
+    expect(screen.getByLabelText('Remove tech tag')).toBeInTheDocument()
+  })
 })
