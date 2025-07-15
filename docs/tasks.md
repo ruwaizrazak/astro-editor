@@ -150,8 +150,8 @@ Investigate alternatives to regex-based parsing:
   - [x] Add a way to clear datepicker fields - currently if a date is set it cannot be removed.
   - [x] Implement https://github.com/JaleelB/emblor for handling array fields. Make it work with the latest tailwind and shadcn if needed (more at https://emblor.jaleelbennett.com/introduction).
   - [x] Platform is an enum field in the astro schema. So it shuold render a dropdown not a textbox. The dropdown should have a blank option which removes the property (same behavior as blank fields for other things.)
-  - [ ] Ensure properties which are arrays of strings in the schema (or frontmatter) use the `tag-input.tsx` element we defined and check it works properly.
-- [ ] Make the frontmatter panel resizeable (using the shadcn `redizable` component maybe?) Should have sensible min and max widths.
+  - [x] Ensure properties which are arrays of strings in the schema (or frontmatter) use the `tag-input.tsx` element we defined and check it works properly.
+- [x] Make the frontmatter panel resizeable (using the shadcn `redizable` component maybe?) Should have sensible min and max widths.
 - [ ] Improvement to macos menubar: Replace our custom implementation of the "traffic light" window controls with https://github.com/agmmnn/tauri-controls.
 - [ ] Bug: Cmd + F does not open proper fullscreen. Cmd + Q does not quit the app. The menubars should properly include these.
 - [ ] Left sidebar UI improvements

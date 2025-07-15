@@ -6,6 +6,11 @@ import { UnifiedTitleBar } from './UnifiedTitleBar'
 import { Sidebar } from './Sidebar'
 import { MainEditor } from './MainEditor'
 import { FrontmatterPanel } from './FrontmatterPanel'
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from '../ui/resizable'
 
 export const Layout: React.FC = () => {
   const {
@@ -135,21 +140,29 @@ export const Layout: React.FC = () => {
           </div>
         )}
 
-        <div className="flex-1 flex flex-col min-w-96">
-          <MainEditor />
-        </div>
-
-        {frontmatterPanelVisible && (
-          <div
-            className="w-75 min-w-62.5 max-w-125 bg-muted/10 border-l border-border resize-x overflow-hidden"
-            style={{
-              width: '300px',
-              minWidth: '250px',
-              maxWidth: '500px',
-              resize: 'horizontal',
-            }}
-          >
-            <FrontmatterPanel />
+        {frontmatterPanelVisible ? (
+          <ResizablePanelGroup direction="horizontal" className="flex-1">
+            <ResizablePanel
+              defaultSize={70}
+              minSize={40}
+              maxSize={80}
+              className="flex flex-col min-w-96"
+            >
+              <MainEditor />
+            </ResizablePanel>
+            <ResizableHandle className="!cursor-col-resize" />
+            <ResizablePanel
+              defaultSize={30}
+              minSize={20}
+              maxSize={60}
+              className="bg-muted/10 border-l border-border overflow-hidden"
+            >
+              <FrontmatterPanel />
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        ) : (
+          <div className="flex-1 flex flex-col min-w-96">
+            <MainEditor />
           </div>
         )}
       </div>
