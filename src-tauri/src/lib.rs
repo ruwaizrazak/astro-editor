@@ -87,7 +87,7 @@ pub fn run() {
                         "enter_fullscreen",
                         "Enter Full Screen",
                         true,
-                        Some("CmdOrCtrl+F"),
+                        Some("Ctrl+Cmd+F"),
                     )?,
                 ],
             )?;

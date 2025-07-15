@@ -4,6 +4,43 @@ export interface ZodField {
   optional: boolean
   default?: string
   options?: string[] // For enum fields
+  constraints?: ZodFieldConstraints
+  arrayType?: ZodFieldType // For array fields
+  unionTypes?: Array<ZodFieldType | { type: 'Literal'; value: string }> // For union fields
+  literalValue?: string // For literal fields
+}
+
+export interface ZodFieldConstraints {
+  // Numeric constraints
+  min?: number
+  max?: number
+  length?: number
+  minLength?: number
+  maxLength?: number
+
+  // String validation
+  regex?: string
+  includes?: string
+  startsWith?: string
+  endsWith?: string
+  url?: boolean
+  email?: boolean
+  uuid?: boolean
+  cuid?: boolean
+  cuid2?: boolean
+  ulid?: boolean
+  emoji?: boolean
+  ip?: boolean
+
+  // String transformations
+  trim?: boolean
+  toLowerCase?: boolean
+  toUpperCase?: boolean
+
+  // Meta information
+  transform?: string
+  refine?: string
+  literal?: string
 }
 
 export type ZodFieldType =
@@ -13,6 +50,9 @@ export type ZodFieldType =
   | 'Date'
   | 'Array'
   | 'Enum'
+  | 'Union'
+  | 'Literal'
+  | 'Object'
   | 'Unknown'
 
 export interface ParsedSchema {
@@ -28,6 +68,10 @@ interface ParsedSchemaJson {
     optional: boolean
     default?: string
     options?: string[] // For enum fields
+    constraints?: Record<string, unknown> // For constraint information
+    arrayType?: string // For array fields
+    unionTypes?: Array<string | { type: 'Literal'; value: string }> // For union fields
+    literalValue?: string // For literal fields
   }>
 }
 
@@ -49,6 +93,20 @@ export function parseSchemaJson(schemaJson: string): ParsedSchema | null {
       optional: field.optional || false,
       ...(field.default !== undefined && { default: field.default }),
       ...(field.options !== undefined && { options: field.options }),
+      ...(field.constraints !== undefined && {
+        constraints: field.constraints as ZodFieldConstraints,
+      }),
+      ...(field.arrayType !== undefined && {
+        arrayType: field.arrayType as ZodFieldType,
+      }),
+      ...(field.unionTypes !== undefined && {
+        unionTypes: field.unionTypes.map(t =>
+          typeof t === 'string' ? (t as ZodFieldType) : t
+        ),
+      }),
+      ...(field.literalValue !== undefined && {
+        literalValue: field.literalValue,
+      }),
     }))
 
     return {
@@ -104,6 +162,12 @@ export function getInputTypeForZodField(fieldType: ZodFieldType): string {
       return 'text' // Will handle as comma-separated values
     case 'Enum':
       return 'select'
+    case 'Union':
+      return 'text' // Handle unions as text input for now
+    case 'Literal':
+      return 'text' // Literals can be displayed as readonly text
+    case 'Object':
+      return 'text' // Objects as JSON text for now
     default:
       return 'text'
   }
@@ -130,6 +194,17 @@ export function getDefaultValueForField(
       return new Date().toISOString().split('T')[0] || '' // YYYY-MM-DD format
     case 'Array':
       return []
+    case 'Literal':
+      return field.literalValue || ''
+    case 'Union':
+      // For unions, return the default for the first non-literal type
+      if (field.unionTypes && field.unionTypes.length > 0) {
+        const firstType = field.unionTypes[0]
+        if (typeof firstType === 'string') {
+          return getDefaultValueForField({ ...field, type: firstType })
+        }
+      }
+      return ''
     default:
       return ''
   }

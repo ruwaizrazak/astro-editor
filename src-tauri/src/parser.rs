@@ -8,6 +8,34 @@ pub struct ZodField {
     pub field_type: ZodFieldType,
     pub optional: bool,
     pub default_value: Option<String>,
+    pub constraints: ZodFieldConstraints,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct ZodFieldConstraints {
+    pub min: Option<i64>,
+    pub max: Option<i64>,
+    pub regex: Option<String>,
+    pub url: bool,
+    pub email: bool,
+    pub uuid: bool,
+    pub cuid: bool,
+    pub cuid2: bool,
+    pub ulid: bool,
+    pub emoji: bool,
+    pub ip: bool,
+    pub includes: Option<String>,
+    pub starts_with: Option<String>,
+    pub ends_with: Option<String>,
+    pub length: Option<i64>,
+    pub trim: bool,
+    pub to_lower_case: bool,
+    pub to_upper_case: bool,
+    pub transform: Option<String>,
+    pub refine: Option<String>,
+    pub literal: Option<String>,
+    pub min_length: Option<i64>,
+    pub max_length: Option<i64>,
 }
 
 #[derive(Debug, Clone)]
@@ -19,6 +47,9 @@ pub enum ZodFieldType {
     Date,
     Array(Box<ZodFieldType>),
     Enum(Vec<String>),
+    Union(Vec<ZodFieldType>),
+    Literal(String),
+    Object(Vec<ZodField>),
     Unknown,
 }
 
@@ -72,14 +103,73 @@ fn parse_collections_from_content(
 }
 
 fn remove_comments(content: &str) -> String {
-    // Simple comment removal - removes // and /* */ comments
-    let line_comment_re = Regex::new(r"//.*").unwrap();
-    let block_comment_re = Regex::new(r"/\*[\s\S]*?\*/").unwrap();
+    // Improved comment removal that handles edge cases better
+    let mut result = String::new();
+    let mut chars = content.chars().peekable();
+    let mut in_string = false;
+    let mut string_char = '"';
+    let mut in_block_comment = false;
+    let mut escape_next = false;
 
-    let no_line_comments = line_comment_re.replace_all(content, "");
-    let no_comments = block_comment_re.replace_all(&no_line_comments, "");
+    while let Some(ch) = chars.next() {
+        if escape_next {
+            if !in_block_comment {
+                result.push(ch);
+            }
+            escape_next = false;
+            continue;
+        }
 
-    no_comments.to_string()
+        if in_string {
+            if ch == '\\' {
+                escape_next = true;
+                result.push(ch);
+            } else if ch == string_char {
+                in_string = false;
+                result.push(ch);
+            } else {
+                result.push(ch);
+            }
+            continue;
+        }
+
+        if in_block_comment {
+            if ch == '*' && chars.peek() == Some(&'/') {
+                chars.next(); // consume '/'
+                in_block_comment = false;
+            }
+            continue;
+        }
+
+        match ch {
+            '"' | '\'' => {
+                in_string = true;
+                string_char = ch;
+                result.push(ch);
+            }
+            '/' => {
+                if chars.peek() == Some(&'/') {
+                    // Line comment - skip to end of line
+                    chars.next(); // consume second '/'
+                    for next_ch in chars.by_ref() {
+                        if next_ch == '\n' {
+                            result.push(next_ch);
+                            break;
+                        }
+                    }
+                } else if chars.peek() == Some(&'*') {
+                    // Block comment start
+                    chars.next(); // consume '*'
+                    in_block_comment = true;
+                } else {
+                    result.push(ch);
+                }
+            }
+            _ => result.push(ch),
+        }
+    }
+
+    result
 }
 
 fn extract_collections_block(content: &str) -> Option<String> {
@@ -309,31 +399,12 @@ fn parse_schema_fields(schema_text: &str) -> Option<String> {
 
             let field_definition = &line[colon_pos + 1..].trim();
 
-            // Determine field type (order matters - check most specific first)
-            let field_type = if field_definition.contains("z.array(") {
-                ZodFieldType::Array(Box::new(ZodFieldType::String))
-            } else if field_definition.contains("z.enum(") {
-                // Extract enum values from z.enum(['value1', 'value2'])
-                let enum_values = extract_enum_values(field_definition);
-                ZodFieldType::Enum(enum_values)
-            } else if field_definition.contains("z.coerce.date()")
-                || field_definition.contains("z.date()")
-            {
-                ZodFieldType::Date
-            } else if field_definition.contains("z.string()") {
-                ZodFieldType::String
-            } else if field_definition.contains("z.number()") {
-                ZodFieldType::Number
-            } else if field_definition.contains("z.boolean()") {
-                ZodFieldType::Boolean
-            } else if field_definition.contains("image()") {
-                ZodFieldType::String
-            } else {
-                ZodFieldType::Unknown
-            };
+            // Determine field type and extract constraints
+            let (field_type, constraints) = parse_field_type_and_constraints(field_definition);
 
             // Check if field is optional or has default
-            let has_optional = field_definition.contains(".optional()");
+            let has_optional = field_definition.contains(".optional()")
+                || field_definition.contains("z.optional(");
             let has_default = field_definition.contains(".default(");
 
             // If field has a default, treat it as optional for UI purposes
@@ -350,6 +421,7 @@ fn parse_schema_fields(schema_text: &str) -> Option<String> {
                 field_type,
                 optional: is_optional,
                 default_value,
+                constraints,
             });
         }
     }
@@ -364,6 +436,9 @@ fn parse_schema_fields(schema_text: &str) -> Option<String> {
                     "type": match &f.field_type {
                         ZodFieldType::Enum(_) => "Enum".to_string(),
                         ZodFieldType::Array(_) => "Array".to_string(),
+                        ZodFieldType::Union(_) => "Union".to_string(),
+                        ZodFieldType::Literal(_) => "Literal".to_string(),
+                        ZodFieldType::Object(_) => "Object".to_string(),
                         ZodFieldType::String => "String".to_string(),
                         ZodFieldType::Number => "Number".to_string(),
                         ZodFieldType::Boolean => "Boolean".to_string(),
@@ -371,12 +446,40 @@ fn parse_schema_fields(schema_text: &str) -> Option<String> {
                         ZodFieldType::Unknown => "Unknown".to_string(),
                     },
                     "optional": f.optional,
-                    "default": f.default_value
+                    "default": f.default_value,
+                    "constraints": serialize_constraints(&f.constraints)
                 });
 
-                // Add enum options if field is an enum
-                if let ZodFieldType::Enum(options) = &f.field_type {
-                    field_json["options"] = serde_json::json!(options);
+                // Add type-specific options
+                match &f.field_type {
+                    ZodFieldType::Enum(options) => {
+                        field_json["options"] = serde_json::json!(options);
+                    }
+                    ZodFieldType::Array(inner_type) => {
+                        field_json["arrayType"] = serde_json::json!(match **inner_type {
+                            ZodFieldType::String => "String",
+                            ZodFieldType::Number => "Number",
+                            ZodFieldType::Boolean => "Boolean",
+                            ZodFieldType::Date => "Date",
+                            _ => "Unknown",
+                        });
+                    }
+                    ZodFieldType::Union(types) => {
+                        field_json["unionTypes"] = serde_json::json!(
+                            types.iter().map(|t| match t {
+                                ZodFieldType::String => serde_json::json!("String"),
+                                ZodFieldType::Number => serde_json::json!("Number"),
+                                ZodFieldType::Boolean => serde_json::json!("Boolean"),
+                                ZodFieldType::Date => serde_json::json!("Date"),
+                                ZodFieldType::Literal(val) => serde_json::json!({"type": "Literal", "value": val}),
+                                _ => serde_json::json!("Unknown"),
+                            }).collect::<Vec<_>>()
+                        );
+                    }
+                    ZodFieldType::Literal(value) => {
+                        field_json["literalValue"] = serde_json::json!(value);
+                    }
+                    _ => {}
                 }
 
                 field_json
@@ -405,6 +508,367 @@ fn extract_enum_values(field_definition: &str) -> Vec<String> {
     } else {
         vec![]
     }
+}
+
+fn parse_field_type_and_constraints(field_definition: &str) -> (ZodFieldType, ZodFieldConstraints) {
+    let mut constraints = ZodFieldConstraints::default();
+
+    // Normalize whitespace and handle multi-line definitions
+    let normalized = normalize_field_definition(field_definition);
+
+    // Check for z.optional(z.type()) syntax first
+    if normalized.contains("z.optional(") {
+        let inner_type = extract_optional_inner_type(&normalized);
+        return (inner_type.0, inner_type.1);
+    }
+
+    // Determine base field type (order matters - check most specific first)
+    let field_type = if normalized.contains("z.array(") {
+        // Extract array element type
+        let inner_type = extract_array_inner_type(&normalized);
+        ZodFieldType::Array(Box::new(inner_type))
+    } else if normalized.contains("z.enum(") {
+        // Extract enum values from z.enum(['value1', 'value2'])
+        let enum_values = extract_enum_values(&normalized);
+        ZodFieldType::Enum(enum_values)
+    } else if normalized.contains("z.union(") {
+        // Extract union types from z.union([z.string(), z.null()])
+        let union_types = extract_union_types(&normalized);
+        ZodFieldType::Union(union_types)
+    } else if normalized.contains("z.literal(") {
+        // Extract literal value from z.literal("value")
+        let literal_value = extract_literal_value(&normalized);
+        ZodFieldType::Literal(literal_value)
+    } else if normalized.contains("z.object(") {
+        // For nested objects, we'll parse them recursively in the future
+        // For now, treat as unknown but mark that it's an object
+        ZodFieldType::Object(vec![])
+    } else if normalized.contains("z.coerce.date()") || normalized.contains("z.date()") {
+        ZodFieldType::Date
+    } else if normalized.contains("z.string()") || normalized.contains("z.string().") {
+        constraints = extract_string_constraints(&normalized);
+        ZodFieldType::String
+    } else if normalized.contains("z.number()") || normalized.contains("z.number().") {
+        constraints = extract_number_constraints(&normalized);
+        ZodFieldType::Number
+    } else if normalized.contains("z.boolean()") {
+        ZodFieldType::Boolean
+    } else if normalized.contains("image()") {
+        // Astro's image() helper - treat as string with additional metadata
+        constraints.transform = Some("astro-image".to_string());
+        ZodFieldType::String
+    } else {
+        ZodFieldType::Unknown
+    };
+
+    (field_type, constraints)
+}
+
+fn normalize_field_definition(field_definition: &str) -> String {
+    // Remove extra whitespace and normalize line breaks
+    let normalized = field_definition
+        .lines()
+        .map(|line| line.trim())
+        .collect::<Vec<_>>()
+        .join(" ");
+
+    // Collapse multiple spaces
+    let space_re = Regex::new(r"\s+").unwrap();
+    space_re.replace_all(&normalized, " ").to_string()
+}
+
+fn extract_optional_inner_type(field_definition: &str) -> (ZodFieldType, ZodFieldConstraints) {
+    // Extract type from z.optional(z.string()) or z.optional(z.number().min(1))
+    let optional_re = Regex::new(r"z\.optional\s*\(\s*([^)]+)\s*\)").unwrap();
+
+    if let Some(cap) = optional_re.captures(field_definition) {
+        let inner_def = cap.get(1).unwrap().as_str();
+
+        // Recursively parse the inner type
+        let (inner_type, inner_constraints) = parse_field_type_and_constraints(inner_def);
+        (inner_type, inner_constraints)
+    } else {
+        (ZodFieldType::Unknown, ZodFieldConstraints::default())
+    }
+}
+
+fn extract_array_inner_type(field_definition: &str) -> ZodFieldType {
+    // Extract type from z.array(z.string()) or z.array(z.number())
+    let array_re = Regex::new(r"z\.array\s*\(\s*([^)]+)\s*\)").unwrap();
+
+    if let Some(cap) = array_re.captures(field_definition) {
+        let inner_def = cap.get(1).unwrap().as_str();
+
+        if inner_def.contains("z.string") {
+            ZodFieldType::String
+        } else if inner_def.contains("z.number") {
+            ZodFieldType::Number
+        } else if inner_def.contains("z.boolean") {
+            ZodFieldType::Boolean
+        } else if inner_def.contains("z.date") {
+            ZodFieldType::Date
+        } else {
+            ZodFieldType::Unknown
+        }
+    } else {
+        ZodFieldType::String // Default fallback
+    }
+}
+
+fn extract_union_types(field_definition: &str) -> Vec<ZodFieldType> {
+    // Extract types from z.union([z.string(), z.null(), z.number()])
+    let union_re = Regex::new(r"z\.union\s*\(\s*\[\s*([^\]]+)\s*\]\s*\)").unwrap();
+
+    if let Some(cap) = union_re.captures(field_definition) {
+        let types_str = cap.get(1).unwrap().as_str();
+
+        let mut union_types = Vec::new();
+
+        // Split by comma and parse each type
+        for type_str in types_str.split(',') {
+            let type_str = type_str.trim();
+
+            let field_type = if type_str.contains("z.string") {
+                ZodFieldType::String
+            } else if type_str.contains("z.number") {
+                ZodFieldType::Number
+            } else if type_str.contains("z.boolean") {
+                ZodFieldType::Boolean
+            } else if type_str.contains("z.date") {
+                ZodFieldType::Date
+            } else if type_str.contains("z.null") || type_str.contains("null") {
+                // Represent null as a special string literal
+                ZodFieldType::Literal("null".to_string())
+            } else if type_str.contains("z.undefined") || type_str.contains("undefined") {
+                ZodFieldType::Literal("undefined".to_string())
+            } else {
+                ZodFieldType::Unknown
+            };
+
+            union_types.push(field_type);
+        }
+
+        union_types
+    } else {
+        vec![]
+    }
+}
+
+fn extract_literal_value(field_definition: &str) -> String {
+    // Extract value from z.literal("value") or z.literal('value')
+    let literal_re = Regex::new(r#"z\.literal\s*\(\s*["']([^"']+)["']\s*\)"#).unwrap();
+
+    if let Some(cap) = literal_re.captures(field_definition) {
+        cap.get(1).unwrap().as_str().to_string()
+    } else {
+        // Try without quotes for numbers/booleans
+        let literal_unquoted_re = Regex::new(r"z\.literal\s*\(\s*([^)]+)\s*\)").unwrap();
+        if let Some(cap) = literal_unquoted_re.captures(field_definition) {
+            cap.get(1).unwrap().as_str().trim().to_string()
+        } else {
+            "unknown".to_string()
+        }
+    }
+}
+
+fn extract_string_constraints(field_definition: &str) -> ZodFieldConstraints {
+    let mut constraints = ZodFieldConstraints::default();
+
+    // Extract min/max length
+    if let Some(cap) = Regex::new(r"\.min\s*\(\s*(\d+)\s*\)")
+        .unwrap()
+        .captures(field_definition)
+    {
+        constraints.min_length = Some(cap.get(1).unwrap().as_str().parse().unwrap_or(0));
+    }
+
+    if let Some(cap) = Regex::new(r"\.max\s*\(\s*(\d+)\s*\)")
+        .unwrap()
+        .captures(field_definition)
+    {
+        constraints.max_length = Some(cap.get(1).unwrap().as_str().parse().unwrap_or(0));
+    }
+
+    if let Some(cap) = Regex::new(r"\.length\s*\(\s*(\d+)\s*\)")
+        .unwrap()
+        .captures(field_definition)
+    {
+        constraints.length = Some(cap.get(1).unwrap().as_str().parse().unwrap_or(0));
+    }
+
+    // Extract regex pattern
+    if let Some(cap) = Regex::new(r"\.regex\s*\(\s*/([^/]+)/([gimuy]*)\s*\)")
+        .unwrap()
+        .captures(field_definition)
+    {
+        let pattern = cap.get(1).unwrap().as_str();
+        let flags = cap.get(2).map(|m| m.as_str()).unwrap_or("");
+        constraints.regex = Some(format!("/{pattern}/{flags}"));
+    }
+
+    // Extract string validation methods
+    constraints.url = field_definition.contains(".url()");
+    constraints.email = field_definition.contains(".email()");
+    constraints.uuid = field_definition.contains(".uuid()");
+    constraints.cuid = field_definition.contains(".cuid()");
+    constraints.cuid2 = field_definition.contains(".cuid2()");
+    constraints.ulid = field_definition.contains(".ulid()");
+    constraints.emoji = field_definition.contains(".emoji()");
+    constraints.ip = field_definition.contains(".ip()");
+
+    // Extract string transformation methods
+    constraints.trim = field_definition.contains(".trim()");
+    constraints.to_lower_case = field_definition.contains(".toLowerCase()");
+    constraints.to_upper_case = field_definition.contains(".toUpperCase()");
+
+    // Extract includes/startsWith/endsWith
+    if let Some(cap) = Regex::new(r#"\.includes\s*\(\s*["']([^"']+)["']\s*\)"#)
+        .unwrap()
+        .captures(field_definition)
+    {
+        constraints.includes = Some(cap.get(1).unwrap().as_str().to_string());
+    }
+
+    if let Some(cap) = Regex::new(r#"\.startsWith\s*\(\s*["']([^"']+)["']\s*\)"#)
+        .unwrap()
+        .captures(field_definition)
+    {
+        constraints.starts_with = Some(cap.get(1).unwrap().as_str().to_string());
+    }
+
+    if let Some(cap) = Regex::new(r#"\.endsWith\s*\(\s*["']([^"']+)["']\s*\)"#)
+        .unwrap()
+        .captures(field_definition)
+    {
+        constraints.ends_with = Some(cap.get(1).unwrap().as_str().to_string());
+    }
+
+    constraints
+}
+
+fn extract_number_constraints(field_definition: &str) -> ZodFieldConstraints {
+    let mut constraints = ZodFieldConstraints::default();
+
+    // Extract min/max values
+    if let Some(cap) = Regex::new(r"\.min\s*\(\s*(\d+)\s*\)")
+        .unwrap()
+        .captures(field_definition)
+    {
+        constraints.min = Some(cap.get(1).unwrap().as_str().parse().unwrap_or(0));
+    }
+
+    if let Some(cap) = Regex::new(r"\.max\s*\(\s*(\d+)\s*\)")
+        .unwrap()
+        .captures(field_definition)
+    {
+        constraints.max = Some(cap.get(1).unwrap().as_str().parse().unwrap_or(0));
+    }
+
+    // Check for integer/positive/negative constraints
+    if field_definition.contains(".int()") {
+        constraints.transform = Some("integer".to_string());
+    }
+
+    if field_definition.contains(".positive()") {
+        constraints.min = Some(1);
+    }
+
+    if field_definition.contains(".negative()") {
+        constraints.max = Some(-1);
+    }
+
+    if field_definition.contains(".nonnegative()") {
+        constraints.min = Some(0);
+    }
+
+    if field_definition.contains(".nonpositive()") {
+        constraints.max = Some(0);
+    }
+
+    constraints
+}
+
+fn serialize_constraints(constraints: &ZodFieldConstraints) -> serde_json::Value {
+    let mut constraint_json = serde_json::json!({});
+
+    // Add numeric constraints
+    if let Some(min) = constraints.min {
+        constraint_json["min"] = serde_json::json!(min);
+    }
+    if let Some(max) = constraints.max {
+        constraint_json["max"] = serde_json::json!(max);
+    }
+    if let Some(length) = constraints.length {
+        constraint_json["length"] = serde_json::json!(length);
+    }
+    if let Some(min_length) = constraints.min_length {
+        constraint_json["minLength"] = serde_json::json!(min_length);
+    }
+    if let Some(max_length) = constraints.max_length {
+        constraint_json["maxLength"] = serde_json::json!(max_length);
+    }
+
+    // Add string constraints
+    if let Some(regex) = &constraints.regex {
+        constraint_json["regex"] = serde_json::json!(regex);
+    }
+    if let Some(includes) = &constraints.includes {
+        constraint_json["includes"] = serde_json::json!(includes);
+    }
+    if let Some(starts_with) = &constraints.starts_with {
+        constraint_json["startsWith"] = serde_json::json!(starts_with);
+    }
+    if let Some(ends_with) = &constraints.ends_with {
+        constraint_json["endsWith"] = serde_json::json!(ends_with);
+    }
+
+    // Add boolean constraints
+    if constraints.url {
+        constraint_json["url"] = serde_json::json!(true);
+    }
+    if constraints.email {
+        constraint_json["email"] = serde_json::json!(true);
+    }
+    if constraints.uuid {
+        constraint_json["uuid"] = serde_json::json!(true);
+    }
+    if constraints.cuid {
+        constraint_json["cuid"] = serde_json::json!(true);
+    }
+    if constraints.cuid2 {
+        constraint_json["cuid2"] = serde_json::json!(true);
+    }
+    if constraints.ulid {
+        constraint_json["ulid"] = serde_json::json!(true);
+    }
+    if constraints.emoji {
+        constraint_json["emoji"] = serde_json::json!(true);
+    }
+    if constraints.ip {
+        constraint_json["ip"] = serde_json::json!(true);
+    }
+    if constraints.trim {
+        constraint_json["trim"] = serde_json::json!(true);
+    }
+    if constraints.to_lower_case {
+        constraint_json["toLowerCase"] = serde_json::json!(true);
+    }
+    if constraints.to_upper_case {
+        constraint_json["toUpperCase"] = serde_json::json!(true);
+    }
+
+    // Add transform/refine information
+    if let Some(transform) = &constraints.transform {
+        constraint_json["transform"] = serde_json::json!(transform);
+    }
+    if let Some(refine) = &constraints.refine {
+        constraint_json["refine"] = serde_json::json!(refine);
+    }
+    if let Some(literal) = &constraints.literal {
+        constraint_json["literal"] = serde_json::json!(literal);
+    }
+
+    constraint_json
 }
 
 fn extract_default_value(schema_text: &str, field_name: &str) -> Option<String> {

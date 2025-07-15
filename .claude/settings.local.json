@@ -16,7 +16,8 @@
       "Bash(npm uninstall:*)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(mkdir:*)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "WebFetch(domain:v2.tauri.app)"
     ],
     "deny": []
   }

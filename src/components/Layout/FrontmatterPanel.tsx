@@ -90,6 +90,7 @@ const TextareaField: React.FC<TextareaFieldProps> = ({
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
       <AutoExpandingTextarea
+        id={name === 'title' ? 'frontmatter-title-field' : undefined}
         placeholder={placeholder || `Enter ${label.toLowerCase()}...`}
         className={className}
         minRows={minRows}

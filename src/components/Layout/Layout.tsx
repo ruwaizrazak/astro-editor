@@ -59,6 +59,9 @@ export const Layout: React.FC = () => {
     toggleSidebar,
     toggleFrontmatterPanel,
     loadPersistedProject,
+    selectedCollection,
+    createNewFile,
+    closeCurrentFile,
   } = useAppStore()
 
   // macOS keyboard shortcuts
@@ -84,6 +87,24 @@ export const Layout: React.FC = () => {
             // Cmd+2: Toggle Frontmatter Panel
             toggleFrontmatterPanel()
             break
+          case 'n':
+            e.preventDefault()
+            // Cmd+N: Create New File (only if a collection is selected)
+            if (selectedCollection) {
+              void createNewFile()
+              // Fix for cursor disappearing - ensure cursor is visible
+              document.body.style.cursor = 'auto'
+              // Force a reflow to ensure the cursor change is applied
+              void document.body.offsetHeight
+            }
+            break
+          case 'w':
+            e.preventDefault()
+            // Cmd+W: Close Current File (only if a file is open)
+            if (currentFile) {
+              closeCurrentFile()
+            }
+            break
         }
       }
     }
@@ -97,6 +118,9 @@ export const Layout: React.FC = () => {
     saveFile,
     toggleSidebar,
     toggleFrontmatterPanel,
+    selectedCollection,
+    createNewFile,
+    closeCurrentFile,
   ])
 
   // Load persisted project on app start

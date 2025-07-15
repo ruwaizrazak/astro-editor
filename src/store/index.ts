@@ -57,6 +57,7 @@ interface AppState {
   loadCollections: () => Promise<void>
   loadCollectionFiles: (collectionPath: string) => Promise<void>
   openFile: (file: FileEntry) => Promise<void>
+  closeCurrentFile: () => void
   saveFile: () => Promise<void>
   createNewFile: () => Promise<void>
   setEditorContent: (content: string) => void
@@ -190,6 +191,25 @@ export const useAppStore = create<AppState>((set, get) => ({
       // eslint-disable-next-line no-console
       console.error('Failed to open file:', error)
     }
+  },
+
+  closeCurrentFile: () => {
+    // Clear auto-save timeout if it exists
+    const { autoSaveTimeoutId } = get()
+    if (autoSaveTimeoutId) {
+      clearTimeout(autoSaveTimeoutId)
+    }
+
+    // Clear all file-related state
+    set({
+      currentFile: null,
+      editorContent: '',
+      frontmatter: {},
+      rawFrontmatter: '',
+      imports: '',
+      isDirty: false,
+      autoSaveTimeoutId: null,
+    })
   },
 
   saveFile: async () => {
@@ -421,8 +441,8 @@ export const useAppStore = create<AppState>((set, get) => ({
     const singularize = (word: string): string => {
       const pluralRules = [
         { suffix: 'ies', replacement: 'y' }, // stories -> story
-        { suffix: 'es', replacement: 'e' },  // articles -> article (not articl)
-        { suffix: 's', replacement: '' },    // notes -> note
+        { suffix: 'es', replacement: 'e' }, // articles -> article (not articl)
+        { suffix: 's', replacement: '' }, // notes -> note
       ]
 
       for (const rule of pluralRules) {
@@ -464,29 +484,34 @@ export const useAppStore = create<AppState>((set, get) => ({
         : null
       const defaultFrontmatter: Record<string, unknown> = {}
 
+      // Track if we have a title field in the schema
+      let hasTitleField = false
+
       // Generate default title
       const singularName = singularize(selectedCollection)
       const defaultTitle = `New ${singularName.charAt(0).toUpperCase() + singularName.slice(1)}`
 
       if (schema?.fields) {
         for (const field of schema.fields) {
-          // Only include required fields or fields with meaningful defaults
-          if (!field.optional) {
-            const value = getDefaultValueForField(field)
-
-            // Set date fields to today's date
-            if (
-              field.type === 'Date' &&
-              (field.name.toLowerCase().includes('date') ||
-                field.name.toLowerCase().includes('published'))
-            ) {
-              defaultFrontmatter[field.name] = today
-            } else if (field.name.toLowerCase() === 'title') {
-              // Set title to "New Article", "New Note", etc.
-              defaultFrontmatter[field.name] = defaultTitle
-            } else {
-              defaultFrontmatter[field.name] = value
-            }
+          // Check if this is a title field
+          if (field.name.toLowerCase() === 'title') {
+            hasTitleField = true
+            // Always include title field with default value
+            defaultFrontmatter[field.name] = defaultTitle
+          }
+          // Check for date fields (pubDate, date, publishedDate)
+          else if (
+            field.type === 'Date' &&
+            (field.name.toLowerCase() === 'pubdate' ||
+              field.name.toLowerCase() === 'date' ||
+              field.name.toLowerCase() === 'publisheddate')
+          ) {
+            // Only add date fields if they exist in the schema
+            defaultFrontmatter[field.name] = today
+          }
+          // Include other required fields
+          else if (!field.optional) {
+            defaultFrontmatter[field.name] = getDefaultValueForField(field)
           }
         }
       }
@@ -534,22 +559,33 @@ export const useAppStore = create<AppState>((set, get) => ({
       if (newFile) {
         await get().openFile(newFile)
 
-        // Open frontmatter panel if not already open
+        // Open frontmatter panel if we have a title field
         const { frontmatterPanelVisible, toggleFrontmatterPanel } = get()
-        if (!frontmatterPanelVisible) {
+        if (hasTitleField && !frontmatterPanelVisible) {
           toggleFrontmatterPanel()
         }
 
-        // Focus the title field after a short delay to allow UI to update
+        // Focus the appropriate element after a delay to allow UI to update
         setTimeout(() => {
-          const titleInput = document.querySelector(
-            'input[name="title"]'
-          ) as HTMLInputElement
-          if (titleInput) {
-            titleInput.focus()
-            titleInput.select()
+          if (hasTitleField) {
+            // Try to find and focus the title field by ID
+            const titleField = document.getElementById(
+              'frontmatter-title-field'
+            ) as HTMLTextAreaElement
+            if (titleField) {
+              titleField.focus()
+              titleField.select()
+            }
+          } else {
+            // No title field, focus the main editor
+            const cmEditor = document.querySelector(
+              '.cm-editor .cm-content'
+            ) as HTMLElement
+            if (cmEditor) {
+              cmEditor.focus()
+            }
           }
-        }, 100)
+        }, 200)
       }
     } catch (error) {
       // eslint-disable-next-line no-console
