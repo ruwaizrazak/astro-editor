@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render } from '@testing-library/react'
+import { screen, fireEvent } from '@testing-library/dom'
 import { FrontmatterPanel } from './FrontmatterPanel'
 import { useAppStore } from '../../store'
 

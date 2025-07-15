@@ -79,11 +79,38 @@ pub fn run() {
                         Some("CmdOrCtrl+2"),
                     )?,
                     &PredefinedMenuItem::separator(app)?,
-                    &PredefinedMenuItem::fullscreen(app, Some("Enter Full Screen"))?,
+                    &MenuItem::with_id(
+                        app,
+                        "enter_fullscreen",
+                        "Enter Full Screen",
+                        true,
+                        Some("CmdOrCtrl+F"),
+                    )?,
                 ],
             )?;
 
-            let menu = Menu::with_items(app, &[&file_menu, &edit_menu, &view_menu])?;
+            let app_menu = Submenu::with_items(
+                app,
+                "Astro Editor",
+                true,
+                &[
+                    &MenuItem::with_id(app, "about", "About Astro Editor", true, None::<&str>)?,
+                    &PredefinedMenuItem::separator(app)?,
+                    &PredefinedMenuItem::hide(app, Some("Hide Astro Editor"))?,
+                    &PredefinedMenuItem::hide_others(app, Some("Hide Others"))?,
+                    &PredefinedMenuItem::show_all(app, Some("Show All"))?,
+                    &PredefinedMenuItem::separator(app)?,
+                    &MenuItem::with_id(
+                        app,
+                        "quit",
+                        "Quit Astro Editor",
+                        true,
+                        Some("CmdOrCtrl+Q"),
+                    )?,
+                ],
+            )?;
+
+            let menu = Menu::with_items(app, &[&app_menu, &file_menu, &edit_menu, &view_menu])?;
             app.set_menu(menu)?;
 
             // Apply window vibrancy with rounded corners on macOS
@@ -110,6 +137,17 @@ pub fn run() {
                 }
                 "toggle_frontmatter" => {
                     let _ = app.emit("menu-toggle-frontmatter", ());
+                }
+                "enter_fullscreen" => {
+                    if let Some(window) = app.get_webview_window("main") {
+                        let _ = window.set_fullscreen(true);
+                    }
+                }
+                "about" => {
+                    let _ = app.emit("menu-about", ());
+                }
+                "quit" => {
+                    app.exit(0);
                 }
                 _ => {}
             });

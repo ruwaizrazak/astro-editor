@@ -152,8 +152,7 @@ Investigate alternatives to regex-based parsing:
   - [x] Platform is an enum field in the astro schema. So it shuold render a dropdown not a textbox. The dropdown should have a blank option which removes the property (same behavior as blank fields for other things.)
   - [x] Ensure properties which are arrays of strings in the schema (or frontmatter) use the `tag-input.tsx` element we defined and check it works properly.
 - [x] Make the frontmatter panel resizeable (using the shadcn `redizable` component maybe?) Should have sensible min and max widths.
-- [ ] Improvement to macos menubar: Replace our custom implementation of the "traffic light" window controls with https://github.com/agmmnn/tauri-controls.
-- [ ] Bug: Cmd + F does not open proper fullscreen. Cmd + Q does not quit the app. The menubars should properly include these.
+- [x] Bug: Cmd + F does not open proper fullscreen. Cmd + Q does not quit the app. The menubars should properly include these.
 - [ ] Left sidebar UI improvements
   - [ ] Completely rebuild the left sidebar with shadcn's components (see https://ui.shadcn.com/docs/components/sidebar). The sidebar header "Collections" should only say "Collections" when not inside a collection. Once the user has clicked into a collection it should use the name of the collection, capitalised. Eg "Articles" or "Notes". When inside a collection there should be a back arrow which takes you back up to the collections list. We can then remove everything bar the list of items in the collection from the scrollable area of the sidebar. We can maybe use Shadcn's sidebar patterns to make this UI work a bit better.
   - [ ] Each content item in the left sidebar should display:
