@@ -1,4 +1,6 @@
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
+use std::collections::HashMap;
 use std::path::PathBuf;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -10,6 +12,7 @@ pub struct FileEntry {
     pub is_draft: bool,
     pub collection: String,
     pub last_modified: Option<u64>,
+    pub frontmatter: Option<HashMap<String, Value>>, // Basic frontmatter for display
 }
 
 impl FileEntry {
@@ -28,6 +31,13 @@ impl FileEntry {
 
         let id = format!("{collection}/{name}");
 
+        // Get file modification time
+        let last_modified = std::fs::metadata(&path)
+            .ok()
+            .and_then(|metadata| metadata.modified().ok())
+            .and_then(|time| time.duration_since(std::time::UNIX_EPOCH).ok())
+            .map(|duration| duration.as_secs());
+
         Self {
             id,
             path,
@@ -35,8 +45,20 @@ impl FileEntry {
             extension,
             is_draft: false, // Will be determined by parsing frontmatter
             collection,
-            last_modified: None,
+            last_modified,
+            frontmatter: None, // Will be populated by enhanced scanning
         }
+    }
+
+    pub fn with_frontmatter(mut self, frontmatter: HashMap<String, Value>) -> Self {
+        // Check if this file is a draft based on frontmatter
+        self.is_draft = frontmatter
+            .get("draft")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false);
+        
+        self.frontmatter = Some(frontmatter);
+        self
     }
 
     #[allow(dead_code)]

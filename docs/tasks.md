@@ -153,16 +153,20 @@ Investigate alternatives to regex-based parsing:
   - [x] Ensure properties which are arrays of strings in the schema (or frontmatter) use the `tag-input.tsx` element we defined and check it works properly.
 - [x] Make the frontmatter panel resizeable (using the shadcn `redizable` component maybe?) Should have sensible min and max widths.
 - [x] Bug: Cmd + F does not open proper fullscreen. Cmd + Q does not quit the app. The menubars should properly include these.
-- [ ] Left sidebar UI improvements
-  - [ ] Completely rebuild the left sidebar with shadcn's components (see https://ui.shadcn.com/docs/components/sidebar). The sidebar header "Collections" should only say "Collections" when not inside a collection. Once the user has clicked into a collection it should use the name of the collection, capitalised. Eg "Articles" or "Notes". When inside a collection there should be a back arrow which takes you back up to the collections list. We can then remove everything bar the list of items in the collection from the scrollable area of the sidebar. We can maybe use Shadcn's sidebar patterns to make this UI work a bit better.
-  - [ ] Each content item in the left sidebar should display:
+- [x] Left sidebar UI improvements
+  - [x] Completely rebuild the left sidebar with shadcn's components (see https://ui.shadcn.com/docs/components/sidebar). The sidebar header "Collections" should only say "Collections" when not inside a collection. Once the user has clicked into a collection it should use the name of the collection, capitalised. Eg "Articles" or "Notes". When inside a collection there should be a back arrow which takes you back up to the collections list. We can then remove everything bar the list of items in the collection from the scrollable area of the sidebar. We can maybe use Shadcn's sidebar patterns to make this UI work a bit better.
+  - [x] Each content item in the left sidebar should display:
     - Title: use the "title" frontmatter field if it exists, otherwise use the filename
     - Filename (small, subdued, in monospace font)
     - Published date (if present): check for `pubDate` or `date` or `publishedDate` etc if present in the frontmatter, otherwise do not render anything.
     - A small grey "MDX" badge if the file extension is MDX
     - A small orange "Draft" badge if the frontmatter has `draft:true` set.
-  - [ ] The content items should be ordered according to published date in reverse chronological order. Use `pubdate` or `date` or `publishedDate` if present in the frontmatter. Ignore dates in filenames. Items without a published date should appear at the top.
-  - [ ] If not done already: fix hover and selected states
+  - [x] The content items should be ordered according to published date in reverse chronological order. Use `pubdate` or `date` or `publishedDate` if present in the frontmatter. Ignore dates in filenames. Items without a published date should appear at the top.
+  - [x] If not done already: fix hover and selected states
+  - [x] Backend enhancement: Added frontmatter parsing to FileEntry for proper title display, draft detection, and date-based sorting
+  - [x] Sidebar positioning: Fixed sidebar to be inside main content container with proper clipping
+  - [x] Sidebar resizing: Integrated with ResizablePanel system with sensible min/max defaults
+  - [x] Enhanced selected state: Made selected items more visible with primary accent colors
 - [ ] Improve the dummy data in `dummy-astro-project` so its's easier for us to test (both manually and automated):
   - Keep a few of the real examples and the styleguides but clear out some of theother stuff.
   - Add some more dummy content pieces into the two collections with differring frontmatter, content, filename formats etc. Ensure all features of (GitHub-flavoured) markdown are present so we can easily test the markdown editor later on. Maybe add another collection? Do not change the `notes` or `articles` collection schemas in `content.config.json` - they are exact copies of the schema for my personal blog.

@@ -75,7 +75,16 @@ pub async fn scan_collection_files(collection_path: String) -> Result<Vec<FileEn
         if path.is_file() {
             if let Some(extension) = path.extension().and_then(|ext| ext.to_str()) {
                 if matches!(extension, "md" | "mdx") {
-                    files.push(FileEntry::new(path, collection_name.clone()));
+                    let mut file_entry = FileEntry::new(path.clone(), collection_name.clone());
+                    
+                    // Parse frontmatter for basic metadata
+                    if let Ok(content) = std::fs::read_to_string(&path) {
+                        if let Ok(parsed) = crate::commands::files::parse_frontmatter_internal(&content) {
+                            file_entry = file_entry.with_frontmatter(parsed.frontmatter);
+                        }
+                    }
+                    
+                    files.push(file_entry);
                 }
             }
         }

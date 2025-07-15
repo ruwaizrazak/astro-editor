@@ -11,6 +11,7 @@ export interface FileEntry {
   is_draft: boolean
   collection: string
   last_modified?: number
+  frontmatter?: Record<string, unknown>
 }
 
 export interface MarkdownContent {

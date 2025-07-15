@@ -124,45 +124,76 @@ export const Layout: React.FC = () => {
       {/* Unified titlebar */}
       <UnifiedTitleBar />
 
-      {/* Main content area */}
+      {/* Main content area with integrated sidebar */}
       <div className="flex flex-1 overflow-hidden">
-        {sidebarVisible && (
-          <div
-            className="w-70 min-w-50 max-w-100 bg-muted/20 border-r border-border resize-x overflow-hidden"
-            style={{
-              width: '280px',
-              minWidth: '200px',
-              maxWidth: '400px',
-              resize: 'horizontal',
-            }}
-          >
-            <Sidebar />
-          </div>
-        )}
-
-        {frontmatterPanelVisible ? (
+        {sidebarVisible ? (
           <ResizablePanelGroup direction="horizontal" className="flex-1">
             <ResizablePanel
-              defaultSize={70}
-              minSize={40}
-              maxSize={80}
-              className="flex flex-col min-w-96"
+              defaultSize={20}
+              minSize={15}
+              maxSize={35}
+              className="min-w-[200px] max-w-[400px]"
             >
-              <MainEditor />
+              <Sidebar />
             </ResizablePanel>
             <ResizableHandle className="!cursor-col-resize" />
-            <ResizablePanel
-              defaultSize={30}
-              minSize={20}
-              maxSize={60}
-              className="bg-muted/10 border-l border-border overflow-hidden"
-            >
-              <FrontmatterPanel />
+            <ResizablePanel defaultSize={80} minSize={65}>
+              <div className="h-full">
+                {frontmatterPanelVisible ? (
+                  <ResizablePanelGroup direction="horizontal" className="h-full">
+                    <ResizablePanel
+                      defaultSize={70}
+                      minSize={40}
+                      maxSize={80}
+                      className="flex flex-col min-w-96"
+                    >
+                      <MainEditor />
+                    </ResizablePanel>
+                    <ResizableHandle className="!cursor-col-resize" />
+                    <ResizablePanel
+                      defaultSize={30}
+                      minSize={20}
+                      maxSize={60}
+                      className="bg-muted/10 border-l border-border overflow-hidden"
+                    >
+                      <FrontmatterPanel />
+                    </ResizablePanel>
+                  </ResizablePanelGroup>
+                ) : (
+                  <div className="h-full flex flex-col min-w-96">
+                    <MainEditor />
+                  </div>
+                )}
+              </div>
             </ResizablePanel>
           </ResizablePanelGroup>
         ) : (
-          <div className="flex-1 flex flex-col min-w-96">
-            <MainEditor />
+          <div className="flex-1">
+            {frontmatterPanelVisible ? (
+              <ResizablePanelGroup direction="horizontal" className="flex-1">
+                <ResizablePanel
+                  defaultSize={70}
+                  minSize={40}
+                  maxSize={80}
+                  className="flex flex-col min-w-96"
+                >
+                  <MainEditor />
+                </ResizablePanel>
+                <ResizableHandle className="!cursor-col-resize" />
+                <ResizablePanel
+                  defaultSize={30}
+                  minSize={20}
+                  maxSize={60}
+                  className="bg-muted/10 border-l border-border overflow-hidden"
+                >
+                  <FrontmatterPanel />
+                </ResizablePanel>
+              </ResizablePanelGroup>
+            ) : (
+              <div className="flex-1 flex flex-col min-w-96">
+                <MainEditor />
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -81,6 +81,10 @@ pub async fn save_markdown_content(
     std::fs::write(&file_path, new_content).map_err(|e| format!("Failed to write file: {e}"))
 }
 
+pub fn parse_frontmatter_internal(content: &str) -> Result<MarkdownContent, String> {
+    parse_frontmatter(content)
+}
+
 fn parse_frontmatter(content: &str) -> Result<MarkdownContent, String> {
     let lines: Vec<&str> = content.lines().collect();
 
