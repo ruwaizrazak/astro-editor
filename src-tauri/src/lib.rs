@@ -166,6 +166,7 @@ pub fn run() {
             write_file,
             create_file,
             delete_file,
+            rename_file,
             parse_markdown_content,
             update_frontmatter,
             save_markdown_content,

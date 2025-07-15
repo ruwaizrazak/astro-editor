@@ -72,6 +72,12 @@ export const Sidebar: React.FC = () => {
     openFile: (file: FileEntry) => Promise<void>
   } = useAppStore()
 
+  // State for rename functionality
+  const [renamingFileId, setRenamingFileId] = React.useState<string | null>(
+    null
+  )
+  const [renameValue, setRenameValue] = React.useState('')
+
   const handleOpenProject = async () => {
     try {
       const result = await invoke<string | null>('select_project_folder')
@@ -115,7 +121,83 @@ export const Sidebar: React.FC = () => {
           )
         }
       },
+      onRename: handleRename,
     })
+  }
+
+  const handleRename = (file: FileEntry) => {
+    setRenamingFileId(file.id)
+    // Include extension in the edit value
+    const fullName = file.extension ? `${file.name}.${file.extension}` : file.name
+    setRenameValue(fullName || '')
+  }
+
+  // Focus and select filename without extension when rename input is rendered
+  React.useEffect(() => {
+    if (renamingFileId) {
+      const timeoutId = setTimeout(() => {
+        const input = document.querySelector(
+          'input[type="text"]'
+        ) as HTMLInputElement
+        if (input && renameValue) {
+          input.focus()
+          const lastDotIndex = renameValue.lastIndexOf('.')
+          if (lastDotIndex > 0) {
+            // Select filename without extension
+            input.setSelectionRange(0, lastDotIndex)
+          } else {
+            // Select all if no extension
+            input.select()
+          }
+        }
+      }, 10)
+      return () => clearTimeout(timeoutId)
+    }
+  }, [renamingFileId]) // Remove renameValue dependency to prevent re-running on typing
+
+  const handleRenameSubmit = async (file: FileEntry) => {
+    if (!renameValue.trim() || renameValue === file.name) {
+      setRenamingFileId(null)
+      return
+    }
+
+    try {
+      const directory = file.path.substring(0, file.path.lastIndexOf('/'))
+      const newPath = `${directory}/${renameValue}`
+
+      await invoke('rename_file', {
+        oldPath: file.path,
+        newPath: newPath,
+      })
+
+      setRenamingFileId(null)
+      setRenameValue('')
+
+      // Refresh the file list
+      if (selectedCollection) {
+        void loadCollectionFiles(
+          collections.find(c => c.name === selectedCollection)?.path || ''
+        )
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to rename file:', error)
+    }
+  }
+
+  const handleRenameCancel = () => {
+    setRenamingFileId(null)
+    setRenameValue('')
+  }
+
+  const handleRenameKeyDown = (event: React.KeyboardEvent, file: FileEntry) => {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      void handleRenameSubmit(file)
+    } else if (event.key === 'Escape') {
+      event.preventDefault()
+      handleRenameCancel()
+    }
   }
 
   // Sort files by published date (reverse chronological), files without dates first
@@ -242,7 +324,20 @@ export const Sidebar: React.FC = () => {
                         </div>
                       )}
                       <div className="text-xs font-mono text-muted-foreground mt-1">
-                        {file.name}
+                        {renamingFileId === file.id ? (
+                          <input
+                            type="text"
+                            value={renameValue}
+                            onChange={e => setRenameValue(e.target.value)}
+                            onKeyDown={e => handleRenameKeyDown(e, file)}
+                            onBlur={() => void handleRenameSubmit(file)}
+                            className="bg-background border border-border rounded px-1 py-0.5 text-xs font-mono w-full"
+                            autoFocus
+                            onClick={e => e.stopPropagation()}
+                          />
+                        ) : (
+                          file.extension ? `${file.name}.${file.extension}` : file.name
+                        )}
                       </div>
                     </div>
                     <div className="flex flex-col gap-1">

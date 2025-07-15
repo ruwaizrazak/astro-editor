@@ -10,6 +10,7 @@ interface ContextMenuOptions {
   file: FileEntry
   position: { x: number; y: number }
   onRefresh?: () => void
+  onRename?: (file: FileEntry) => void
 }
 
 export class FileContextMenu {
@@ -42,6 +43,7 @@ export class FileContextMenu {
     file,
     position,
     onRefresh,
+    onRename,
   }: ContextMenuOptions): Promise<void> {
     try {
       // eslint-disable-next-line no-console
@@ -133,6 +135,23 @@ export class FileContextMenu {
         },
       })
 
+      const renameItem = await MenuItem.new({
+        id: 'rename-file',
+        text: 'Rename',
+        action: () => {
+          try {
+            // eslint-disable-next-line no-console
+            console.log('Rename clicked for file:', file.path)
+            if (onRename) {
+              onRename(file)
+            }
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('Failed to initiate rename:', error)
+          }
+        },
+      })
+
       const separator = await PredefinedMenuItem.new({
         text: 'separator',
         item: 'Separator',
@@ -172,7 +191,14 @@ export class FileContextMenu {
 
       // Create and show the context menu
       const menu = await Menu.new({
-        items: [revealItem, copyPathItem, duplicateItem, separator, deleteItem],
+        items: [
+          revealItem,
+          copyPathItem,
+          duplicateItem,
+          renameItem,
+          separator,
+          deleteItem,
+        ],
       })
 
       // Show the menu at the specified position

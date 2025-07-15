@@ -34,6 +34,11 @@ pub async fn delete_file(file_path: String) -> Result<(), String> {
     std::fs::remove_file(&file_path).map_err(|e| format!("Failed to delete file: {e}"))
 }
 
+#[tauri::command]
+pub async fn rename_file(old_path: String, new_path: String) -> Result<(), String> {
+    std::fs::rename(&old_path, &new_path).map_err(|e| format!("Failed to rename file: {e}"))
+}
+
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct MarkdownContent {
     pub frontmatter: HashMap<String, Value>,
