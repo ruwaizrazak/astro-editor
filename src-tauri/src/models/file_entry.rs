@@ -56,7 +56,7 @@ impl FileEntry {
             .get("draft")
             .and_then(|v| v.as_bool())
             .unwrap_or(false);
-        
+
         self.frontmatter = Some(frontmatter);
         self
     }
