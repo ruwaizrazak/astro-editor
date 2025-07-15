@@ -1,272 +1,131 @@
-# Claude Instructions for Astro Blog Editor Project
+# Claude Instructions for Astro Blog Editor
 
 ## Project Overview
 
-This is a native macOS markdown editor specifically designed for managing and editing Astro content collections. The goal is to create a beautiful, distraction-free writing environment that understands Astro's content structure and provides seamless frontmatter editing, inspired by iA Writer's design philosophy.
+Native macOS markdown editor for Astro content collections. Creates a distraction-free writing environment with seamless frontmatter editing, inspired by iA Writer.
 
 ## Core Rules
 
 ### New Sessions
-
-- Always read `docs/initial-prd.md` and `docs/tasks.md` to understand project context and current status
-- Check the git status and project structure to understand what's been implemented
+- Read `docs/tasks.md` for current status and next steps
+- Check git status and project structure for recent changes
 
 ### Progress Tracking
+- **CRITICAL:** Update `docs/tasks.md` after completing major work - mark completed items with `[x]`
+- Update planning documents when moving between phases
 
-- **CRITICAL:** After completing any major work, update `docs/tasks.md` and mark completed items with `[x]`
-- When moving between phases, update the planning document to reflect current status
-- If you complete multiple related tasks, update them all at once to keep the plan current
+### Documentation Lookup
+- **Always use Context7 first** for major frameworks/libraries documentation
+- Use `mcp__context7__resolve-library-id` then `mcp__context7__get-library-docs`
+- Only use WebSearch if Context7 lacks the needed information
+- Common Context7 queries: Tauri v2, React, Zustand, CodeMirror, Tailwind, Vitest
 
-### Development Approach
+## Current Status
 
-- We are taking a phased approach to development outlined in `docs/tasks.md`
-- **Current Status**: Phase 2.3 (UI refinement and code quality improvements) - partially complete
-- Each phase has specific deliverables - ensure these are met before moving to the next phase
+**Phase 2.3 - Complete** (UI refinement and code quality)
+- All core functionality implemented
+- shadcn/ui components integrated
+- Comprehensive test suite (121 tests passing)
+- File operations: create, rename, duplicate, context menus
+- Auto-save every 2 seconds
+- Frontmatter panel with dynamic forms
 
-## Technology Stack (IMPLEMENTED)
+**Next:** Phase 3 - Editor experience improvements
 
-- **Framework:** Tauri v2 (Rust backend + React frontend)
-- **Text Editor:** CodeMirror 6 with markdown support
-- **Frontend:** React 19 + TypeScript (strict mode)
-- **State Management:** Zustand with persistence
-- **Styling:** Tailwind CSS v3 + shadcn/ui components (v4 upgrade planned)
-- **Icons:** Lucide React + Radix UI icons
-- **Forms:** Direct Zustand store updates (React Hook Form removed)
-- **Testing:** Vitest + React Testing Library (frontend), Cargo test (backend)
-- **Code Quality:** ESLint, Prettier, Clippy with comprehensive configurations
+## Technology Stack
 
-**CRITICAL:** This project uses Tauri v2. Always refer to Tauri v2 documentation. Many Tauri v1 approaches do NOT work in v2.
+- **Framework:** Tauri v2 (Rust + React)
+- **Frontend:** React 19 + TypeScript (strict)
+- **State:** Zustand with persistence
+- **Styling:** Tailwind v4 + shadcn/ui
+- **Editor:** CodeMirror 6
+- **Testing:** Vitest + React Testing Library, Cargo
+- **Quality:** ESLint, Prettier, Clippy
 
-## Project Structure
+**CRITICAL:** Use Tauri v2 documentation only. v1 approaches don't work.
 
-### Frontend Architecture
+## Architecture
 
+### Frontend Structure
 ```
 src/
 ├── components/
-│   ├── Layout/           # Main app layout components
-│   │   ├── Layout.tsx           # Root layout container with helper components
-│   │   ├── Sidebar.tsx          # Collections/files navigation
-│   │   ├── EditorView.tsx       # CodeMirror integration
-│   │   ├── FrontmatterPanel.tsx # Dynamic form generation with typed interfaces
-│   │   ├── MainEditor.tsx       # Editor area with extracted WelcomeScreen
-│   │   └── UnifiedTitleBar.tsx  # macOS-style window chrome
-│   └── ui/               # shadcn/ui components (30+ components)
-├── store/
-│   └── index.ts          # Zustand store with file operations
-├── lib/
-│   ├── schema.ts         # Zod schema parsing and form generation
-│   └── utils.ts          # Utility functions
-├── types/
-│   └── common.ts         # Shared TypeScript interfaces and types
+│   ├── Layout/           # Main app components
+│   └── ui/               # shadcn/ui components (30+)
+├── store/index.ts        # Zustand state management
+├── lib/schema.ts         # Zod schema parsing
+├── types/common.ts       # Shared interfaces
 └── hooks/                # React hooks
 ```
 
-### Backend Architecture (Rust)
-
+### Backend Structure (Rust)
 ```
 src-tauri/src/
-├── commands/             # Tauri command implementations
-│   ├── files.rs         # File operations (read, write, create)
-│   ├── project.rs       # Project/collection discovery
-│   └── watcher.rs       # File system watching
+├── commands/             # Tauri commands
 ├── models/              # Data structures
-│   ├── collection.rs    # Collection and schema definitions
-│   └── file_entry.rs    # File metadata and frontmatter
-└── parser.rs            # TypeScript config parsing
+└── parser.rs            # TypeScript parsing
 ```
 
-### Project Overview
-
+### Project Structure
 ```
 blog-editor/
-├── docs/                       # Project documentation
-│   ├── images/                 # Screenshots and visual references
-│   ├── initial-prd.md          # Product requirements document
-│   ├── initial-requirement-notes.md
-│   └── tasks.md               # Implementation plan and status
-├── test/dummy-astro-project/  # Test Astro project for development
-│   └── src/
-│       ├── assets/            # Sample assets (images etc) for content collections
-│       │   ├── articles/
-│       │   └── notes/
-│       ├── content/           # Sample content collections
-│       │   ├── articles/      # Collection: Long-form blog posts
-│       │   └── notes/         # Collection: Shorter notes/thoughts
-│       ├── components/mdx/    # Astron components intende for use inside MDX content items
-│       └── content.config.ts  # Astro collection schemas
-├── src/                       # Main React application
-├── src-tauri/                 # Rust backend code
-├── public/                    # Static assets
-├── components.json            # shadcn/ui configuration
-├── tailwind.config.js         # Tailwind CSS setup
-├── vitest.config.ts           # Testing configuration
-├── package.json               # Dependencies and scripts
-└── README.md                  # Project overview
+├── docs/                # Documentation
+├── test/dummy-astro-project/  # Test data
+├── src/                 # React app
+├── src-tauri/           # Rust backend
+├── components.json      # shadcn/ui config
+└── package.json
 ```
 
-## Current Implementation Status
-
-### ✅ Completed (Phases 1-2)
-
-- Basic Tauri app with React frontend
-- File system operations and watching
-- Astro content collection discovery and parsing
-- CodeMirror 6 integration with markdown support
-- Frontmatter parsing and form-based editing
-- Dynamic form generation from Zod schemas
-- shadcn/ui component library integration
-- Comprehensive testing and linting setup
-- macOS-native window customization
-
-### ✅ Completed (Phase 2.3)
-
-- UI refinement with shadcn components
-- Frontmatter panel improvements (auto-growing textareas, field extraction)
-- Direct store pattern architecture (eliminated infinite loops)
-- Bug fixes (save refreshing, frontmatter ordering, textarea auto-expansion)
-- Architectural refactor removing React Hook Form dependencies
-- **Component refactoring**: Eliminated code duplication in Layout component
-- **TypeScript improvements**: Added comprehensive type interfaces and better type safety
-
-### 🚧 In Progress (Phase 2.3)
-
-- Left sidebar redesign with collection navigation
-- Test data enhancement
-
-### 📋 Next Steps
-
-- Tailwind v4 upgrade
-- Editor experience improvements (Phase 3)
-- Polish and performance optimizations (Phase 4)
-
-## Development Guidelines
-
-### Code Quality Requirements
-
-- **TypeScript:** Strict typing required, no `any` types
-- **React:** Use modern patterns (hooks, function components)
-- **State Management:** All state through Zustand store
-- **Error Handling:** Graceful degradation and user-friendly messages
-- **Performance:** Target <2s app launch, <100ms file operations
-
-### Component Patterns
-
-- Use shadcn/ui components over custom implementations
-- Keep components focused and reusable
-- Use TypeScript interfaces for all component props
-- Implement proper loading states and error boundaries
-- **CRITICAL:** Follow the Direct Store Pattern for all form-like components (see below)
-- **Extract helper components** to eliminate code duplication (e.g., `EditorAreaWithFrontmatter`)
-- **Create reusable interfaces** in `src/types/common.ts` for consistent prop types
-
-### Styling Guidelines
-
-- **Primary:** Use Tailwind utilities over custom CSS
-- **Spacing:** `p-4` for panels, `gap-2` for small spacing, `gap-4` for larger
-- **Icons:** `h-4 w-4` for standard icons, `h-8` for toolbar buttons
-- **Colors:** Use CSS variables (`bg-background`, `text-foreground`, etc.)
-- **Responsive:** Use `overflow-hidden` with `text-ellipsis` for long text
-
-## Available Commands
+## Development Commands
 
 ### Development
-
 ```bash
-npm run dev              # Start Tauri dev server
-npm run tauri:dev        # Alternative Tauri dev command
-npm run build            # Build for production
-npm run tauri:build      # Build Tauri app
+npm run dev              # Start dev server
+npm run build            # Production build
+npm run tauri:dev        # Alternative dev
+npm run tauri:build      # Build app
 ```
 
-### Code Quality
-
+### Quality Checks
 ```bash
-# Frontend
-npm run lint             # ESLint checking
-npm run lint:fix         # Auto-fix ESLint issues
-npm run format           # Prettier formatting
-npm run format:check     # Check Prettier formatting
-npm run typecheck        # TypeScript type checking
-
-# Backend
-npm run rust:fmt         # Format Rust code
-npm run rust:clippy      # Clippy linting
-npm run rust:clippy:fix  # Auto-fix Clippy issues
-
-# Combined
-npm run check:all        # Run all checks (TS + Rust + tests)
+npm run check:all        # All checks (TS + Rust + tests)
 npm run fix:all          # Auto-fix all issues
+npm run typecheck        # TypeScript check
+npm run lint             # ESLint
+npm run format           # Prettier
+npm run rust:clippy      # Rust linting
 ```
 
 ### Testing
-
 ```bash
-# Frontend Tests (Vitest + React Testing Library)
-npm run test             # Run tests in watch mode
-npm run test:run         # Run tests once
-npm run test:ui          # Run tests with UI
+npm run test             # Watch mode
+npm run test:run         # Run once
+npm run test:all         # Frontend + backend
+npm run rust:test        # Rust only
 npm run test:coverage    # Coverage report
-
-# Backend Tests (Cargo)
-npm run rust:test        # Run Rust tests
-
-# All Tests
-npm run test:all         # Run both frontend and backend tests
 ```
 
-## Testing Strategy
+### Data Management
+```bash
+npm run reset:testdata   # Reset test project
+```
 
-A dummy astro project with most of the relevant files exists at `dummy-astro-project`
-
-### Frontend Testing
-
-- **Store tests:** State management and async operations
-- **Component tests:** Rendering and user interactions
-- **Error handling:** API failures and edge cases
-- **Mocked APIs:** Use `globalThis.mockTauri` for Tauri commands
-
-### Backend Testing
-
-- **Command tests:** File operations with temporary files
-- **Model tests:** Data structure validation
-- **Integration tests:** Complete workflows
-- **Error scenarios:** Permission denied, file not found, etc.
-
-## Architecture Patterns
-
-### State Management
-
-- Single Zustand store in `src/store/index.ts`
-- Async actions for all file operations
-- State persistence for project path and UI preferences
-- Separation of UI state and file content state
+## Key Patterns
 
 ### Direct Store Pattern (CRITICAL)
-
-**Problem:** React Hook Form + Zustand sync causes infinite loops when extracting components.
-
-**Solution:** Components read/write directly to Zustand store using `updateFrontmatterField`.
-
-**Pattern:**
+**Problem:** React Hook Form + Zustand causes infinite loops.
+**Solution:** Direct store access with `updateFrontmatterField`.
 
 ```tsx
-// Define reusable interface (in src/types/common.ts)
-interface FieldProps {
+// Reusable field component
+const StringField: React.FC<{
   name: string
   label: string
   required?: boolean
-  className?: string
-}
-
-// Component implementation with proper typing
-const MyField: React.FC<FieldProps> = ({
-  name,
-  label,
-  required,
-}) => {
+}> = ({ name, label, required }) => {
   const { frontmatter, updateFrontmatterField } = useAppStore()
-
+  
   return (
     <div className="space-y-2">
       <label className="text-sm font-medium">
@@ -282,156 +141,131 @@ const MyField: React.FC<FieldProps> = ({
 }
 ```
 
-**Benefits:**
+**Benefits:** No infinite loops, extractable components, real-time updates, auto-save works.
 
-- No callback dependencies → no infinite loops
-- Components are safely extractable
-- Real-time updates maintained
-- Auto-save works seamlessly
-
-**Use for:** Any component that modifies frontmatter, form fields, or app state.
-
-### Frontmatter Form Generation
-
-- Dynamic forms generated from Zod schemas in `lib/schema.ts`
-- Support for string, number, boolean, date, enum, and array fields
-- Direct store updates (no React Hook Form)
-- Individual field components: `StringField`, `BooleanField`, `DateField`, etc.
+### State Management
+- Single Zustand store in `src/store/index.ts`
+- Async actions for file operations
+- State persistence for project/UI preferences
+- Auto-save every 2 seconds with debouncing
 
 ### File Operations
+- All I/O through Tauri commands
+- File watching with change detection
+- Frontmatter parsing and validation
+- MDX import handling
 
-- All file I/O through Tauri commands
-- File watching with debounced updates
-- Auto-save every 30 seconds and on blur
-- Frontmatter hidden from CodeMirror display
+### Form Generation
+- Dynamic forms from Zod schemas
+- Field types: string, number, boolean, date, enum, array
+- Direct store updates (no React Hook Form)
+- Components: `StringField`, `BooleanField`, `DateField`, etc.
 
-### TypeScript Patterns
+## Code Quality
 
-**Type-Safe Store Usage:**
-```tsx
-// Explicitly type store destructuring for better IDE support
-const { currentFile, frontmatter, collections }: {
-  currentFile: FileEntry | null
-  frontmatter: Record<string, unknown>
-  collections: Collection[]
-} = useAppStore()
-```
+### TypeScript Requirements
+- Strict mode enabled
+- No `any` types
+- Explicit interface definitions
+- Type-safe store usage
 
-**Reusable Field Interfaces:**
-```tsx
-// Base interface for all form fields
-interface FieldProps extends BaseComponentProps {
-  name: string
-  label: string
-  required?: boolean
-}
+### Component Guidelines
+- Use shadcn/ui components first
+- Direct Store Pattern for state modification
+- Extract helper components for repeated JSX (3+ times)
+- Create reusable interfaces in `src/types/common.ts`
 
-// Extended interfaces for specific field types
-interface StringFieldProps extends FieldProps {
-  placeholder?: string
-}
+### Styling
+- Tailwind utilities over custom CSS
+- Standard spacing: `p-4` panels, `gap-2` small, `gap-4` large
+- Icons: `h-4 w-4` standard, `h-8` toolbar
+- CSS variables: `bg-background`, `text-foreground`
 
-interface EnumFieldProps extends FieldProps {
-  options: string[]
-}
-```
+## Testing Strategy
 
-**Helper Component Pattern:**
-```tsx
-// Extract duplicated logic into helper components
-const EditorAreaWithFrontmatter: React.FC<{
-  frontmatterPanelVisible: boolean
-}> = ({ frontmatterPanelVisible }) => {
-  // Shared layout logic here
-  return frontmatterPanelVisible ? (
-    // Complex resizable layout
-  ) : (
-    // Simple layout
-  )
-}
-```
+### Frontend (Vitest + React Testing Library)
+- Store operations and async actions
+- Component rendering and interactions
+- Error handling and edge cases
+- Mock Tauri with `globalThis.mockTauri`
 
-## Known Issues & Limitations
+### Backend (Cargo)
+- File operations with temp files
+- Data structure validation
+- Complete workflow integration
+- Error scenarios (permissions, missing files)
 
-### Technical Limitations
+### Test Data
+- `test/dummy-astro-project/` contains sample Astro project
+- Use `npm run reset:testdata` for clean test environment
+- Covers various frontmatter configurations and content types
 
-- Only supports standard Astro project structures
-- Limited to basic Zod schema types
-- Regex-based TypeScript parsing (improvement planned)
-- macOS only (initial version)
-
-### WebKit/Tauri Considerations
-
-- `field-sizing: content` CSS is not supported → use JavaScript-based auto-expansion
-- Use `AutoExpandingTextarea` component for auto-resizing textareas
-- WebKit has different behavior than Chrome DevTools
-
-## Key Files to Understand
-
-### Essential Reading
-
-- `docs/initial-prd.md` - Product requirements and vision
-- `docs/tasks.md` - Implementation plan and current status
-- `src/store/index.ts` - Application state management (includes `updateFrontmatterField`)
-- `src/lib/schema.ts` - Schema parsing and form generation
-- `src/types/common.ts` - Shared TypeScript interfaces and types
-- `src/components/Layout/FrontmatterPanel.tsx` - Direct Store Pattern example with typed interfaces
-- `src/components/Layout/Layout.tsx` - Helper component pattern example (`EditorAreaWithFrontmatter`)
-- `src/components/ui/auto-expanding-textarea.tsx` - WebKit-compatible auto-expansion
-
-### Configuration Files
-
-- `components.json` - shadcn/ui configuration
-- `tailwind.config.js` - Tailwind CSS setup
-- `vitest.config.ts` - Testing configuration
-- `eslint.config.js` - Linting rules
-- `src-tauri/tauri.conf.json` - Tauri app configuration
+## WebKit/Tauri Considerations
+- `field-sizing: content` CSS not supported → use `AutoExpandingTextarea`
+- WebKit behavior differs from Chrome DevTools
+- Use JavaScript-based auto-expansion for textareas
 
 ## Best Practices
 
 ### Before Committing
-
-1. Run `npm run check:all` to verify all tests and linting pass
+1. Run `npm run check:all` - all tests/linting must pass
 2. Update `docs/tasks.md` with completed work
-3. Ensure TypeScript compilation is clean
-4. Ask the user to test manually in the app if UI changes were made
+3. Manual testing for UI changes
 
-### When Adding Features
-
-1. Check if shadcn/ui has a suitable component first
-2. **Use Direct Store Pattern for any state-modifying components**
-3. Write tests for new functionality
-4. Update types and interfaces as needed
-5. Consider performance impact for large collections
-6. Follow established patterns in existing code
-
-### Component Extraction Rules
-
+### Component Development
 - **NEVER** use React Hook Form for new components
-- **ALWAYS** use `updateFrontmatterField` for frontmatter changes
-- **AVOID** callback props that depend on changing state
-- **USE** direct store access: `const { state, action } = useAppStore()`
-- **EXTRACT** helper components when you see duplicate JSX patterns (3+ repetitions)
-- **DEFINE** reusable interfaces in `src/types/common.ts` for consistent prop types
-- **TYPE** store destructuring explicitly for better IDE support and documentation
+- **ALWAYS** use Direct Store Pattern for state changes
+- **AVOID** callback props with changing dependencies
+- **EXTRACT** helper components for duplicate patterns
+- **TYPE** store destructuring explicitly
 
-### Refactoring Guidelines
+### Error Handling
+- Graceful degradation for missing files/permissions
+- User-friendly error messages
+- Validation before file operations
+- Recovery from file system errors
 
-1. **Identify Duplication**: Look for repeated JSX structures, especially in layout components
-2. **Extract Helper Components**: Create focused components for repeated patterns
-3. **Improve Type Safety**: Add explicit type annotations for store usage
-4. **Create Shared Interfaces**: Move common prop types to `src/types/common.ts`
-5. **Maintain Functionality**: Ensure refactoring doesn't change app behavior (all tests must pass)
+## Key Files Reference
 
-### Code Review Checklist
+### Essential
+- `src/store/index.ts` - State management with `updateFrontmatterField`
+- `src/lib/schema.ts` - Zod schema parsing and validation
+- `src/types/common.ts` - Shared TypeScript interfaces
+- `src/components/Layout/FrontmatterPanel.tsx` - Direct Store Pattern example
 
-- TypeScript types are properly defined
-- Error handling is implemented
-- Components are accessible and responsive
-- Performance considerations for large files/collections
-- Tests cover new functionality
-- Documentation is updated if needed
+### Configuration
+- `components.json` - shadcn/ui setup
+- `vitest.config.ts` - Testing configuration
+- `src-tauri/tauri.conf.json` - App configuration
+
+## Troubleshooting
+
+### Common Issues
+- **Infinite loops:** Check Direct Store Pattern usage
+- **Auto-save not working:** Verify `scheduleAutoSave()` calls
+- **File watching issues:** Check file permissions and paths
+- **Schema parsing errors:** Validate TypeScript config syntax
+
+### Performance
+- Target <2s app launch, <100ms file operations
+- Use virtualization for large collections
+- Debounce file watching updates
+- Optimize re-renders with proper memoization
+
+## Architecture Notes
+
+### Limitations
+- macOS only (initial version)
+- Standard Astro project structures only
+- Basic Zod schema types supported
+- Regex-based TypeScript parsing
+
+### Future Improvements
+- Cross-platform support
+- Enhanced schema parsing
+- Advanced editor features
+- Performance optimizations
 
 ---
 
-_Keep this file updated as the project evolves. Always verify current implementation matches the guidance provided here._
+*Keep this updated as the project evolves. Verify implementation matches guidance.*
