@@ -174,13 +174,12 @@ Investigate alternatives to regex-based parsing:
 - [x] Review all non-shadci React components for opportunities to extract reusable components or simplify to make things more readable/understandable etc. Refactor as needed.
 - [x] Review all typescript code to ensure we're making full use of the various types and interfaces we've defined in `store/index.ts` and elsewhere. Can we improve simplicity and type safety elsewhere in the app by using typescript types well?
 - [x] Add native context menu actions to files in FileList:
-  - Reveal in Finder - opens directory in finder
-  - Copy path to file - copies the absolute path to the file
-  - Delete - Deletes the file after confirmation. If easy, use the OS file deletion (so it goes to trash)
-- [ ] Add "duplicate" to FileList context menu (append `-1` etc to filename before extension for new file)
-- [ ] Add "rename" to FileList context menu - UI should rename kinda "in-place" if possible, not in a modal.
-
-- [ ] Create new file functionality for easy creation of new content items within collections
+  - [x] Reveal in Finder - opens directory in finder
+  - [x] Copy path to file - copies the absolute path to the file
+  - [x] Delete - Deletes the file after confirmation. If easy, use the OS file deletion (so it goes to trash)
+  - [x] Add "duplicate" to FileList context menu (append `-1` etc to filename before extension for new file)
+- [ ] Add ability to rename files in the FileList. This needs to work as seemlessly and easily as possible so it can be done quickly.
+- [ ] Create new file functionality for easy creation of new content items within collections. New files should be created with the mandatory frontmatter as per the schema and if pubDate, date or PublishedDate is a property it should be set to today's date.
 - [ ] Review our approach to parsing `content.config.js` - I think we currently use RegEx, but if we're able to execute JS/TS in the compiled Tauri app it may be possible to use `zod` to read and understand the schema in a more robust/efficient/safe way. Could we use the md/mdx files and zon schemas to creat our own typesafe objects, which our UI components can read? This would probably involve the the rust backend talking more with the TS front-end etc.
 - [ ] Rework (or add to) the tests so they actually test all the weird little bits of business logic we've now got in our code. Our tests must encode our business logic effectively and not be over-bloated testing obvious things.
 - [ ] Update `CLAUDE.md` with clear descriptions of the new design patterns etc we have introduced, current project structure, examples, npm commands etc. Add instructions to check the shadcn docs when needed (with the appropriate tool calls to do so). Make sure CLAUDE.md is the best it can be. Also look for opportunities to optimise for token use without affecting its effectiveness.
