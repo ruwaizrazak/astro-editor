@@ -180,9 +180,12 @@ Investigate alternatives to regex-based parsing:
   - [x] Add "duplicate" to FileList context menu (append `-1` etc to filename before extension for new file)
 - [x] Add ability to rename files in the FileList. This needs to work as seemlessly and easily as possible so it can be done quickly.
 - [ ] Create new file functionality for easy creation of new content items within collections. New files should be created with the mandatory frontmatter as per the schema and if pubDate, date or PublishedDate is a property it should be set to today's date.
-- [ ] Review our approach to parsing `content.config.js` - I think we currently use RegEx, but if we're able to execute JS/TS in the compiled Tauri app it may be possible to use `zod` to read and understand the schema in a more robust/efficient/safe way. Could we use the md/mdx files and zon schemas to creat our own typesafe objects, which our UI components can read? This would probably involve the the rust backend talking more with the TS front-end etc.
-- [ ] Rework (or add to) the tests so they actually test all the weird little bits of business logic we've now got in our code. Our tests must encode our business logic effectively and not be over-bloated testing obvious things.
-- [ ] Update `CLAUDE.md` with clear descriptions of the new design patterns etc we have introduced, current project structure, examples, npm commands etc. Add instructions to check the shadcn docs when needed (with the appropriate tool calls to do so). Make sure CLAUDE.md is the best it can be. Also look for opportunities to optimise for token use without affecting its effectiveness.
+  - [ ] It should focus the "title" field in the frontmatter panel with its contents selected.
+  - [ ] We should add handling for cases where we're in a collection and there is no field named 'title' in the schema, in which case we shouldn't set one and should just focus the main editor window instead. Likewise if there is no date, pubDate or publishedDate field in the schema we should not create it in the frontmatter of the new file.
+  - [ ] Add a Cmd + N shortcut which creates a new file in the currently open collection. It should be disabled if no collection is selected.
+- [ ] Comprehensively review our approach to parsing `content.config.js` - I think we currently use RegEx, but if we're able to execute JS/TS in the compiled Tauri app it may be possible to use `zod` to read and understand the schema in a more robust/efficient/safe way. Could we use the md/mdx files and zod schemas to creat our own typesafe objects as representations of frontmatter/schema etc, which our UI components can read? This would probably involve the the rust backend talking more with the TS front-end etc. It may not be worth the effort to do this.
+- [ ] Comprehensively review our whole test suite so it actually test all the weird little bits of business logic we've now got in our code. Our tests must encode our business logic effectively and not be over-bloated testing obvious things.
+- [ ] Comprehensively review and reqrite `CLAUDE.md` with clear descriptions of the current design patterns, architecture, technology, examples, npm commands etc. Add instructions to check the docs when needed (with the appropriate Context7 tool calls to do so). Make sure CLAUDE.md is the best it can be. Also look for opportunities to gently optimise for token use without affecting its effectiveness.
 
 ---
 
@@ -197,6 +200,7 @@ _Goal: Beautiful, iA Writer-inspired editing experience_
 - [ ] Custom CodeMirror theme matching iA Writer aesthetic
 - [ ] Add editor keyboard shortcuts (Cmd+B, Cmd+I, Cmd+K, etc.)
 - [ ] Add: Pasting a URL over selected text inserts a markdown link properly
+- [ ] Ensure undo and redo work with the usual keyboard shortcuts and OS menubar entries.
 - [ ] Ensure all GFM features are fully supported
 - [x] Hide initial MDX imports for MDX files
 - [ ] Improve markdown syntax highlighting and code block display
@@ -206,7 +210,7 @@ _Goal: Beautiful, iA Writer-inspired editing experience_
 - [ ] Implement image drag & drop functionality
   - [ ] Auto-copy images to `src/assets/[collection]/` with auto-rename to kebabcase and date prefix etc.
   - [ ] Insert markdown image syntax at drop location
-- [ ] Implement basic auto-formatting on save
+- [ ] Implement basic auto-formatting on save (should insert nealine at EOF if not there)
 
 **Deliverable:** Beautiful, responsive editor with excellent UX for markdown writing
 
@@ -218,14 +222,14 @@ _Goal: Production-ready reliability and performance_
 **Phase 4.1**
 
 - [ ] Add simple (currently empty) preferences/settings window/dialog with `Cmd + ,` keyboard shortcut, menu item, cog icon in `UnifiedTitleBar.tsx` etc.
-- [ ] Add error handling and graceful degradation where appropriate
-- [ ] Optimize for large content collections (virtualized lists, laxy loading etc)
+- [ ] Add error handling and graceful degradation wherever appropriate
+- [ ] Optimize for large content collections (virtualized lists, lazy loading etc)
 - [ ] Add simple search functionality for large collections (by filename and title [if present] only)
 - [ ] Crash recovery and unsaved changes detection
-- [ ] Add comprehensive keyboard shortcuts
+- [ ] Check keyboard shortcuts are comprehensive and all work
 - [ ] Review all right-click context menus, menubar menus etc. Remove anything not implemented and conform to macOS norms
 - [ ] Implement simple command pallete to execute common commands etc (use https://ui.shadcn.com/docs/components/command)
-- [ ] Review all code for opportunities to simplify, refactor, make more readable etc **without affecting functionality**
+- [ ] Review all code for opportunities to simplify, refactor, make more readable/maintainable etc **without affecting functionality**
 - [ ] Performance optimization and profiling
 
 **Deliverable:** Stable, performant editor ready for daily use
@@ -237,10 +241,10 @@ _Goal: Advanced features that differentiate from basic editors_
 
 **Stretch Goals Priority 1:**
 
-- [ ] Focus mode highlighting current sentence/paragraph
+- [ ] Focus mode which greys out all but the current sentence/paragraph
 - [ ] "Typewriter mode" (much like iA Writer)
-- [ ] Image preview on hover over markdown image syntax
-- [ ] Better error messages, toasts etc where needed
+- [ ] Image preview popover on hover over local image URL
+- [ ] Better error messages, toasts, empty states etc where needed
 
 **Stretch Goals Priority 2:**
 
@@ -252,15 +256,15 @@ _Goal: Advanced features that differentiate from basic editors_
   - Path to Astro components for use in MDX files (default: `src/components/mdx/`)
   - Path to content directory (default: `src/content/`)
   - Path to assets directory (default: `src/assets/[collection name]/`)
-  - "Published Date" frontmatter proeperty (default: `date`, `pubDate` or `publishedDate`) - must be of type Date
-  - "Title" frontmatter property (default: `title`) - must be of type String
-  - "Draft" frontmatter property (default: `draft`) - must be of type Boolean
+  - "Published Date" frontmatter proeperty name (default: `date`, `pubDate` or `publishedDate`) - must be of type Date
+  - "Title" frontmatter property name (default: `title`) - must be of type String
+  - "Draft" frontmatter property name (default: `draft`) - must be of type Boolean
 
 **Stretch Goals Priority 3:**
 
-- [ ] Toggleable "review mode" which enables analysis features...
-- [ ] Syntax highlighting (colours) by parts of speech (Nouns, Adverbs, Verbs, Conjunctions like iA Writer (see https://ia.net/writer/how-to/edit-and-polish). Should ignore code blocks for this.
-- [ ] Simple, performant writing analysis algorithms (eg. sentence complexity, readability etc) - like Hemmingway App.
+- [ ] Toggleable "review mode" which enables text analysis features...
+  - [ ] Syntax highlighting (colours) by parts of speech (Nouns, Adverbs, Verbs, Conjunctions like iA Writer (see https://ia.net/writer/how-to/edit-and-polish). Should ignore code blocks for this.
+  - [ ] Simple, performant writing analysis algorithms (eg. sentence complexity, readability etc) - like Hemmingway App.
 
 **Deliverable:** Feature-rich editor that provides unique value for Astro content creators
 
@@ -274,13 +278,5 @@ _Goal: Advanced features that differentiate from basic editors_
 2. **CodeMirror customization difficulties** → Research extensively, have fallback plans
 3. **File watching performance** → Use debouncing, limit to relevant directories
 4. **Frontmatter/content synchronization** → Implement robust parsing and validation
-
-**Success Criteria:**
-
-- App launches in < 2 seconds
-- File operations feel instant (< 100ms)
-- Zero data loss from crashes
-- Handles projects with 100+ content files smoothly
-- Writing experience feels better than VSCode for markdown
 
 ## Potential Future Features
