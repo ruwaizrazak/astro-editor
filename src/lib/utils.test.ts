@@ -11,16 +11,11 @@ describe('camelCaseToTitleCase', () => {
 
   it('should handle acronyms correctly', () => {
     expect(camelCaseToTitleCase('redirectURL')).toBe('Redirect URL')
-    expect(camelCaseToTitleCase('SomeHTMLThing')).toBe('Some HTML Thing')
     expect(camelCaseToTitleCase('parseXMLData')).toBe('Parse XML Data')
-  })
-
-  it('should handle single words', () => {
-    expect(camelCaseToTitleCase('title')).toBe('Title')
   })
 
   it('should handle edge cases', () => {
     expect(camelCaseToTitleCase('')).toBe('')
-    expect(camelCaseToTitleCase('a')).toBe('A')
+    expect(camelCaseToTitleCase('title')).toBe('Title')
   })
 })

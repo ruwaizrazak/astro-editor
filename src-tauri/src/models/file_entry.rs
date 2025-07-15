@@ -126,4 +126,74 @@ mod tests {
         assert_eq!(entry.extension, "md");
         assert_eq!(entry.id, "posts/hello-world_2024");
     }
+
+    #[test]
+    fn test_with_frontmatter_draft_detection() {
+        let path = PathBuf::from("/test/posts/draft-post.md");
+        let collection = "posts".to_string();
+
+        let mut frontmatter = HashMap::new();
+        frontmatter.insert("draft".to_string(), serde_json::Value::Bool(true));
+        frontmatter.insert(
+            "title".to_string(),
+            serde_json::Value::String("Draft Post".to_string()),
+        );
+
+        let entry = FileEntry::new(path, collection).with_frontmatter(frontmatter);
+
+        assert!(entry.is_draft);
+        assert_eq!(
+            entry.frontmatter.as_ref().unwrap().get("title").unwrap(),
+            "Draft Post"
+        );
+    }
+
+    #[test]
+    fn test_with_frontmatter_no_draft_field() {
+        let path = PathBuf::from("/test/posts/published-post.md");
+        let collection = "posts".to_string();
+
+        let mut frontmatter = HashMap::new();
+        frontmatter.insert(
+            "title".to_string(),
+            serde_json::Value::String("Published Post".to_string()),
+        );
+
+        let entry = FileEntry::new(path, collection).with_frontmatter(frontmatter);
+
+        assert!(!entry.is_draft); // Should default to false when no draft field
+    }
+
+    #[test]
+    fn test_with_frontmatter_draft_false() {
+        let path = PathBuf::from("/test/posts/published-post.md");
+        let collection = "posts".to_string();
+
+        let mut frontmatter = HashMap::new();
+        frontmatter.insert("draft".to_string(), serde_json::Value::Bool(false));
+        frontmatter.insert(
+            "title".to_string(),
+            serde_json::Value::String("Published Post".to_string()),
+        );
+
+        let entry = FileEntry::new(path, collection).with_frontmatter(frontmatter);
+
+        assert!(!entry.is_draft);
+    }
+
+    #[test]
+    fn test_with_frontmatter_draft_non_boolean() {
+        let path = PathBuf::from("/test/posts/weird-draft.md");
+        let collection = "posts".to_string();
+
+        let mut frontmatter = HashMap::new();
+        frontmatter.insert(
+            "draft".to_string(),
+            serde_json::Value::String("true".to_string()),
+        );
+
+        let entry = FileEntry::new(path, collection).with_frontmatter(frontmatter);
+
+        assert!(!entry.is_draft); // Should default to false when draft field is not boolean
+    }
 }

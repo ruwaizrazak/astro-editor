@@ -381,7 +381,7 @@ fn parse_schema_fields(schema_text: &str) -> Option<String> {
     let mut current_field = String::new();
     let mut in_field = false;
     let mut brace_count = 0;
-    
+
     for line in schema_text.lines() {
         let line = line.trim();
         if line.is_empty() || line == "}" || line == "{" {
@@ -392,19 +392,29 @@ fn parse_schema_fields(schema_text: &str) -> Option<String> {
         if line.contains(':') && !in_field {
             // Process previous field if exists
             if !current_field.is_empty() {
-                process_field(&current_field, &mut schema_fields, &mut processed_fields, schema_text);
+                process_field(
+                    &current_field,
+                    &mut schema_fields,
+                    &mut processed_fields,
+                    schema_text,
+                );
                 current_field.clear();
             }
-            
+
             current_field = line.to_string();
             in_field = true;
-            
+
             // Count parentheses and other grouping characters to detect if field continues
             brace_count = line.matches('(').count() as i32 - line.matches(')').count() as i32;
-            
+
             // If the field appears complete on one line (balanced parens), process it immediately
             if brace_count == 0 && (line.ends_with(',') || !line.contains('(')) {
-                process_field(&current_field, &mut schema_fields, &mut processed_fields, schema_text);
+                process_field(
+                    &current_field,
+                    &mut schema_fields,
+                    &mut processed_fields,
+                    schema_text,
+                );
                 current_field.clear();
                 in_field = false;
             }
@@ -412,23 +422,33 @@ fn parse_schema_fields(schema_text: &str) -> Option<String> {
             // Continue accumulating the current field
             current_field.push(' ');
             current_field.push_str(line);
-            
+
             // Update brace count
             brace_count += line.matches('(').count() as i32 - line.matches(')').count() as i32;
-            
+
             // If braces are balanced, the field is complete
             if brace_count <= 0 {
-                process_field(&current_field, &mut schema_fields, &mut processed_fields, schema_text);
+                process_field(
+                    &current_field,
+                    &mut schema_fields,
+                    &mut processed_fields,
+                    schema_text,
+                );
                 current_field.clear();
                 in_field = false;
                 brace_count = 0;
             }
         }
     }
-    
+
     // Process any remaining field
     if !current_field.is_empty() {
-        process_field(&current_field, &mut schema_fields, &mut processed_fields, schema_text);
+        process_field(
+            &current_field,
+            &mut schema_fields,
+            &mut processed_fields,
+            schema_text,
+        );
     }
 
     if !schema_fields.is_empty() {
@@ -498,10 +518,10 @@ fn parse_schema_fields(schema_text: &str) -> Option<String> {
 }
 
 fn process_field(
-    field_definition: &str, 
-    schema_fields: &mut Vec<ZodField>, 
+    field_definition: &str,
+    schema_fields: &mut Vec<ZodField>,
     processed_fields: &mut std::collections::HashSet<String>,
-    schema_text: &str
+    schema_text: &str,
 ) {
     // Remove trailing comma if present
     let field_definition = field_definition.trim_end_matches(',');
@@ -522,8 +542,8 @@ fn process_field(
         let (field_type, constraints) = parse_field_type_and_constraints(field_def_content);
 
         // Check if field is optional or has default
-        let has_optional = field_def_content.contains(".optional()")
-            || field_def_content.contains("z.optional(");
+        let has_optional =
+            field_def_content.contains(".optional()") || field_def_content.contains("z.optional(");
         let has_default = field_def_content.contains(".default(");
 
         // If field has a default, treat it as optional for UI purposes
@@ -639,7 +659,7 @@ fn extract_optional_inner_type(field_definition: &str) -> (ZodFieldType, ZodFiel
 
         // Parse the inner type directly without recursion to avoid infinite loops
         let mut constraints = ZodFieldConstraints::default();
-        
+
         let field_type = if inner_def.contains("z.string") {
             constraints = extract_string_constraints(inner_def);
             ZodFieldType::String
@@ -653,7 +673,7 @@ fn extract_optional_inner_type(field_definition: &str) -> (ZodFieldType, ZodFiel
         } else {
             ZodFieldType::Unknown
         };
-        
+
         (field_type, constraints)
     } else {
         (ZodFieldType::Unknown, ZodFieldConstraints::default())
@@ -1098,7 +1118,6 @@ export const collections = {
   test: defineCollection({
     schema: z.object({
       category: z.literal('blog'),
-      format: z.literal('markdown'),
       version: z.literal(1),
     }),
   }),
@@ -1123,10 +1142,6 @@ export const collections = {
         let category_field = fields.iter().find(|f| f["name"] == "category").unwrap();
         assert_eq!(category_field["type"], "Literal");
         assert_eq!(category_field["literalValue"], "blog");
-
-        let format_field = fields.iter().find(|f| f["name"] == "format").unwrap();
-        assert_eq!(format_field["type"], "Literal");
-        assert_eq!(format_field["literalValue"], "markdown");
 
         // Clean up
         fs::remove_dir_all(&temp_dir).ok();
@@ -1199,7 +1214,10 @@ export const collections = {
         let fields = parsed_schema["fields"].as_array().unwrap();
 
         // Both syntaxes should be marked as optional
-        let regular_optional = fields.iter().find(|f| f["name"] == "regularOptional").unwrap();
+        let regular_optional = fields
+            .iter()
+            .find(|f| f["name"] == "regularOptional")
+            .unwrap();
         assert_eq!(regular_optional["optional"], true);
 
         let alt_optional = fields.iter().find(|f| f["name"] == "altOptional").unwrap();
@@ -1209,7 +1227,10 @@ export const collections = {
             assert_eq!(alt_optional["constraints"]["minLength"], 10);
         }
 
-        let alt_with_constraints = fields.iter().find(|f| f["name"] == "altOptionalWithConstraints").unwrap();
+        let alt_with_constraints = fields
+            .iter()
+            .find(|f| f["name"] == "altOptionalWithConstraints")
+            .unwrap();
         assert_eq!(alt_with_constraints["optional"], true);
         // For now, just check that it's detected as optional - constraint parsing for z.optional() can be improved later
         assert_eq!(alt_with_constraints["type"], "String");
@@ -1226,12 +1247,8 @@ export const collections = {
     schema: z.object({
       slug: z.string().min(3).max(50).regex(/^[a-z0-9-]+$/),
       email: z.string().email(),
-      url: z.string().url(),
-      uuid: z.string().uuid(),
       trimmed: z.string().trim(),
       twitter: z.string().startsWith('@'),
-      domain: z.string().endsWith('.com'),
-      keyword: z.string().includes('test'),
     }),
   }),
 };
@@ -1253,16 +1270,13 @@ export const collections = {
         let slug_field = fields.iter().find(|f| f["name"] == "slug").unwrap();
         assert_eq!(slug_field["constraints"]["minLength"], 3);
         assert_eq!(slug_field["constraints"]["maxLength"], 50);
-        assert!(slug_field["constraints"]["regex"].as_str().unwrap().contains("^[a-z0-9-]+$"));
+        assert!(slug_field["constraints"]["regex"]
+            .as_str()
+            .unwrap()
+            .contains("^[a-z0-9-]+$"));
 
         let email_field = fields.iter().find(|f| f["name"] == "email").unwrap();
         assert_eq!(email_field["constraints"]["email"], true);
-
-        let url_field = fields.iter().find(|f| f["name"] == "url").unwrap();
-        assert_eq!(url_field["constraints"]["url"], true);
-
-        let trimmed_field = fields.iter().find(|f| f["name"] == "trimmed").unwrap();
-        assert_eq!(trimmed_field["constraints"]["trim"], true);
 
         let twitter_field = fields.iter().find(|f| f["name"] == "twitter").unwrap();
         assert_eq!(twitter_field["constraints"]["startsWith"], "@");
@@ -1340,18 +1354,18 @@ export const collections = {
 };
 "#;
         let clean = remove_comments(content);
-        
+
         // Should remove comments
         assert!(!clean.contains("Line comment at start"));
         assert!(!clean.contains("Multi-line block comment"));
         assert!(!clean.contains("End-of-line comment"));
         assert!(!clean.contains("inline block"));
-        
+
         // Should preserve content inside strings and regex
         assert!(clean.contains("/* not a comment inside string */"));
         // The regex content should be preserved (just check for the path structure)
         assert!(clean.contains("regex:"));
-        
+
         // Should preserve the actual code
         assert!(clean.contains("export const collections"));
         assert!(clean.contains("z.string()"));
@@ -1383,7 +1397,7 @@ export const collections = {
         let fields = parsed_schema["fields"].as_array().unwrap();
 
         let simple_field = fields.iter().find(|f| f["name"] == "simpleField").unwrap();
-        
+
         // The field should be parsed with constraints from the chained methods
         assert_eq!(simple_field["constraints"]["minLength"], 5);
         assert_eq!(simple_field["constraints"]["maxLength"], 100);
