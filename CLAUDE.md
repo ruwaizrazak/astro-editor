@@ -82,7 +82,7 @@ blog-editor/
 │   ├── initial-prd.md          # Product requirements document
 │   ├── initial-requirement-notes.md
 │   └── tasks.md               # Implementation plan and status
-├── dummy-astro-project/        # Test Astro project for development
+├── test/dummy-astro-project/  # Test Astro project for development
 │   └── src/
 │       ├── assets/            # Sample assets (images etc) for content collections
 │       │   ├── articles/
@@ -126,7 +126,7 @@ blog-editor/
 
 ### 🚧 In Progress (Phase 2.3)
 
-- Left sidebar redesign with collection navigation 
+- Left sidebar redesign with collection navigation
 - Test data enhancement
 
 ### 📋 Next Steps
@@ -242,10 +242,14 @@ A dummy astro project with most of the relevant files exists at `dummy-astro-pro
 **Solution:** Components read/write directly to Zustand store using `updateFrontmatterField`.
 
 **Pattern:**
+
 ```tsx
-const MyField: React.FC<{ name: string; label: string }> = ({ name, label }) => {
+const MyField: React.FC<{ name: string; label: string }> = ({
+  name,
+  label,
+}) => {
   const { frontmatter, updateFrontmatterField } = useAppStore()
-  
+
   return (
     <div className="space-y-2">
       <label className="text-sm font-medium">{label}</label>
@@ -259,6 +263,7 @@ const MyField: React.FC<{ name: string; label: string }> = ({ name, label }) => 
 ```
 
 **Benefits:**
+
 - No callback dependencies → no infinite loops
 - Components are safely extractable
 - Real-time updates maintained

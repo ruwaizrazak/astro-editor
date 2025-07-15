@@ -40,7 +40,14 @@ function getTitle(file: FileEntry): string {
   if (file.frontmatter?.title && typeof file.frontmatter.title === 'string') {
     return file.frontmatter.title
   }
-  return file.name || file.path.split('/').pop()?.replace(/\.(md|mdx)$/, '') || 'Untitled'
+  return (
+    file.name ||
+    file.path
+      .split('/')
+      .pop()
+      ?.replace(/\.(md|mdx)$/, '') ||
+    'Untitled'
+  )
 }
 
 export const Sidebar: React.FC = () => {
@@ -85,12 +92,12 @@ export const Sidebar: React.FC = () => {
     return [...files].sort((a, b) => {
       const dateA = getPublishedDate(a.frontmatter || {})
       const dateB = getPublishedDate(b.frontmatter || {})
-      
+
       // Files without dates go to top
       if (!dateA && !dateB) return 0
       if (!dateA) return -1
       if (!dateB) return 1
-      
+
       // Sort by date descending (newest first)
       return dateB.getTime() - dateA.getTime()
     })
@@ -177,7 +184,8 @@ export const Sidebar: React.FC = () => {
               const title = getTitle(file)
               const publishedDate = getPublishedDate(file.frontmatter || {})
               const isMdx = file.extension === 'mdx'
-              const isFileDraft = file.is_draft || file.frontmatter?.draft === true
+              const isFileDraft =
+                file.is_draft || file.frontmatter?.draft === true
               const isSelected = currentFile?.id === file.id
 
               return (
@@ -207,7 +215,10 @@ export const Sidebar: React.FC = () => {
                     </div>
                     <div className="flex flex-col gap-1">
                       {isFileDraft && (
-                        <Badge variant="destructive" className="text-xs px-1 py-0">
+                        <Badge
+                          variant="destructive"
+                          className="text-xs px-1 py-0"
+                        >
                           Draft
                         </Badge>
                       )}

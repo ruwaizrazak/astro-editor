@@ -1,0 +1,54 @@
+---
+title: "Note Testing MDX Components"
+description: "A note that tests how MDX components work in the notes collection"
+pubDate: 2023-11-30
+tags: ["mdx", "components", "testing"]
+draft: false
+---
+
+import { Callout, BookmarkCard } from '@/components/mdx'
+
+# Note Testing MDX Components
+
+This note tests how MDX components integrate with the notes collection.
+
+<Callout type="info">
+Notes can also use MDX components, though they're typically simpler than full articles.
+</Callout>
+
+## Component Use Cases in Notes
+
+Notes might use components for:
+
+### Quick References
+
+<BookmarkCard
+  title="Astro Documentation"
+  description="The official Astro framework documentation"
+  url="https://docs.astro.build"
+  favicon="https://docs.astro.build/favicon.ico"
+/>
+
+### Highlighting Important Information
+
+<Callout type="warning">
+Remember to test component functionality in both articles and notes collections.
+</Callout>
+
+### Success Indicators
+
+<Callout type="success">
+MDX components should work seamlessly in notes just like in articles.
+</Callout>
+
+## Editor Testing
+
+This note should:
+
+1. **Show MDX badge** in the file list
+2. **Handle component imports** properly
+3. **Render components** in any preview mode
+4. **Preserve component syntax** during editing
+5. **Support component auto-completion** if available
+
+The editor should treat MDX notes the same as MDX articles regarding component support and syntax highlighting.

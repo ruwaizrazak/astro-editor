@@ -1,0 +1,69 @@
+---
+title: "Testing Timestamp Filename Format"
+slug: "timestamp-filename-testing"
+description: "This article tests how the editor handles timestamp-based filenames vs human-readable names"
+pubDate: 2024-03-08
+tags: ["filename", "testing", "timestamps", "organization"]
+platform: "medium"
+---
+
+import { Callout } from '@/components/mdx'
+
+# Testing Timestamp Filename Format
+
+This article uses a timestamp-based filename to test how the editor handles different naming conventions.
+
+<Callout type="info">
+This file demonstrates how the editor should handle various filename formats while displaying proper titles from frontmatter.
+</Callout>
+
+## Filename Testing Scenarios
+
+This tests several important behaviors:
+
+### 1. Filename vs Title Display
+- **Filename**: `1709876543210-timestamp-filename-format.mdx`
+- **Title**: "Testing Timestamp Filename Format"
+- **Expected**: Editor should display the title, not the filename
+
+### 2. MDX Component Support
+This article uses MDX format to test component rendering:
+
+<Callout type="warning">
+The editor should properly handle MDX files and their custom components.
+</Callout>
+
+### 3. Different Naming Conventions
+Projects often use different naming conventions:
+- Timestamp-based: `1709876543210-title.md`
+- Date-based: `2024-03-08-title.md`
+- Slug-based: `article-title-slug.md`
+- Simple: `title.md`
+
+## Component Testing
+
+<Callout type="success">
+This callout tests the MDX component system and how it integrates with the editor.
+</Callout>
+
+The editor should:
+1. Recognize this as an MDX file (show MDX badge)
+2. Handle the custom imports properly
+3. Display components correctly in preview
+4. Maintain component syntax when editing
+
+## Content Organization
+
+Using timestamp filenames can be useful for:
+- **Unique identification**: Avoiding filename conflicts
+- **Chronological sorting**: Natural filesystem ordering
+- **Import systems**: Some CMSs prefer timestamp IDs
+- **Migration scenarios**: Converting from other systems
+
+However, the editor should prioritize human-readable titles in the UI while preserving the actual filename structure.
+
+<Callout type="info">
+The file list should show "Testing Timestamp Filename Format" as the title, with the actual filename shown in smaller text below.
+</Callout>
+
+This tests the balance between technical file organization and user-friendly display.

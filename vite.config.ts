@@ -1,9 +1,9 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import tailwindcss from '@tailwindcss/vite';
-import path from 'path';
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
+import path from 'path'
 
-const host = process.env.TAURI_DEV_HOST;
+const host = process.env.TAURI_DEV_HOST
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
@@ -31,8 +31,12 @@ export default defineConfig(async () => ({
         }
       : undefined,
     watch: {
-      // 3. tell vite to ignore watching `src-tauri`
-      ignored: ['**/src-tauri/**', '**/dummy-astro-project/**'],
+      // 3. tell vite to ignore watching `src-tauri` and test data
+      ignored: [
+        '**/src-tauri/**',
+        '**/test/dummy-astro-project/**',
+        '**/temp-dummy-astro-project/**',
+      ],
     },
   },
-}));
+}))

@@ -140,7 +140,10 @@ export const Layout: React.FC = () => {
             <ResizablePanel defaultSize={80} minSize={65}>
               <div className="h-full">
                 {frontmatterPanelVisible ? (
-                  <ResizablePanelGroup direction="horizontal" className="h-full">
+                  <ResizablePanelGroup
+                    direction="horizontal"
+                    className="h-full"
+                  >
                     <ResizablePanel
                       defaultSize={70}
                       minSize={40}

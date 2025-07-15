@@ -5,4 +5,5 @@ target
 *.lock
 *.log
 src-tauri/target
-dummy-astro-project
+test/dummy-astro-project
+temp-dummy-astro-project
