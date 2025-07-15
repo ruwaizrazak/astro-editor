@@ -5,7 +5,7 @@ import { EditorView } from '@codemirror/view'
 import { keymap } from '@codemirror/view'
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
 import { searchKeymap } from '@codemirror/search'
-import { EditorSelection } from '@codemirror/state'
+import { EditorSelection, Prec } from '@codemirror/state'
 import { useAppStore } from '../../store'
 import './EditorView.css'
 
@@ -123,11 +123,8 @@ export const EditorViewComponent: React.FC = () => {
   const extensions = [
     markdown(),
     history(),
-    keymap.of([
-      ...defaultKeymap,
-      ...historyKeymap,
-      ...searchKeymap,
-      // Custom markdown shortcuts
+    // High-precedence custom markdown shortcuts
+    Prec.high(keymap.of([
       {
         key: 'Mod-b',
         run: view => toggleMarkdown(view, '**'),
@@ -150,6 +147,12 @@ export const EditorViewComponent: React.FC = () => {
           return true
         },
       },
+    ])),
+    // Default keymaps with lower precedence
+    keymap.of([
+      ...defaultKeymap,
+      ...historyKeymap,
+      ...searchKeymap,
     ]),
     // Paste event handler for URL link creation
     EditorView.domEventHandlers({

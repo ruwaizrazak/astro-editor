@@ -194,7 +194,7 @@ _Goal: Beautiful, iA Writer-inspired editing experience_
 
 **Phase 3.1**
 
-- [ ] Review our `EditorView` and configure CodeMirror so we're in the best possible starting point for working on the markdown editor.
+- [x] Review our `EditorView` and configure CodeMirror so we're in the best possible starting point for working on the markdown editor.
 - [ ] Implement iA Writer-inspired typography and colors (add iA Writer Duo variable font - https://github.com/iaolo/iA-Fonts)
 - [ ] Create hanging hash marks for headings
 - [ ] Custom CodeMirror theme matching iA Writer aesthetic
