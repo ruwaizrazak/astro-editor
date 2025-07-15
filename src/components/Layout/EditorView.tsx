@@ -72,12 +72,14 @@ export const EditorViewComponent: React.FC = () => {
       '&': {
         fontSize: '16px',
         fontFamily:
-          '"SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+          "'iA Writer Duo', -apple-system, 'Segoe UI', 'Roboto', sans-serif;",
+        padding: '20px 40px',
       },
       '.cm-content': {
-        padding: '20px 40px',
-        lineHeight: '1.6',
+        lineHeight: '1.7',
         minHeight: '100vh',
+        maxWidth: '65ch',
+        margin: '0 auto',
       },
       '.cm-focused': {
         outline: 'none',
@@ -88,51 +90,7 @@ export const EditorViewComponent: React.FC = () => {
       '.cm-scroller': {
         fontVariantLigatures: 'common-ligatures',
       },
-      // Markdown-specific styling
-      '.cm-line': {
-        maxWidth: '65ch',
-        margin: '0 auto',
-      },
-      // Heading styles with hanging hash marks (basic implementation)
-      '.tok-heading1': {
-        fontSize: '2em',
-        fontWeight: 'bold',
-        lineHeight: '1.2',
-      },
-      '.tok-heading2': {
-        fontSize: '1.5em',
-        fontWeight: 'bold',
-        lineHeight: '1.3',
-      },
-      '.tok-heading3': {
-        fontSize: '1.25em',
-        fontWeight: 'bold',
-        lineHeight: '1.4',
-      },
-      '.tok-strong': {
-        fontWeight: '600',
-      },
-      '.tok-emphasis': {
-        fontStyle: 'italic',
-      },
-      '.tok-strikethrough': {
-        textDecoration: 'line-through',
-      },
-      '.tok-link': {
-        color: '#007AFF',
-        textDecoration: 'none',
-      },
-      '.tok-url': {
-        color: '#8E8E93',
-      },
-      '.tok-monospace': {
-        fontFamily:
-          '"SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace',
-        fontSize: '0.9em',
-        backgroundColor: 'rgba(142, 142, 147, 0.12)',
-        padding: '2px 4px',
-        borderRadius: '3px',
-      },
+      '.cm-line': {},
     }),
     EditorView.lineWrapping,
   ]
