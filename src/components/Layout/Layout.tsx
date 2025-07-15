@@ -12,6 +12,41 @@ import {
   ResizableHandle,
 } from '../ui/resizable'
 
+// Helper component to reduce duplication in Layout
+const EditorAreaWithFrontmatter: React.FC<{
+  frontmatterPanelVisible: boolean
+}> = ({ frontmatterPanelVisible }) => {
+  if (frontmatterPanelVisible) {
+    return (
+      <ResizablePanelGroup direction="horizontal" className="h-full">
+        <ResizablePanel
+          defaultSize={70}
+          minSize={40}
+          maxSize={80}
+          className="flex flex-col min-w-96"
+        >
+          <MainEditor />
+        </ResizablePanel>
+        <ResizableHandle className="!cursor-col-resize" />
+        <ResizablePanel
+          defaultSize={30}
+          minSize={20}
+          maxSize={60}
+          className="bg-muted/10 border-l border-border overflow-hidden"
+        >
+          <FrontmatterPanel />
+        </ResizablePanel>
+      </ResizablePanelGroup>
+    )
+  }
+
+  return (
+    <div className="h-full flex flex-col min-w-96">
+      <MainEditor />
+    </div>
+  )
+}
+
 export const Layout: React.FC = () => {
   const {
     sidebarVisible,
@@ -138,65 +173,16 @@ export const Layout: React.FC = () => {
             </ResizablePanel>
             <ResizableHandle className="!cursor-col-resize" />
             <ResizablePanel defaultSize={80} minSize={65}>
-              <div className="h-full">
-                {frontmatterPanelVisible ? (
-                  <ResizablePanelGroup
-                    direction="horizontal"
-                    className="h-full"
-                  >
-                    <ResizablePanel
-                      defaultSize={70}
-                      minSize={40}
-                      maxSize={80}
-                      className="flex flex-col min-w-96"
-                    >
-                      <MainEditor />
-                    </ResizablePanel>
-                    <ResizableHandle className="!cursor-col-resize" />
-                    <ResizablePanel
-                      defaultSize={30}
-                      minSize={20}
-                      maxSize={60}
-                      className="bg-muted/10 border-l border-border overflow-hidden"
-                    >
-                      <FrontmatterPanel />
-                    </ResizablePanel>
-                  </ResizablePanelGroup>
-                ) : (
-                  <div className="h-full flex flex-col min-w-96">
-                    <MainEditor />
-                  </div>
-                )}
-              </div>
+              <EditorAreaWithFrontmatter
+                frontmatterPanelVisible={frontmatterPanelVisible}
+              />
             </ResizablePanel>
           </ResizablePanelGroup>
         ) : (
           <div className="flex-1">
-            {frontmatterPanelVisible ? (
-              <ResizablePanelGroup direction="horizontal" className="flex-1">
-                <ResizablePanel
-                  defaultSize={70}
-                  minSize={40}
-                  maxSize={80}
-                  className="flex flex-col min-w-96"
-                >
-                  <MainEditor />
-                </ResizablePanel>
-                <ResizableHandle className="!cursor-col-resize" />
-                <ResizablePanel
-                  defaultSize={30}
-                  minSize={20}
-                  maxSize={60}
-                  className="bg-muted/10 border-l border-border overflow-hidden"
-                >
-                  <FrontmatterPanel />
-                </ResizablePanel>
-              </ResizablePanelGroup>
-            ) : (
-              <div className="flex-1 flex flex-col min-w-96">
-                <MainEditor />
-              </div>
-            )}
+            <EditorAreaWithFrontmatter
+              frontmatterPanelVisible={frontmatterPanelVisible}
+            />
           </div>
         )}
       </div>

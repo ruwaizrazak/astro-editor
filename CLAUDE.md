@@ -45,10 +45,11 @@ This is a native macOS markdown editor specifically designed for managing and ed
 src/
 ├── components/
 │   ├── Layout/           # Main app layout components
-│   │   ├── Layout.tsx           # Root layout container
+│   │   ├── Layout.tsx           # Root layout container with helper components
 │   │   ├── Sidebar.tsx          # Collections/files navigation
 │   │   ├── EditorView.tsx       # CodeMirror integration
-│   │   ├── FrontmatterPanel.tsx # Dynamic form generation
+│   │   ├── FrontmatterPanel.tsx # Dynamic form generation with typed interfaces
+│   │   ├── MainEditor.tsx       # Editor area with extracted WelcomeScreen
 │   │   └── UnifiedTitleBar.tsx  # macOS-style window chrome
 │   └── ui/               # shadcn/ui components (30+ components)
 ├── store/
@@ -56,6 +57,8 @@ src/
 ├── lib/
 │   ├── schema.ts         # Zod schema parsing and form generation
 │   └── utils.ts          # Utility functions
+├── types/
+│   └── common.ts         # Shared TypeScript interfaces and types
 └── hooks/                # React hooks
 ```
 
@@ -123,6 +126,8 @@ blog-editor/
 - Direct store pattern architecture (eliminated infinite loops)
 - Bug fixes (save refreshing, frontmatter ordering, textarea auto-expansion)
 - Architectural refactor removing React Hook Form dependencies
+- **Component refactoring**: Eliminated code duplication in Layout component
+- **TypeScript improvements**: Added comprehensive type interfaces and better type safety
 
 ### 🚧 In Progress (Phase 2.3)
 
@@ -152,6 +157,8 @@ blog-editor/
 - Use TypeScript interfaces for all component props
 - Implement proper loading states and error boundaries
 - **CRITICAL:** Follow the Direct Store Pattern for all form-like components (see below)
+- **Extract helper components** to eliminate code duplication (e.g., `EditorAreaWithFrontmatter`)
+- **Create reusable interfaces** in `src/types/common.ts` for consistent prop types
 
 ### Styling Guidelines
 
@@ -244,15 +251,28 @@ A dummy astro project with most of the relevant files exists at `dummy-astro-pro
 **Pattern:**
 
 ```tsx
-const MyField: React.FC<{ name: string; label: string }> = ({
+// Define reusable interface (in src/types/common.ts)
+interface FieldProps {
+  name: string
+  label: string
+  required?: boolean
+  className?: string
+}
+
+// Component implementation with proper typing
+const MyField: React.FC<FieldProps> = ({
   name,
   label,
+  required,
 }) => {
   const { frontmatter, updateFrontmatterField } = useAppStore()
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium">{label}</label>
+      <label className="text-sm font-medium">
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+      </label>
       <Input
         value={frontmatter[name] ? String(frontmatter[name]) : ''}
         onChange={e => updateFrontmatterField(name, e.target.value)}
@@ -285,6 +305,52 @@ const MyField: React.FC<{ name: string; label: string }> = ({
 - Auto-save every 30 seconds and on blur
 - Frontmatter hidden from CodeMirror display
 
+### TypeScript Patterns
+
+**Type-Safe Store Usage:**
+```tsx
+// Explicitly type store destructuring for better IDE support
+const { currentFile, frontmatter, collections }: {
+  currentFile: FileEntry | null
+  frontmatter: Record<string, unknown>
+  collections: Collection[]
+} = useAppStore()
+```
+
+**Reusable Field Interfaces:**
+```tsx
+// Base interface for all form fields
+interface FieldProps extends BaseComponentProps {
+  name: string
+  label: string
+  required?: boolean
+}
+
+// Extended interfaces for specific field types
+interface StringFieldProps extends FieldProps {
+  placeholder?: string
+}
+
+interface EnumFieldProps extends FieldProps {
+  options: string[]
+}
+```
+
+**Helper Component Pattern:**
+```tsx
+// Extract duplicated logic into helper components
+const EditorAreaWithFrontmatter: React.FC<{
+  frontmatterPanelVisible: boolean
+}> = ({ frontmatterPanelVisible }) => {
+  // Shared layout logic here
+  return frontmatterPanelVisible ? (
+    // Complex resizable layout
+  ) : (
+    // Simple layout
+  )
+}
+```
+
 ## Known Issues & Limitations
 
 ### Technical Limitations
@@ -308,7 +374,9 @@ const MyField: React.FC<{ name: string; label: string }> = ({
 - `docs/tasks.md` - Implementation plan and current status
 - `src/store/index.ts` - Application state management (includes `updateFrontmatterField`)
 - `src/lib/schema.ts` - Schema parsing and form generation
-- `src/components/Layout/FrontmatterPanel.tsx` - Direct Store Pattern example
+- `src/types/common.ts` - Shared TypeScript interfaces and types
+- `src/components/Layout/FrontmatterPanel.tsx` - Direct Store Pattern example with typed interfaces
+- `src/components/Layout/Layout.tsx` - Helper component pattern example (`EditorAreaWithFrontmatter`)
 - `src/components/ui/auto-expanding-textarea.tsx` - WebKit-compatible auto-expansion
 
 ### Configuration Files
@@ -343,6 +411,17 @@ const MyField: React.FC<{ name: string; label: string }> = ({
 - **ALWAYS** use `updateFrontmatterField` for frontmatter changes
 - **AVOID** callback props that depend on changing state
 - **USE** direct store access: `const { state, action } = useAppStore()`
+- **EXTRACT** helper components when you see duplicate JSX patterns (3+ repetitions)
+- **DEFINE** reusable interfaces in `src/types/common.ts` for consistent prop types
+- **TYPE** store destructuring explicitly for better IDE support and documentation
+
+### Refactoring Guidelines
+
+1. **Identify Duplication**: Look for repeated JSX structures, especially in layout components
+2. **Extract Helper Components**: Create focused components for repeated patterns
+3. **Improve Type Safety**: Add explicit type annotations for store usage
+4. **Create Shared Interfaces**: Move common prop types to `src/types/common.ts`
+5. **Maintain Functionality**: Ensure refactoring doesn't change app behavior (all tests must pass)
 
 ### Code Review Checklist
 

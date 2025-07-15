@@ -1,9 +1,9 @@
 import React from 'react'
-import { useAppStore } from '../../store'
+import { useAppStore, type Collection, type FileEntry } from '../../store'
 import {
   parseSchemaJson,
   getInputTypeForZodField,
-  ZodField,
+  type ZodField,
   getDefaultValueForField,
 } from '../../lib/schema'
 import { camelCaseToTitleCase } from '../../lib/utils'
@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { TagInput, type Tag } from '@/components/ui/tag-input'
+import type { FieldProps } from '../../types/common'
 
 // Helper function to convert Tag objects back to string arrays
 const tagsToStringArray = (tags: Tag[]): string[] => tags.map(tag => tag.text)
@@ -34,13 +35,17 @@ const valueToString = (value: unknown): string => {
 }
 
 // Individual field components that read/write directly to store
-const StringField: React.FC<{
-  name: string
-  label: string
+interface StringFieldProps extends FieldProps {
   placeholder?: string
-  className?: string
-  required?: boolean
-}> = ({ name, label, placeholder, className, required }) => {
+}
+
+const StringField: React.FC<StringFieldProps> = ({ 
+  name, 
+  label, 
+  placeholder, 
+  className, 
+  required 
+}) => {
   const { frontmatter, updateFrontmatterField } = useAppStore()
 
   return (
@@ -60,15 +65,13 @@ const StringField: React.FC<{
   )
 }
 
-const TextareaField: React.FC<{
-  name: string
-  label: string
+interface TextareaFieldProps extends FieldProps {
   placeholder?: string
-  className?: string
   minRows?: number
   maxRows?: number
-  required?: boolean
-}> = ({
+}
+
+const TextareaField: React.FC<TextareaFieldProps> = ({
   name,
   label,
   placeholder,
@@ -97,12 +100,16 @@ const TextareaField: React.FC<{
   )
 }
 
-const NumberField: React.FC<{
-  name: string
-  label: string
+interface NumberFieldProps extends FieldProps {
   placeholder?: string
-  required?: boolean
-}> = ({ name, label, placeholder, required }) => {
+}
+
+const NumberField: React.FC<NumberFieldProps> = ({ 
+  name, 
+  label, 
+  placeholder, 
+  required 
+}) => {
   const { frontmatter, updateFrontmatterField } = useAppStore()
 
   return (
@@ -124,11 +131,11 @@ const NumberField: React.FC<{
   )
 }
 
-const BooleanField: React.FC<{
-  name: string
-  label: string
+interface BooleanFieldProps extends FieldProps {
   field?: ZodField
-}> = ({ name, label, field }) => {
+}
+
+const BooleanField: React.FC<BooleanFieldProps> = ({ name, label, field }) => {
   const { frontmatter, updateFrontmatterField } = useAppStore()
 
   // Helper function to get boolean value considering schema defaults
@@ -170,11 +177,7 @@ const BooleanField: React.FC<{
   )
 }
 
-const DateField: React.FC<{
-  name: string
-  label: string
-  required?: boolean
-}> = ({ name, label, required }) => {
+const DateField: React.FC<FieldProps> = ({ name, label, required }) => {
   const { frontmatter, updateFrontmatterField } = useAppStore()
 
   return (
@@ -202,12 +205,11 @@ const DateField: React.FC<{
   )
 }
 
-const EnumField: React.FC<{
-  name: string
-  label: string
+interface EnumFieldProps extends FieldProps {
   options: string[]
-  required?: boolean
-}> = ({ name, label, options, required }) => {
+}
+
+const EnumField: React.FC<EnumFieldProps> = ({ name, label, options, required }) => {
   const { frontmatter, updateFrontmatterField } = useAppStore()
 
   return (
@@ -246,11 +248,7 @@ const EnumField: React.FC<{
   )
 }
 
-const ArrayField: React.FC<{
-  name: string
-  label: string
-  required?: boolean
-}> = ({ name, label, required }) => {
+const ArrayField: React.FC<FieldProps> = ({ name, label, required }) => {
   const { frontmatter, updateFrontmatterField } = useAppStore()
 
   // Convert frontmatter array to tags
@@ -286,11 +284,13 @@ const ArrayField: React.FC<{
 }
 
 // Main field component that delegates to specific field types
-const FrontmatterField: React.FC<{
+interface FrontmatterFieldProps {
   name: string
   label: string
-  field?: ZodField | undefined
-}> = ({ name, label, field }) => {
+  field?: ZodField
+}
+
+const FrontmatterField: React.FC<FrontmatterFieldProps> = ({ name, label, field }) => {
   const { frontmatter } = useAppStore()
   const inputType = field ? getInputTypeForZodField(field.type) : 'text'
   const required = field ? !field.optional : false
@@ -359,11 +359,15 @@ const FrontmatterField: React.FC<{
 }
 
 export const FrontmatterPanel: React.FC = () => {
-  const { currentFile, frontmatter, collections } = useAppStore()
+  const { currentFile, frontmatter, collections }: {
+    currentFile: FileEntry | null
+    frontmatter: Record<string, unknown>
+    collections: Collection[]
+  } = useAppStore()
 
   // Get schema for current collection
-  const currentCollection = currentFile
-    ? collections.find(c => c.name === currentFile.collection)
+  const currentCollection: Collection | null = currentFile
+    ? collections.find(c => c.name === currentFile.collection) || null
     : null
 
   const schema = currentCollection?.schema

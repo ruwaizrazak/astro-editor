@@ -1,15 +1,18 @@
 import React from 'react'
 import { invoke } from '@tauri-apps/api/core'
-import { useAppStore, Collection, FileEntry } from '../../store'
+import { useAppStore, type Collection, type FileEntry } from '../../store'
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
 import { FolderOpen, ArrowLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { parseSchemaJson } from '../../lib/schema'
 
-function formatDate(dateString: string | number | Date): string {
+// Type-safe helper functions for file handling
+function formatDate(dateValue: unknown): string {
+  if (!dateValue) return ''
+  
   try {
-    const date = new Date(dateString)
+    const date = new Date(dateValue as string | number | Date)
     if (isNaN(date.getTime())) return ''
     return date.toLocaleDateString('en-US', {
       month: 'short',
@@ -22,7 +25,8 @@ function formatDate(dateString: string | number | Date): string {
 }
 
 function getPublishedDate(frontmatter: Record<string, unknown>): Date | null {
-  const dateFields = ['pubDate', 'date', 'publishedDate', 'published']
+  const dateFields = ['pubDate', 'date', 'publishedDate', 'published'] as const
+  
   for (const field of dateFields) {
     const value = frontmatter[field]
     if (value) {
@@ -36,18 +40,14 @@ function getPublishedDate(frontmatter: Record<string, unknown>): Date | null {
 }
 
 function getTitle(file: FileEntry): string {
-  // Use frontmatter title if available, otherwise filename
+  // Use frontmatter title if available, otherwise derive from filename
   if (file.frontmatter?.title && typeof file.frontmatter.title === 'string') {
     return file.frontmatter.title
   }
-  return (
-    file.name ||
-    file.path
-      .split('/')
-      .pop()
-      ?.replace(/\.(md|mdx)$/, '') ||
-    'Untitled'
-  )
+  
+  // Extract filename without extension as fallback
+  const filename = file.name || file.path.split('/').pop() || 'Untitled'
+  return filename.replace(/\.(md|mdx)$/, '')
 }
 
 export const Sidebar: React.FC = () => {
@@ -60,6 +60,15 @@ export const Sidebar: React.FC = () => {
     setSelectedCollection,
     loadCollectionFiles,
     openFile,
+  }: {
+    selectedCollection: string | null
+    collections: Collection[]
+    files: FileEntry[]
+    currentFile: FileEntry | null
+    setProject: (path: string) => void
+    setSelectedCollection: (collection: string | null) => void
+    loadCollectionFiles: (collectionPath: string) => Promise<void>
+    openFile: (file: FileEntry) => Promise<void>
   } = useAppStore()
 
   const handleOpenProject = async () => {
@@ -88,7 +97,7 @@ export const Sidebar: React.FC = () => {
   }
 
   // Sort files by published date (reverse chronological), files without dates first
-  const sortedFiles = React.useMemo(() => {
+  const sortedFiles = React.useMemo((): FileEntry[] => {
     return [...files].sort((a, b) => {
       const dateA = getPublishedDate(a.frontmatter || {})
       const dateB = getPublishedDate(b.frontmatter || {})
