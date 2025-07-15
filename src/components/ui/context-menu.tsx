@@ -22,6 +22,22 @@ export class FileContextMenu {
     })
   }
 
+  private static generateDuplicatePath(originalPath: string): string {
+    const lastSlashIndex = originalPath.lastIndexOf('/')
+    const directory = originalPath.substring(0, lastSlashIndex)
+    const fileName = originalPath.substring(lastSlashIndex + 1)
+
+    const lastDotIndex = fileName.lastIndexOf('.')
+    if (lastDotIndex === -1) {
+      // No extension
+      return `${directory}/${fileName}-1`
+    }
+
+    const nameWithoutExt = fileName.substring(0, lastDotIndex)
+    const extension = fileName.substring(lastDotIndex)
+    return `${directory}/${nameWithoutExt}-1${extension}`
+  }
+
   static async show({
     file,
     position,
@@ -76,6 +92,47 @@ export class FileContextMenu {
         },
       })
 
+      const duplicateItem = await MenuItem.new({
+        id: 'duplicate-file',
+        text: 'Duplicate',
+        action: () => {
+          void (async () => {
+            try {
+              // eslint-disable-next-line no-console
+              console.log('Duplicate clicked for file:', file.path)
+              const duplicatePath = FileContextMenu.generateDuplicatePath(
+                file.path
+              )
+              // eslint-disable-next-line no-console
+              console.log('Duplicating to:', duplicatePath)
+
+              // Read the original file content
+              const content = await invoke('read_file', {
+                filePath: file.path,
+              })
+
+              // Parse the duplicate path into directory and filename
+              const lastSlashIndex = duplicatePath.lastIndexOf('/')
+              const directory = duplicatePath.substring(0, lastSlashIndex)
+              const filename = duplicatePath.substring(lastSlashIndex + 1)
+
+              // Create the duplicate file
+              await invoke('create_file', { directory, filename, content })
+              // eslint-disable-next-line no-console
+              console.log('File duplicated successfully')
+
+              // Refresh the file list if callback is provided
+              if (onRefresh) {
+                onRefresh()
+              }
+            } catch (error) {
+              // eslint-disable-next-line no-console
+              console.error('Failed to duplicate file:', error)
+            }
+          })()
+        },
+      })
+
       const separator = await PredefinedMenuItem.new({
         text: 'separator',
         item: 'Separator',
@@ -115,7 +172,7 @@ export class FileContextMenu {
 
       // Create and show the context menu
       const menu = await Menu.new({
-        items: [revealItem, copyPathItem, separator, deleteItem],
+        items: [revealItem, copyPathItem, duplicateItem, separator, deleteItem],
       })
 
       // Show the menu at the specified position
