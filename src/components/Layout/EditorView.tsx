@@ -48,24 +48,68 @@ const toggleMarkdown = (view: EditorView, marker: string): boolean => {
   return true
 }
 
-const createMarkdownLink = (view: EditorView): boolean => {
+const createMarkdownLink = async (view: EditorView): Promise<boolean> => {
   const { state } = view
   const { from, to } = state.selection.main
   const selectedText = state.sliceDoc(from, to)
+  
+  // Check if cursor is inside an existing markdown link
+  const lineText = state.doc.lineAt(from).text
+  const lineStart = state.doc.lineAt(from).from
+  const posInLine = from - lineStart
+  
+  // Find markdown link pattern: [text](url)
+  const linkRegex = /\[([^\]]*)\]\(([^)]*)\)/g
+  let match
+  while ((match = linkRegex.exec(lineText)) !== null) {
+    const linkStart = match.index
+    const linkEnd = match.index + match[0].length
+    const urlStart = match.index + match[1].length + 3 // after "]("
+    const urlEnd = linkEnd - 1 // before ")"
+    
+    // Check if cursor is anywhere within the link
+    if (posInLine >= linkStart && posInLine <= linkEnd) {
+      // Select the URL portion
+      view.dispatch({
+        selection: EditorSelection.range(
+          lineStart + urlStart,
+          lineStart + urlEnd
+        )
+      })
+      return true
+    }
+  }
+  
+  // Try to get clipboard content
+  let clipboardUrl = ''
+  try {
+    if (navigator.clipboard && navigator.clipboard.readText) {
+      clipboardUrl = await navigator.clipboard.readText()
+    }
+  } catch (err) {
+    // Clipboard access failed, continue with normal behavior
+  }
+  
+  // Check if clipboard contains a URL
+  const isClipboardUrl = clipboardUrl && urlRegex.test(clipboardUrl.trim())
 
   if (selectedText.trim()) {
     // If text is selected, create link with text as anchor
-    const linkText = `[${selectedText}](url)`
+    const url = isClipboardUrl ? clipboardUrl.trim() : 'url'
+    const linkText = `[${selectedText}](${url})`
     view.dispatch({
       changes: { from, to, insert: linkText },
-      selection: EditorSelection.range(
-        from + selectedText.length + 3,
-        from + selectedText.length + 6
-      ),
+      selection: isClipboardUrl 
+        ? EditorSelection.range(from + linkText.length, from + linkText.length)
+        : EditorSelection.range(
+            from + selectedText.length + 3,
+            from + selectedText.length + 6
+          ),
     })
   } else {
     // If no text selected, create empty link template
-    const linkText = `[text](url)`
+    const url = isClipboardUrl ? clipboardUrl.trim() : 'url'
+    const linkText = `[text](${url})`
     view.dispatch({
       changes: { from, to, insert: linkText },
       selection: EditorSelection.range(from + 1, from + 5),
@@ -135,7 +179,10 @@ export const EditorViewComponent: React.FC = () => {
       },
       {
         key: 'Mod-k',
-        run: view => createMarkdownLink(view),
+        run: view => {
+          void createMarkdownLink(view)
+          return true
+        },
       },
       {
         key: 'Mod-s',
