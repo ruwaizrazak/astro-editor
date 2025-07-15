@@ -12,6 +12,7 @@ export default tseslint.config(
       'src-tauri/target/**',
       'test/dummy-astro-project/**',
       'temp-dummy-astro-project/**',
+      'src-tauri/src/test_fixtures/**',
       '*.config.{js,ts}',
       'vite.config.ts',
       'tailwind.config.js',

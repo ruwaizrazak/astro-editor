@@ -33,6 +33,10 @@
     }
   },
   "include": ["src"],
-  "exclude": ["temp-dummy-astro-project", "test/dummy-astro-project"],
+  "exclude": [
+    "temp-dummy-astro-project",
+    "test/dummy-astro-project",
+    "src-tauri/src/test_fixtures"
+  ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
