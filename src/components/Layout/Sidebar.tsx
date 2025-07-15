@@ -6,11 +6,12 @@ import { Badge } from '../ui/badge'
 import { FolderOpen, ArrowLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { parseSchemaJson } from '../../lib/schema'
+import { FileContextMenu } from '../ui/context-menu'
 
 // Type-safe helper functions for file handling
 function formatDate(dateValue: unknown): string {
   if (!dateValue) return ''
-  
+
   try {
     const date = new Date(dateValue as string | number | Date)
     if (isNaN(date.getTime())) return ''
@@ -26,7 +27,7 @@ function formatDate(dateValue: unknown): string {
 
 function getPublishedDate(frontmatter: Record<string, unknown>): Date | null {
   const dateFields = ['pubDate', 'date', 'publishedDate', 'published'] as const
-  
+
   for (const field of dateFields) {
     const value = frontmatter[field]
     if (value) {
@@ -44,7 +45,7 @@ function getTitle(file: FileEntry): string {
   if (file.frontmatter?.title && typeof file.frontmatter.title === 'string') {
     return file.frontmatter.title
   }
-  
+
   // Extract filename without extension as fallback
   const filename = file.name || file.path.split('/').pop() || 'Untitled'
   return filename.replace(/\.(md|mdx)$/, '')
@@ -94,6 +95,27 @@ export const Sidebar: React.FC = () => {
 
   const handleFileClick = (file: FileEntry) => {
     void openFile(file)
+  }
+
+  const handleContextMenu = async (
+    event: React.MouseEvent,
+    file: FileEntry
+  ) => {
+    event.preventDefault()
+    event.stopPropagation()
+
+    await FileContextMenu.show({
+      file,
+      position: { x: event.clientX, y: event.clientY },
+      onRefresh: () => {
+        // Refresh the file list by reloading the collection
+        if (selectedCollection) {
+          void loadCollectionFiles(
+            collections.find(c => c.name === selectedCollection)?.path || ''
+          )
+        }
+      },
+    })
   }
 
   // Sort files by published date (reverse chronological), files without dates first
@@ -201,6 +223,7 @@ export const Sidebar: React.FC = () => {
                 <button
                   key={file.id}
                   onClick={() => handleFileClick(file)}
+                  onContextMenu={e => void handleContextMenu(e, file)}
                   className={cn(
                     'w-full text-left p-3 rounded-md transition-colors',
                     'hover:bg-accent',

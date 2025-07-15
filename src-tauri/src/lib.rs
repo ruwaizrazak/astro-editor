@@ -21,6 +21,9 @@ fn greet(name: &str) -> String {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_clipboard_manager::init())
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_dialog::init())
         .manage(commands::watcher::init_watcher_state())
         .setup(|app| {
             // Create macOS menu bar
@@ -167,7 +170,8 @@ pub fn run() {
             update_frontmatter,
             save_markdown_content,
             start_watching_project,
-            stop_watching_project
+            stop_watching_project,
+            copy_text_to_clipboard
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

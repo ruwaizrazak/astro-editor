@@ -39,12 +39,12 @@ interface StringFieldProps extends FieldProps {
   placeholder?: string
 }
 
-const StringField: React.FC<StringFieldProps> = ({ 
-  name, 
-  label, 
-  placeholder, 
-  className, 
-  required 
+const StringField: React.FC<StringFieldProps> = ({
+  name,
+  label,
+  placeholder,
+  className,
+  required,
 }) => {
   const { frontmatter, updateFrontmatterField } = useAppStore()
 
@@ -104,11 +104,11 @@ interface NumberFieldProps extends FieldProps {
   placeholder?: string
 }
 
-const NumberField: React.FC<NumberFieldProps> = ({ 
-  name, 
-  label, 
-  placeholder, 
-  required 
+const NumberField: React.FC<NumberFieldProps> = ({
+  name,
+  label,
+  placeholder,
+  required,
 }) => {
   const { frontmatter, updateFrontmatterField } = useAppStore()
 
@@ -209,7 +209,12 @@ interface EnumFieldProps extends FieldProps {
   options: string[]
 }
 
-const EnumField: React.FC<EnumFieldProps> = ({ name, label, options, required }) => {
+const EnumField: React.FC<EnumFieldProps> = ({
+  name,
+  label,
+  options,
+  required,
+}) => {
   const { frontmatter, updateFrontmatterField } = useAppStore()
 
   return (
@@ -290,7 +295,11 @@ interface FrontmatterFieldProps {
   field?: ZodField
 }
 
-const FrontmatterField: React.FC<FrontmatterFieldProps> = ({ name, label, field }) => {
+const FrontmatterField: React.FC<FrontmatterFieldProps> = ({
+  name,
+  label,
+  field,
+}) => {
   const { frontmatter } = useAppStore()
   const inputType = field ? getInputTypeForZodField(field.type) : 'text'
   const required = field ? !field.optional : false
@@ -359,7 +368,11 @@ const FrontmatterField: React.FC<FrontmatterFieldProps> = ({ name, label, field 
 }
 
 export const FrontmatterPanel: React.FC = () => {
-  const { currentFile, frontmatter, collections }: {
+  const {
+    currentFile,
+    frontmatter,
+    collections,
+  }: {
     currentFile: FileEntry | null
     frontmatter: Record<string, unknown>
     collections: Collection[]

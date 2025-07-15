@@ -28,4 +28,7 @@ notify = "6.1"
 walkdir = "2"
 rfd = "0.15"
 regex = "1.10"
+tauri-plugin-clipboard-manager = "2.3.0"
+tauri-plugin-fs = "2.4.0"
+tauri-plugin-dialog = "2.3.0"
 

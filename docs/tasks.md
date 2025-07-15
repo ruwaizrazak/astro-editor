@@ -173,13 +173,17 @@ Investigate alternatives to regex-based parsing:
   - [x] Move this new structure into `test/dummy-astro-project` and add an `npm run reset:testdata` command to copy this to `/temp-dummy-astro-project`. The temp version should be gitignored - it will be used for local manual testing and can be modified freely via the app interface by the developer. Both of these firectories should be ignored by all linting, testing and build tools, including vite. Look for existing `dummy-astro-project` strings in the project for this bit.
 - [x] Review all non-shadci React components for opportunities to extract reusable components or simplify to make things more readable/understandable etc. Refactor as needed.
 - [x] Review all typescript code to ensure we're making full use of the various types and interfaces we've defined in `store/index.ts` and elsewhere. Can we improve simplicity and type safety elsewhere in the app by using typescript types well?
-- [ ] Add native context menu actions to files in FileList:
+- [x] Add native context menu actions to files in FileList:
   - Reveal in Finder - opens directory in finder
   - Copy path to file - copies the absolute path to the file
   - Delete - Deletes the file after confirmation. If easy, use the OS file deletion (so it goes to trash)
+- [ ] Add "duplicate" to FileList context menu (append `-1` etc to filename before extension for new file)
+- [ ] Add "rename" to FileList context menu - UI should rename kinda "in-place" if possible, not in a modal.
+
+- [ ] Create new file functionality for easy creation of new content items within collections
 - [ ] Review our approach to parsing `content.config.js` - I think we currently use RegEx, but if we're able to execute JS/TS in the compiled Tauri app it may be possible to use `zod` to read and understand the schema in a more robust/efficient/safe way. Could we use the md/mdx files and zon schemas to creat our own typesafe objects, which our UI components can read? This would probably involve the the rust backend talking more with the TS front-end etc.
 - [ ] Rework (or add to) the tests so they actually test all the weird little bits of business logic we've now got in our code. Our tests must encode our business logic effectively and not be over-bloated testing obvious things.
-- [ ] Update `CLAUDE.md` with clear descriptions of the new design patterns etc we have introduced, current project structure, examples, npm commands etc. Add instructions to check the shadcn docs when needed (with the appropriate tool calls to do so). Make sure LAUDE.md is the best it can be.
+- [ ] Update `CLAUDE.md` with clear descriptions of the new design patterns etc we have introduced, current project structure, examples, npm commands etc. Add instructions to check the shadcn docs when needed (with the appropriate tool calls to do so). Make sure CLAUDE.md is the best it can be. Also look for opportunities to optimise for token use without affecting its effectiveness.
 
 ---
 
@@ -217,15 +221,10 @@ _Goal: Production-ready reliability and performance_
 - [ ] Add simple (currently empty) preferences/settings window/dialog with `Cmd + ,` keyboard shortcut, menu item, cog icon in `UnifiedTitleBar.tsx` etc.
 - [ ] Add error handling and graceful degradation where appropriate
 - [ ] Optimize for large content collections (virtualized lists, laxy loading etc)
-- [ ] Add simple search functionality for large collections (by filename only)
+- [ ] Add simple search functionality for large collections (by filename and title [if present] only)
 - [ ] Crash recovery and unsaved changes detection
-
-**Phase 4.2**
-
 - [ ] Add comprehensive keyboard shortcuts
 - [ ] Review all right-click context menus, menubar menus etc. Remove anything not implemented and conform to macOS norms
-- [ ] Add file operations (delete, rename, duplicate etc) via context menu
-- [ ] Create new file functionality for easy creation of new content items within collections
 - [ ] Implement simple command pallete to execute common commands etc (use https://ui.shadcn.com/docs/components/command)
 - [ ] Review all code for opportunities to simplify, refactor, make more readable etc **without affecting functionality**
 - [ ] Performance optimization and profiling

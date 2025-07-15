@@ -17,6 +17,23 @@
     "core:window:allow-hide",
     "core:path:default",
     "core:menu:default",
-    "opener:default"
+    "opener:default",
+    "clipboard-manager:default",
+    "clipboard-manager:allow-write-text",
+    "fs:default",
+    "fs:allow-remove",
+    "dialog:default",
+    {
+      "identifier": "fs:scope",
+      "allow": [
+        { "path": "**" }
+      ]
+    },
+    {
+      "identifier": "opener:allow-open-path",
+      "allow": [
+        { "path": "**" }
+      ]
+    }
   ]
 }
