@@ -195,14 +195,14 @@ _Goal: Beautiful, iA Writer-inspired editing experience_
 **Phase 3.1**
 
 - [x] Review our `EditorView` and configure CodeMirror so we're in the best possible starting point for working on the markdown editor.
-- [ ] Implement iA Writer-inspired typography and colors (add iA Writer Duo variable font - https://github.com/iaolo/iA-Fonts)
-- [ ] Create hanging hash marks for headings
-- [ ] Custom CodeMirror theme matching iA Writer aesthetic
-- [ ] Add editor keyboard shortcuts (Cmd+B, Cmd+I, Cmd+K, etc.)
-- [ ] Add: Pasting a URL over selected text inserts a markdown link properly
-- [ ] Ensure undo and redo work with the usual keyboard shortcuts and OS menubar entries.
-- [ ] Ensure all GFM features are fully supported
+- [x] Implement iA Writer-inspired typography (add iA Writer Duo variable font - https://github.com/iaolo/iA-Fonts)
+- [x] Add editor keyboard shortcuts (Cmd+B, Cmd+I, Cmd+K, etc.)
+- [x] Add: Pasting a URL over selected text inserts a markdown link properly
+- [x] Ensure undo and redo work with the usual keyboard shortcuts.
+- [x] Ensure all GFM features are fully supported
 - [x] Hide initial MDX imports for MDX files
+- [ ] Custom CodeMirror theme matching iA Writer aesthetic
+- [ ] Create hanging hash marks for headings
 - [ ] Improve markdown syntax highlighting and code block display
 
 **Phase 3.2**

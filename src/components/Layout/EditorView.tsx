@@ -6,8 +6,204 @@ import { keymap } from '@codemirror/view'
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
 import { searchKeymap } from '@codemirror/search'
 import { EditorSelection, Prec } from '@codemirror/state'
+import { HighlightStyle, syntaxHighlighting, defaultHighlightStyle } from '@codemirror/language'
+import { Tag, styleTags, tags } from '@lezer/highlight'
 import { useAppStore } from '../../store'
 import './EditorView.css'
+
+// Define comprehensive markdown tags for styling
+const markdownTags = {
+  // Headings
+  heading1: Tag.define(),
+  heading2: Tag.define(),
+  heading3: Tag.define(),
+  heading4: Tag.define(),
+  heading5: Tag.define(),
+  heading6: Tag.define(),
+  headingMark: Tag.define(), // The # symbols
+  
+  // Emphasis and Strong
+  emphasis: Tag.define(), // *italic*
+  emphasisMark: Tag.define(), // The * symbols
+  strong: Tag.define(), // **bold**
+  strongMark: Tag.define(), // The ** symbols
+  strikethrough: Tag.define(), // ~~text~~
+  strikethroughMark: Tag.define(), // The ~~ symbols
+  
+  // Code
+  inlineCode: Tag.define(), // `code`
+  inlineCodeMark: Tag.define(), // The ` symbols
+  codeBlock: Tag.define(), // ```code```
+  codeBlockMark: Tag.define(), // The ``` symbols
+  codeFence: Tag.define(), // Language identifier after ```
+  
+  // Links and Images
+  link: Tag.define(), // [text](url)
+  linkMark: Tag.define(), // The [ ] ( ) symbols
+  linkText: Tag.define(), // The text part
+  linkUrl: Tag.define(), // The URL part
+  image: Tag.define(), // ![alt](src)
+  imageMark: Tag.define(), // The ! [ ] ( ) symbols
+  imageAlt: Tag.define(), // Alt text
+  imageUrl: Tag.define(), // Image URL
+  
+  // Lists
+  listMark: Tag.define(), // - * + for unordered, 1. for ordered
+  listItem: Tag.define(), // List item content
+  
+  // Blockquotes
+  blockquote: Tag.define(), // > quoted text
+  blockquoteMark: Tag.define(), // The > symbol
+  
+  // Horizontal Rules
+  horizontalRule: Tag.define(), // --- or ***
+  
+  // Tables
+  table: Tag.define(),
+  tableHeader: Tag.define(),
+  tableSeparator: Tag.define(), // The | symbols
+  tableRow: Tag.define(),
+  tableCell: Tag.define(),
+  
+  // HTML elements (when mixed with markdown)
+  htmlTag: Tag.define(),
+  htmlAttribute: Tag.define(),
+  
+  // Escape characters
+  escape: Tag.define(), // \* \` etc
+}
+
+// Create style extension that maps parser tags to our custom tags
+const markdownStyleExtension = {
+  props: [
+    styleTags({
+      // Headings
+      'ATXHeading1/HeaderMark': markdownTags.headingMark,
+      'ATXHeading1': markdownTags.heading1,
+      'ATXHeading2/HeaderMark': markdownTags.headingMark,
+      'ATXHeading2': markdownTags.heading2,
+      'ATXHeading3/HeaderMark': markdownTags.headingMark,
+      'ATXHeading3': markdownTags.heading3,
+      'ATXHeading4/HeaderMark': markdownTags.headingMark,
+      'ATXHeading4': markdownTags.heading4,
+      'ATXHeading5/HeaderMark': markdownTags.headingMark,
+      'ATXHeading5': markdownTags.heading5,
+      'ATXHeading6/HeaderMark': markdownTags.headingMark,
+      'ATXHeading6': markdownTags.heading6,
+      
+      // Emphasis and Strong
+      'Emphasis/EmphasisMark': markdownTags.emphasisMark,
+      'Emphasis': markdownTags.emphasis,
+      'StrongEmphasis/EmphasisMark': markdownTags.strongMark,
+      'StrongEmphasis': markdownTags.strong,
+      'Strikethrough/StrikethroughMark': markdownTags.strikethroughMark,
+      'Strikethrough': markdownTags.strikethrough,
+      
+      // Code
+      'InlineCode/CodeMark': markdownTags.inlineCodeMark,
+      'InlineCode': markdownTags.inlineCode,
+      'FencedCode/CodeMark': markdownTags.codeBlockMark,
+      'FencedCode': markdownTags.codeBlock,
+      'CodeInfo': markdownTags.codeFence,
+      
+      // Links and Images
+      'Link/LinkMark': markdownTags.linkMark,
+      'Link': markdownTags.link,
+      'LinkText': markdownTags.linkText,
+      'URL': markdownTags.linkUrl,
+      'Image/ImageMark': markdownTags.imageMark,
+      'Image': markdownTags.image,
+      'ImageText': markdownTags.imageAlt,
+      
+      // Lists
+      'ListMark': markdownTags.listMark,
+      'ListItem': markdownTags.listItem,
+      
+      // Blockquotes
+      'Blockquote/QuoteMark': markdownTags.blockquoteMark,
+      'Blockquote': markdownTags.blockquote,
+      
+      // Horizontal Rules
+      'HorizontalRule': markdownTags.horizontalRule,
+      
+      // Tables
+      'Table': markdownTags.table,
+      'TableHeader': markdownTags.tableHeader,
+      'TableDelimiter': markdownTags.tableSeparator,
+      'TableRow': markdownTags.tableRow,
+      'TableCell': markdownTags.tableCell,
+      
+      // HTML
+      'HTMLTag': markdownTags.htmlTag,
+      'HTMLAttribute': markdownTags.htmlAttribute,
+      
+      // Escape
+      'Escape': markdownTags.escape,
+    }),
+  ],
+}
+
+// Create highlight style with random colors for now
+const markdownHighlightStyle = HighlightStyle.define([
+  // Headings - Purple family
+  { tag: markdownTags.heading1, fontSize: '1.8em', fontWeight: 'bold', color: '#8B5CF6' },
+  { tag: markdownTags.heading2, fontSize: '1.6em', fontWeight: 'bold', color: '#A855F7' },
+  { tag: markdownTags.heading3, fontSize: '1.4em', fontWeight: 'bold', color: '#C084FC' },
+  { tag: markdownTags.heading4, fontSize: '1.2em', fontWeight: 'bold', color: '#D8B4FE' },
+  { tag: markdownTags.heading5, fontSize: '1.1em', fontWeight: 'bold', color: '#E9D5FF' },
+  { tag: markdownTags.heading6, fontSize: '1.05em', fontWeight: 'bold', color: '#F3E8FF' },
+  { tag: markdownTags.headingMark, color: '#6B7280', opacity: '0.6' },
+  
+  // Emphasis and Strong - Orange/Red family
+  { tag: markdownTags.emphasis, fontStyle: 'italic', color: '#F97316' },
+  { tag: markdownTags.emphasisMark, color: '#FB923C', opacity: '0.7' },
+  { tag: markdownTags.strong, fontWeight: 'bold', color: '#DC2626' },
+  { tag: markdownTags.strongMark, color: '#EF4444', opacity: '0.7' },
+  { tag: markdownTags.strikethrough, textDecoration: 'line-through', color: '#9CA3AF' },
+  { tag: markdownTags.strikethroughMark, color: '#D1D5DB', opacity: '0.7' },
+  
+  // Code - Green family
+  { tag: markdownTags.inlineCode, backgroundColor: '#F0FDF4', color: '#15803D', fontFamily: 'monospace', padding: '2px 4px', borderRadius: '3px' },
+  { tag: markdownTags.inlineCodeMark, color: '#22C55E', opacity: '0.6' },
+  { tag: markdownTags.codeBlock, backgroundColor: '#F0FDF4', color: '#059669', fontFamily: 'monospace' },
+  { tag: markdownTags.codeBlockMark, color: '#10B981', opacity: '0.6' },
+  { tag: markdownTags.codeFence, color: '#6EE7B7', fontWeight: 'bold' },
+  
+  // Links and Images - Blue family
+  { tag: markdownTags.link, color: '#2563EB' },
+  { tag: markdownTags.linkMark, color: '#3B82F6', opacity: '0.7' },
+  { tag: markdownTags.linkText, color: '#1D4ED8', textDecoration: 'underline' },
+  { tag: markdownTags.linkUrl, color: '#1E40AF', opacity: '0.8' },
+  { tag: markdownTags.image, color: '#7C3AED' },
+  { tag: markdownTags.imageMark, color: '#8B5CF6', opacity: '0.7' },
+  { tag: markdownTags.imageAlt, color: '#A855F7', fontStyle: 'italic' },
+  { tag: markdownTags.imageUrl, color: '#9333EA', opacity: '0.8' },
+  
+  // Lists - Teal family
+  { tag: markdownTags.listMark, color: '#0D9488', fontWeight: 'bold' },
+  { tag: markdownTags.listItem, color: '#14B8A6' },
+  
+  // Blockquotes - Yellow family
+  { tag: markdownTags.blockquote, color: '#D97706', fontStyle: 'italic', borderLeft: '4px solid #FBBF24', paddingLeft: '1em' },
+  { tag: markdownTags.blockquoteMark, color: '#F59E0B', opacity: '0.7' },
+  
+  // Horizontal Rules - Gray family
+  { tag: markdownTags.horizontalRule, color: '#6B7280', backgroundColor: '#E5E7EB', height: '2px' },
+  
+  // Tables - Indigo family
+  { tag: markdownTags.table, color: '#4F46E5' },
+  { tag: markdownTags.tableHeader, color: '#6366F1', fontWeight: 'bold' },
+  { tag: markdownTags.tableSeparator, color: '#818CF8', opacity: '0.7' },
+  { tag: markdownTags.tableRow, color: '#A5B4FC' },
+  { tag: markdownTags.tableCell, color: '#C7D2FE' },
+  
+  // HTML - Pink family
+  { tag: markdownTags.htmlTag, color: '#EC4899' },
+  { tag: markdownTags.htmlAttribute, color: '#F472B6' },
+  
+  // Escape - Gray
+  { tag: markdownTags.escape, color: '#9CA3AF', opacity: '0.8' },
+])
 
 // Markdown formatting helper functions
 const toggleMarkdown = (view: EditorView, marker: string): boolean => {
@@ -165,7 +361,10 @@ export const EditorViewComponent: React.FC = () => {
 
   // Enhanced extensions for better writing experience
   const extensions = [
-    markdown(),
+    markdown({
+      extensions: [markdownStyleExtension]
+    }),
+    syntaxHighlighting(markdownHighlightStyle),
     history(),
     // High-precedence custom markdown shortcuts
     Prec.high(keymap.of([

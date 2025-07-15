@@ -18,7 +18,8 @@
       "Bash(mkdir:*)",
       "Bash(cp:*)",
       "WebFetch(domain:v2.tauri.app)",
-      "Bash(cargo test:*)"
+      "Bash(cargo test:*)",
+      "WebFetch(domain:discuss.codemirror.net)"
     ],
     "deny": []
   }
