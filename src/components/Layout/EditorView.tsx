@@ -143,8 +143,9 @@ const markdownStyleExtension = {
   ],
 }
 
-// Create highlight style with random colors for now
-const markdownHighlightStyle = HighlightStyle.define([
+// Create comprehensive highlight style that includes both markdown and standard language tags
+const comprehensiveHighlightStyle = HighlightStyle.define([
+  // === MARKDOWN-SPECIFIC TAGS ===
   // Headings - Purple family
   { tag: markdownTags.heading1, fontSize: '1.8em', fontWeight: 'bold', color: '#8B5CF6' },
   { tag: markdownTags.heading2, fontSize: '1.6em', fontWeight: 'bold', color: '#A855F7' },
@@ -197,12 +198,77 @@ const markdownHighlightStyle = HighlightStyle.define([
   { tag: markdownTags.tableRow, color: '#A5B4FC' },
   { tag: markdownTags.tableCell, color: '#C7D2FE' },
   
-  // HTML - Pink family
+  // HTML - Pink family (for markdown-specific HTML tags)
   { tag: markdownTags.htmlTag, color: '#EC4899' },
   { tag: markdownTags.htmlAttribute, color: '#F472B6' },
   
   // Escape - Gray
   { tag: markdownTags.escape, color: '#9CA3AF', opacity: '0.8' },
+
+  // === STANDARD LANGUAGE TAGS (HTML, CSS, JS, etc.) ===
+  // HTML Tags - Red/Pink family
+  { tag: tags.tagName, color: '#E11D48', fontWeight: 'bold' },
+  { tag: tags.angleBracket, color: '#F43F5E', opacity: '0.8' },
+  { tag: tags.attributeName, color: '#EC4899', fontStyle: 'italic' },
+  { tag: tags.attributeValue, color: '#BE185D' },
+  
+  // JavaScript/Programming - Blue family
+  { tag: tags.keyword, color: '#2563EB', fontWeight: 'bold' },
+  { tag: tags.function(tags.variableName), color: '#1D4ED8' },
+  { tag: tags.variableName, color: '#1E40AF' },
+  { tag: tags.className, color: '#3B82F6', fontWeight: 'bold' },
+  { tag: tags.namespace, color: '#60A5FA' },
+  { tag: tags.typeName, color: '#93C5FD' },
+  
+  // Literals - Green family
+  { tag: tags.string, color: '#059669' },
+  { tag: tags.character, color: '#10B981' },
+  { tag: tags.number, color: '#059669' },
+  { tag: tags.bool, color: '#16A34A', fontWeight: 'bold' },
+  { tag: tags.null, color: '#15803D', fontStyle: 'italic' },
+  
+  // Comments - Gray family
+  { tag: tags.comment, color: '#6B7280', fontStyle: 'italic' },
+  { tag: tags.blockComment, color: '#9CA3AF', fontStyle: 'italic' },
+  { tag: tags.lineComment, color: '#9CA3AF', fontStyle: 'italic' },
+  { tag: tags.docComment, color: '#6B7280', fontStyle: 'italic', fontWeight: 'bold' },
+  
+  // Operators and Punctuation - Purple family
+  { tag: tags.operator, color: '#7C3AED' },
+  { tag: tags.punctuation, color: '#8B5CF6' },
+  { tag: tags.bracket, color: '#A855F7' },
+  { tag: tags.paren, color: '#C084FC' },
+  { tag: tags.squareBracket, color: '#DDD6FE' },
+  
+  // CSS - Cyan family
+  { tag: tags.propertyName, color: '#0891B2', fontWeight: 'bold' },
+  { tag: tags.unit, color: '#06B6D4' },
+  { tag: tags.color, color: '#67E8F9', fontWeight: 'bold' },
+  
+  // Special/Meta - Orange family
+  { tag: tags.meta, color: '#EA580C' },
+  { tag: tags.processingInstruction, color: '#F97316' },
+  { tag: tags.definition(tags.variableName), color: '#FB923C', fontWeight: 'bold' },
+  { tag: tags.definition(tags.function(tags.variableName)), color: '#FDBA74', fontWeight: 'bold' },
+  
+  // Invalid/Error - Red family
+  { tag: tags.invalid, color: '#DC2626', textDecoration: 'underline wavy' },
+  { tag: tags.deleted, color: '#EF4444', textDecoration: 'line-through' },
+  { tag: tags.inserted, color: '#10B981', backgroundColor: '#DCFCE7' },
+  { tag: tags.changed, color: '#F59E0B', backgroundColor: '#FEF3C7' },
+  
+  // URLs and Links - Blue variations
+  { tag: tags.url, color: '#1E40AF', textDecoration: 'underline' },
+  { tag: tags.link, color: '#2563EB', textDecoration: 'underline' },
+  
+  // Headings (for other languages that have them) - Purple variations
+  { tag: tags.heading, fontSize: '1.2em', fontWeight: 'bold', color: '#7C3AED' },
+  { tag: tags.heading1, fontSize: '1.8em', fontWeight: 'bold', color: '#8B5CF6' },
+  { tag: tags.heading2, fontSize: '1.6em', fontWeight: 'bold', color: '#A855F7' },
+  { tag: tags.heading3, fontSize: '1.4em', fontWeight: 'bold', color: '#C084FC' },
+  { tag: tags.heading4, fontSize: '1.2em', fontWeight: 'bold', color: '#D8B4FE' },
+  { tag: tags.heading5, fontSize: '1.1em', fontWeight: 'bold', color: '#E9D5FF' },
+  { tag: tags.heading6, fontSize: '1.05em', fontWeight: 'bold', color: '#F3E8FF' },
 ])
 
 // Markdown formatting helper functions
@@ -364,7 +430,7 @@ export const EditorViewComponent: React.FC = () => {
     markdown({
       extensions: [markdownStyleExtension]
     }),
-    syntaxHighlighting(markdownHighlightStyle),
+    syntaxHighlighting(comprehensiveHighlightStyle),
     history(),
     // High-precedence custom markdown shortcuts
     Prec.high(keymap.of([

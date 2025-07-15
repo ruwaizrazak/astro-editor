@@ -201,8 +201,15 @@ _Goal: Beautiful, iA Writer-inspired editing experience_
 - [x] Ensure undo and redo work with the usual keyboard shortcuts.
 - [x] Ensure all GFM features are fully supported
 - [x] Hide initial MDX imports for MDX files
+- [x] Set up to style markdown etc sensibly in editor
 - [ ] Custom CodeMirror theme matching iA Writer aesthetic
-- [ ] Create hanging hash marks for headings
+  - [ ] Background and general type treatment / base colours
+  - [ ] Text selection / carat
+  - [ ] Font size and typography grows with viewport width (fluid type)
+  - [ ] All markdown colours
+  - [ ] Colours for HTML tags etc
+  - [ ] Any other colours
+  - [ ] Create hanging hash marks for headings
 - [ ] Improve markdown syntax highlighting and code block display
 
 **Phase 3.2**
