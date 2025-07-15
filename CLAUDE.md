@@ -183,6 +183,119 @@ const BadField = ({ name, onChange }) => { /* Don't do this */ }
 - Auto-focus title field on new file creation
 - Schema field ordering preserved in saved frontmatter
 
+## Editor Styling System
+
+### CodeMirror 6 Markdown Highlighting Architecture
+
+The editor uses a **comprehensive custom highlighting system** that replaces CodeMirror's default highlighting entirely. This provides complete control over markdown and code syntax appearance.
+
+**Location:** `src/components/Layout/EditorView.tsx`
+
+### Two-Part Styling System
+
+#### 1. Custom Markdown Tags
+```javascript
+const markdownTags = {
+  // Headings
+  heading1: Tag.define(), heading2: Tag.define(), // ... heading6
+  headingMark: Tag.define(), // The # symbols
+  
+  // Text formatting
+  emphasis: Tag.define(), emphasisMark: Tag.define(), // *italic*
+  strong: Tag.define(), strongMark: Tag.define(), // **bold**
+  strikethrough: Tag.define(), strikethroughMark: Tag.define(), // ~~text~~
+  
+  // Code
+  inlineCode: Tag.define(), inlineCodeMark: Tag.define(), // `code`
+  codeBlock: Tag.define(), codeBlockMark: Tag.define(), // ```blocks```
+  
+  // Links, lists, blockquotes, tables, etc.
+}
+```
+
+#### 2. Standard Language Tags
+Uses `tags` from `@lezer/highlight` for HTML, CSS, JavaScript syntax:
+- `tags.tagName`, `tags.attributeName` - HTML elements
+- `tags.keyword`, `tags.string`, `tags.comment` - Programming constructs
+- `tags.operator`, `tags.bracket` - Punctuation
+
+### Parser Integration
+
+**Style Extension Mapping:**
+```javascript
+const markdownStyleExtension = {
+  props: [
+    styleTags({
+      'ATXHeading1': markdownTags.heading1,
+      'ATXHeading1/HeaderMark': markdownTags.headingMark,
+      'Emphasis': markdownTags.emphasis,
+      'StrongEmphasis': markdownTags.strong,
+      // ... maps Lezer parser nodes to custom tags
+    })
+  ]
+}
+```
+
+**Integration:**
+```javascript
+markdown({
+  extensions: [markdownStyleExtension]
+}),
+syntaxHighlighting(comprehensiveHighlightStyle)
+```
+
+### Comprehensive Highlight Style
+
+**Single source of truth** for all syntax highlighting:
+```javascript
+const comprehensiveHighlightStyle = HighlightStyle.define([
+  // Markdown-specific styling
+  { tag: markdownTags.heading1, fontSize: '1.8em', fontWeight: 'bold', color: '#8B5CF6' },
+  
+  // Standard language styling  
+  { tag: tags.tagName, color: '#E11D48', fontWeight: 'bold' }, // HTML tags
+  { tag: tags.keyword, color: '#2563EB', fontWeight: 'bold' }, // JS keywords
+  // ... 50+ comprehensive style rules
+])
+```
+
+### Color Families
+
+**Organized by element type:**
+- **Purple family:** Headings (H1-H6)
+- **Orange/Red family:** Emphasis, strong text
+- **Green family:** Code elements
+- **Blue family:** Links, images, programming constructs
+- **Red/Pink family:** HTML tags
+- **Gray family:** Comments, utility elements
+
+### Key Features
+
+1. **Complete Control:** Every syntax element can be styled independently
+2. **Language Agnostic:** Works for markdown, HTML, CSS, JavaScript, etc.
+3. **Modular:** Add new elements by defining tags and adding style rules
+4. **Performance:** Uses CodeMirror's optimized Lezer parser highlighting
+5. **Type Safe:** All tags are explicitly defined
+
+### Adding New Styled Elements
+
+1. **Define tag:** `newElement: Tag.define()`
+2. **Map parser node:** `'ParserNodeName': markdownTags.newElement`
+3. **Add styling:** `{ tag: markdownTags.newElement, color: '#color' }`
+
+### Working Elements
+
+- ✅ **Markdown:** Headings, bold, italic, ~~strikethrough~~, links, lists, blockquotes, tables
+- ✅ **Code:** Inline `code`, ```code blocks```, syntax highlighting
+- ✅ **HTML:** `<tags>`, attributes, mixed content
+- ✅ **Programming:** Keywords, strings, comments, operators
+
+### Future Styling
+
+For non-standard markdown (like `==highlighting==`), use HTML: `<mark>text</mark>`
+
+**CRITICAL:** This system completely replaces default CodeMirror highlighting. All color changes must be made in `comprehensiveHighlightStyle`.
+
 ## Code Quality
 
 ### TypeScript Requirements
