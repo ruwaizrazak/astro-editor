@@ -56,6 +56,7 @@ const StringField: React.FC<StringFieldProps> = ({
       </label>
       <Input
         type="text"
+        name={name}
         placeholder={placeholder || `Enter ${label.toLowerCase()}...`}
         className={className}
         value={valueToString(frontmatter[name])}

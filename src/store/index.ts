@@ -1,7 +1,11 @@
 import { create } from 'zustand'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
-import { parseSchemaJson, validateFieldValue } from '../lib/schema'
+import {
+  parseSchemaJson,
+  validateFieldValue,
+  getDefaultValueForField,
+} from '../lib/schema'
 
 export interface FileEntry {
   id: string
@@ -54,6 +58,7 @@ interface AppState {
   loadCollectionFiles: (collectionPath: string) => Promise<void>
   openFile: (file: FileEntry) => Promise<void>
   saveFile: () => Promise<void>
+  createNewFile: () => Promise<void>
   setEditorContent: (content: string) => void
   updateFrontmatter: (frontmatter: Record<string, unknown>) => void
   updateFrontmatterField: (key: string, value: unknown) => void
@@ -402,6 +407,153 @@ export const useAppStore = create<AppState>((set, get) => ({
     } catch (error) {
       // eslint-disable-next-line no-console
       console.warn('Failed to load persisted project:', error)
+    }
+  },
+
+  createNewFile: async () => {
+    const { selectedCollection, collections } = get()
+    if (!selectedCollection) return
+
+    const collection = collections.find(c => c.name === selectedCollection)
+    if (!collection) return
+
+    // Helper function to singularize collection name
+    const singularize = (word: string): string => {
+      const pluralRules = [
+        { suffix: 'ies', replacement: 'y' }, // stories -> story
+        { suffix: 'es', replacement: 'e' },  // articles -> article (not articl)
+        { suffix: 's', replacement: '' },    // notes -> note
+      ]
+
+      for (const rule of pluralRules) {
+        if (word.endsWith(rule.suffix)) {
+          return word.slice(0, -rule.suffix.length) + rule.replacement
+        }
+      }
+      return word
+    }
+
+    try {
+      // Generate filename based on today's date
+      const today = new Date().toISOString().split('T')[0]
+      let filename = `${today}.md`
+      let counter = 1
+
+      // Check if file exists and increment counter if needed
+      const collectionFiles = await invoke<FileEntry[]>(
+        'scan_collection_files',
+        {
+          collectionPath: collection.path,
+        }
+      )
+
+      const existingNames = new Set(
+        collectionFiles.map(f =>
+          f.extension ? `${f.name}.${f.extension}` : f.name
+        )
+      )
+
+      while (existingNames.has(filename)) {
+        filename = `${today}-${counter}.md`
+        counter++
+      }
+
+      // Generate default frontmatter from schema
+      const schema = collection.schema
+        ? parseSchemaJson(collection.schema)
+        : null
+      const defaultFrontmatter: Record<string, unknown> = {}
+
+      // Generate default title
+      const singularName = singularize(selectedCollection)
+      const defaultTitle = `New ${singularName.charAt(0).toUpperCase() + singularName.slice(1)}`
+
+      if (schema?.fields) {
+        for (const field of schema.fields) {
+          // Only include required fields or fields with meaningful defaults
+          if (!field.optional) {
+            const value = getDefaultValueForField(field)
+
+            // Set date fields to today's date
+            if (
+              field.type === 'Date' &&
+              (field.name.toLowerCase().includes('date') ||
+                field.name.toLowerCase().includes('published'))
+            ) {
+              defaultFrontmatter[field.name] = today
+            } else if (field.name.toLowerCase() === 'title') {
+              // Set title to "New Article", "New Note", etc.
+              defaultFrontmatter[field.name] = defaultTitle
+            } else {
+              defaultFrontmatter[field.name] = value
+            }
+          }
+        }
+      }
+
+      // Create YAML frontmatter with proper type formatting
+      const frontmatterYaml =
+        Object.keys(defaultFrontmatter).length > 0
+          ? `---\n${Object.entries(defaultFrontmatter)
+              .map(([key, value]) => {
+                if (typeof value === 'string') {
+                  return `${key}: "${value}"`
+                } else if (typeof value === 'boolean') {
+                  return `${key}: ${value}` // Don't quote booleans
+                } else if (Array.isArray(value)) {
+                  return `${key}: []` // Empty array
+                } else if (typeof value === 'number') {
+                  return `${key}: ${value}` // Don't quote numbers
+                }
+                return `${key}: ${String(value)}`
+              })
+              .join('\n')}\n---\n\n`
+          : ''
+
+      // Create the file
+      const directory = collection.path
+      const filenameOnly = filename
+      await invoke('create_file', {
+        directory,
+        filename: filenameOnly,
+        content: frontmatterYaml,
+      })
+
+      // Refresh the collection files
+      await get().loadCollectionFiles(collection.path)
+
+      // Find and open the newly created file
+      const updatedFiles = await invoke<FileEntry[]>('scan_collection_files', {
+        collectionPath: collection.path,
+      })
+
+      const newFile = updatedFiles.find(
+        f => (f.extension ? `${f.name}.${f.extension}` : f.name) === filename
+      )
+
+      if (newFile) {
+        await get().openFile(newFile)
+
+        // Open frontmatter panel if not already open
+        const { frontmatterPanelVisible, toggleFrontmatterPanel } = get()
+        if (!frontmatterPanelVisible) {
+          toggleFrontmatterPanel()
+        }
+
+        // Focus the title field after a short delay to allow UI to update
+        setTimeout(() => {
+          const titleInput = document.querySelector(
+            'input[name="title"]'
+          ) as HTMLInputElement
+          if (titleInput) {
+            titleInput.focus()
+            titleInput.select()
+          }
+        }, 100)
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to create new file:', error)
     }
   },
 }))

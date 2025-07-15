@@ -8,6 +8,7 @@ import {
   PanelLeft,
   PanelLeftClose,
   PanelRightClose,
+  Plus,
 } from 'lucide-react'
 
 export const UnifiedTitleBar: React.FC = () => {
@@ -20,12 +21,18 @@ export const UnifiedTitleBar: React.FC = () => {
     saveFile,
     isDirty,
     currentFile,
+    selectedCollection,
+    createNewFile,
   } = useAppStore()
 
   const handleSave = () => {
     if (currentFile && isDirty) {
       void saveFile()
     }
+  }
+
+  const handleNewFile = () => {
+    void createNewFile()
   }
 
   const handleMinimize = async () => {
@@ -105,8 +112,21 @@ export const UnifiedTitleBar: React.FC = () => {
         )}
       </div>
 
-      {/* Right: Save button + Right sidebar toggle */}
+      {/* Right: New file + Save button + Right sidebar toggle */}
       <div className="flex items-center gap-2" data-tauri-drag-region>
+        {/* New file button - only show when in a collection */}
+        {selectedCollection && (
+          <Button
+            onClick={handleNewFile}
+            variant="ghost"
+            size="sm"
+            className="size-7 p-0"
+            title={`New ${selectedCollection} file`}
+          >
+            <Plus className="size-4" />
+          </Button>
+        )}
+
         {/* Save button - no drag region */}
         <Button
           onClick={handleSave}

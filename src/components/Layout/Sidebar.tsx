@@ -77,6 +77,7 @@ export const Sidebar: React.FC = () => {
     null
   )
   const [renameValue, setRenameValue] = React.useState('')
+  const renameInitializedRef = React.useRef(false)
 
   const handleOpenProject = async () => {
     try {
@@ -128,13 +129,17 @@ export const Sidebar: React.FC = () => {
   const handleRename = (file: FileEntry) => {
     setRenamingFileId(file.id)
     // Include extension in the edit value
-    const fullName = file.extension ? `${file.name}.${file.extension}` : file.name
+    const fullName = file.extension
+      ? `${file.name}.${file.extension}`
+      : file.name
     setRenameValue(fullName || '')
+    renameInitializedRef.current = false // Reset for new rename session
   }
 
   // Focus and select filename without extension when rename input is rendered
   React.useEffect(() => {
-    if (renamingFileId) {
+    if (renamingFileId && !renameInitializedRef.current) {
+      renameInitializedRef.current = true
       const timeoutId = setTimeout(() => {
         const input = document.querySelector(
           'input[type="text"]'
@@ -153,7 +158,7 @@ export const Sidebar: React.FC = () => {
       }, 10)
       return () => clearTimeout(timeoutId)
     }
-  }, [renamingFileId]) // Remove renameValue dependency to prevent re-running on typing
+  }, [renamingFileId, renameValue])
 
   const handleRenameSubmit = async (file: FileEntry) => {
     if (!renameValue.trim() || renameValue === file.name) {
@@ -335,8 +340,10 @@ export const Sidebar: React.FC = () => {
                             autoFocus
                             onClick={e => e.stopPropagation()}
                           />
+                        ) : file.extension ? (
+                          `${file.name}.${file.extension}`
                         ) : (
-                          file.extension ? `${file.name}.${file.extension}` : file.name
+                          file.name
                         )}
                       </div>
                     </div>
