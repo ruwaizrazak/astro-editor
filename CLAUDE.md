@@ -2,7 +2,18 @@
 
 ## Project Overview
 
-Native macOS markdown editor for Astro content collections. Creates a distraction-free writing environment with seamless frontmatter editing, inspired by iA Writer.
+**Goal:** Native macOS markdown editor specifically designed for Astro content collections. Creates a distraction-free writing environment with seamless frontmatter editing, inspired by iA Writer's design philosophy.
+
+**Purpose:** Replace the need for code editors (VSCode/Cursor) when writing content. Provides a calm, focused environment for long-form writing while understanding Astro's content structure.
+
+**Key Features:**
+- Auto-discovers Astro content collections from `src/content/config.ts`
+- Dynamic frontmatter forms generated from Zod schemas
+- File management: create, rename, duplicate, delete with context menus
+- Real-time auto-save every 2 seconds
+- CodeMirror 6 editor with markdown support
+- Resizable panels for optimal writing layout
+- Draft detection and date-based file sorting
 
 ## Core Rules
 
@@ -18,7 +29,13 @@ Native macOS markdown editor for Astro content collections. Creates a distractio
 - **Always use Context7 first** for major frameworks/libraries documentation
 - Use `mcp__context7__resolve-library-id` then `mcp__context7__get-library-docs`
 - Only use WebSearch if Context7 lacks the needed information
-- Common Context7 queries: Tauri v2, React, Zustand, CodeMirror, Tailwind, Vitest
+- **CRITICAL VERSION REQUIREMENTS:**
+  - Tauri v2.x (NOT v1 - different API)
+  - shadcn/ui v4.x with Tailwind v4.x (NOT v3)
+  - React 19.x
+  - Zustand v5.x
+  - CodeMirror v6.x
+  - Vitest v3.x
 
 ## Current Status
 
@@ -46,35 +63,36 @@ Native macOS markdown editor for Astro content collections. Creates a distractio
 
 ## Architecture
 
+### App Layout Structure
+- **UnifiedTitleBar:** macOS-style window chrome with menu integration
+- **Layout:** Main container with ResizablePanelGroup system
+  - **Sidebar:** Collection/file navigation (collapsible)
+  - **MainEditor:** CodeMirror 6 markdown editor
+  - **FrontmatterPanel:** Dynamic forms from Zod schemas (resizable)
+
+### Data Flow
+1. **Project Discovery:** Parse `src/content/config.ts` → extract collections & schemas
+2. **File Loading:** Read markdown → separate frontmatter/content → populate editor
+3. **Editing:** Direct store updates → auto-save every 2 seconds
+4. **File Operations:** Tauri commands for create/rename/duplicate/delete
+
 ### Frontend Structure
 ```
 src/
-├── components/
-│   ├── Layout/           # Main app components
-│   └── ui/               # shadcn/ui components (30+)
+├── components/Layout/    # Main app components (Layout, Sidebar, etc.)
+├── components/ui/        # shadcn/ui components (30+)
 ├── store/index.ts        # Zustand state management
 ├── lib/schema.ts         # Zod schema parsing
 ├── types/common.ts       # Shared interfaces
-└── hooks/                # React hooks
+└── test/                 # Vitest test files
 ```
 
 ### Backend Structure (Rust)
 ```
 src-tauri/src/
-├── commands/             # Tauri commands
-├── models/              # Data structures
-└── parser.rs            # TypeScript parsing
-```
-
-### Project Structure
-```
-blog-editor/
-├── docs/                # Documentation
-├── test/dummy-astro-project/  # Test data
-├── src/                 # React app
-├── src-tauri/           # Rust backend
-├── components.json      # shadcn/ui config
-└── package.json
+├── commands/             # Tauri commands (files.rs, project.rs)
+├── models/              # Data structures (Collection, FileEntry)
+└── parser.rs            # TypeScript config parsing
 ```
 
 ## Development Commands
@@ -114,11 +132,11 @@ npm run reset:testdata   # Reset test project
 ## Key Patterns
 
 ### Direct Store Pattern (CRITICAL)
-**Problem:** React Hook Form + Zustand causes infinite loops.
-**Solution:** Direct store access with `updateFrontmatterField`.
+**Problem:** React Hook Form + Zustand causes infinite loops when extracting components.
+**Solution:** Components access store directly with `updateFrontmatterField`.
 
 ```tsx
-// Reusable field component
+// ✅ CORRECT: Direct store pattern
 const StringField: React.FC<{
   name: string
   label: string
@@ -139,9 +157,12 @@ const StringField: React.FC<{
     </div>
   )
 }
+
+// ❌ WRONG: Callback dependencies cause infinite loops
+const BadField = ({ name, onChange }) => { /* Don't do this */ }
 ```
 
-**Benefits:** No infinite loops, extractable components, real-time updates, auto-save works.
+**Why:** Enables component extraction, prevents infinite loops, maintains real-time updates and auto-save.
 
 ### State Management
 - Single Zustand store in `src/store/index.ts`
@@ -156,10 +177,11 @@ const StringField: React.FC<{
 - MDX import handling
 
 ### Form Generation
-- Dynamic forms from Zod schemas
+- Parse Zod schemas from `src/content/config.ts` into JSON
+- Generate dynamic forms for frontmatter editing
 - Field types: string, number, boolean, date, enum, array
-- Direct store updates (no React Hook Form)
-- Components: `StringField`, `BooleanField`, `DateField`, etc.
+- Auto-focus title field on new file creation
+- Schema field ordering preserved in saved frontmatter
 
 ## Code Quality
 
@@ -170,16 +192,18 @@ const StringField: React.FC<{
 - Type-safe store usage
 
 ### Component Guidelines
-- Use shadcn/ui components first
-- Direct Store Pattern for state modification
+- Use shadcn/ui v4 components first (NOT v3)
+- Direct Store Pattern for all state modification
 - Extract helper components for repeated JSX (3+ times)
 - Create reusable interfaces in `src/types/common.ts`
+- Use `EditorAreaWithFrontmatter` pattern for layout helpers
 
 ### Styling
-- Tailwind utilities over custom CSS
+- Tailwind v4 utilities over custom CSS
 - Standard spacing: `p-4` panels, `gap-2` small, `gap-4` large
 - Icons: `h-4 w-4` standard, `h-8` toolbar
 - CSS variables: `bg-background`, `text-foreground`
+- ResizablePanel system for layout management
 
 ## Testing Strategy
 
@@ -202,8 +226,9 @@ const StringField: React.FC<{
 
 ## WebKit/Tauri Considerations
 - `field-sizing: content` CSS not supported → use `AutoExpandingTextarea`
-- WebKit behavior differs from Chrome DevTools
-- Use JavaScript-based auto-expansion for textareas
+- WebKit behavior differs from Chrome DevTools  
+- JavaScript-based auto-expansion for textareas
+- Tauri v2 has different API than v1 (different import paths, command structure)
 
 ## Best Practices
 
@@ -213,11 +238,11 @@ const StringField: React.FC<{
 3. Manual testing for UI changes
 
 ### Component Development
-- **NEVER** use React Hook Form for new components
-- **ALWAYS** use Direct Store Pattern for state changes
+- **NEVER** use React Hook Form (causes infinite loops)
+- **ALWAYS** use Direct Store Pattern: `updateFrontmatterField(key, value)`
 - **AVOID** callback props with changing dependencies
-- **EXTRACT** helper components for duplicate patterns
-- **TYPE** store destructuring explicitly
+- **EXTRACT** helper components for duplicate patterns (see `EditorAreaWithFrontmatter`)
+- **TYPE** store destructuring explicitly for IDE support
 
 ### Error Handling
 - Graceful degradation for missing files/permissions
@@ -241,10 +266,11 @@ const StringField: React.FC<{
 ## Troubleshooting
 
 ### Common Issues
-- **Infinite loops:** Check Direct Store Pattern usage
-- **Auto-save not working:** Verify `scheduleAutoSave()` calls
-- **File watching issues:** Check file permissions and paths
-- **Schema parsing errors:** Validate TypeScript config syntax
+- **Infinite loops:** Ensure Direct Store Pattern, not callback props
+- **Auto-save not working:** Check `scheduleAutoSave()` calls and 2s interval
+- **File watching issues:** Verify file permissions and project paths
+- **Schema parsing errors:** Check `src/content/config.ts` syntax
+- **Version conflicts:** Use Tauri v2, shadcn/ui v4, Tailwind v4 docs only
 
 ### Performance
 - Target <2s app launch, <100ms file operations
