@@ -192,7 +192,7 @@ Investigate alternatives to regex-based parsing:
 **Phase 3: The Editor Experience (Week 5-6)**
 _Goal: Beautiful, iA Writer-inspired editing experience_
 
-**Phase 3.1**
+**Phase 3.1 - The Markdown Editor**
 
 - [x] Review our `EditorView` and configure CodeMirror so we're in the best possible starting point for working on the markdown editor.
 - [x] Implement iA Writer-inspired typography (add iA Writer Duo variable font - https://github.com/iaolo/iA-Fonts)
@@ -203,12 +203,13 @@ _Goal: Beautiful, iA Writer-inspired editing experience_
 - [x] Hide initial MDX imports for MDX files
 - [x] Set up to style markdown etc sensibly in editor
 - [ ] **MANUAL WORK FOR DANNY** - Codify iA Writer style in `/docs/ia-writer-ui.md` (See Figma)
-  - [ ] Extract Colours
-  - [ ] Measure breakpoints and associated line-heights etc.
-  - [ ] Recreate all in Figma sith a sensible base font-size.
+  - [x] Extract Colours
+  - [ ] Measure all breakpoints and associated line-heights etc.
+  - [ ] Recreate views in Figma sith a sensible base font-size -> identify all variables, breakpoints etc.
+  - [ ] Play with additions to iA writer style in Figma (blockquotes, heading styling etc)
   - [ ] Write up `/docs/ia-writer-ui.md` with final detailed UI specifications.
-- [ ] Custom CodeMirror theme matching iA Writer aesthetic
-  - [ ] Set up editor colour palette variables (see `/docs/ia-writer-ui.md`) so it's easy to switch to dark mode when we add it. Set editor background colour etc.
+- [ ] Build Custom CodeMirror theme based on UI specs
+  - [ ] Set up reusable editor colour palette variables (see `/docs/ia-writer-ui.md`) which make it easy to switch to dark mode when we add it. Set editor background colour etc.
   - [ ] Set default typography: size, weight, font-variant etc for all basic elements (text, headings, bold, italic). Remove or override any unwanted pre-existing styles.
   - [ ] Style carat and text-selection.
   - [ ] Add MD syntax highlighting colours for all other elements (links, images, footnotes, strikethrough, inline code, code blocks, blockquotes etc)
@@ -216,10 +217,10 @@ _Goal: Beautiful, iA Writer-inspired editing experience_
   - [ ] Add colours for HTML/JSX tags which appear in the markdown - keep this very simple
   - [ ] Style blockquotes niceley
   - [ ] If possible, "hang" header hashes in the left margin.
-  - [ ] Add nice styling for fenced code blocks with language-specific syntax highlighting.
+- [ ] Add nice styling for fenced code blocks with language-specific syntax highlighting.
 - [ ] Opening URLs via Click
-  - Hovering any URL while holding `Opt` changes it to <carat colour> and the pointer to a hand.
-  - Clicking while holding `Opt` opens it in the default browser.
+  - Hovering any URL while holding `Opt` changes it to the carat colour and the pointer to a hand.
+  - Clicking while holding `Opt` opens URL in the default browser.
 - [ ] Add More Editor Keyboard Shortcuts
   - `Opt+Cmd+1` - Turn current line to H1
   - `Opt+Cmd+2` - Turn current line to H2
@@ -227,78 +228,93 @@ _Goal: Beautiful, iA Writer-inspired editing experience_
   - `Opt+Cmd+4` - Turn current line to H4
   - `Opt+Cmd+0` - Turn current line to plain paragraph
 
-**Phase 3.2**
+**Phase 3.2 - Drag & Drop Images and Files**
 
-- [ ] Implement image drag & drop functionality
-  - [ ] Auto-copy images to `src/assets/[collection]/` with auto-rename to kebabcase and date prefix etc.
-  - [ ] Insert markdown image syntax at drop location
+- [ ] Implement image/file drag & drop functionality
+  - Auto-copy to `src/assets/[collection]/` with auto-rename to kebabcase and date prefix etc.
+  - If image: insert markdown image tag at drop location and focus alt text
+  - If non-image file: insert markdown link tag and focus link text
 
 **Deliverable:** Beautiful, responsive editor with excellent UX for markdown writing
 
 ---
 
-**Phase 4: Polish & Performance**
+**Phase 4: Polish, Usability & Performance**
 _Goal: Production-ready reliability and performance_
 
-**Phase 4.1**
+**Phase 4.1 - Polish, Resiliance & Usability**
 
-- [ ] Add simple (currently empty) preferences/settings window/dialog with `Cmd + ,` keyboard shortcut, menu item, cog icon in `UnifiedTitleBar.tsx` etc.
-- [ ] Add error handling and graceful degradation wherever appropriate
+- [ ] Implement simple `Cmd + P` command pallete to execute common commands etc (use https://ui.shadcn.com/docs/components/command): New [Article, Note etc - based on collections in schema], Open Collection, Open Project etc. Must be easily extensible in the future and know the currently selected collection and content item (if any).
+- [ ] Add simple search functionality when in large collections (by filename and title [if present] only)
 - [ ] Optimize for large content collections (virtualized lists, lazy loading etc)
-- [ ] Add simple search functionality for large collections (by filename and title [if present] only)
-- [ ] Crash recovery and unsaved changes detection
-- [ ] Check keyboard shortcuts are comprehensive and all work
-- [ ] Review all right-click context menus, menubar menus etc. Remove anything not implemented and conform to macOS norms
-- [ ] Implement simple command pallete to execute common commands etc (use https://ui.shadcn.com/docs/components/command)
-- [ ] Review all code for opportunities to simplify, refactor, make more readable/maintainable etc **without affecting functionality**
-- [ ] Performance optimization and profiling
+- [ ] Handle crash recovery and unsaved changes detection
+- [ ] Better error messages, toasts, empty states etc where needed
+- [ ] Check keyboard shortcuts are comprehensive and all work. Review all right-click context menus, menubar menus etc and remove anything not implemented and conform to macOS norms
+- [ ] Review all code for opportunities to simplify, refactor, make more readable/maintainable etc **without affecting functionality**.
 
 **Deliverable:** Stable, performant editor ready for daily use
 
 ---
 
-**Phase 5: Stretch Goals**
+**Phase 5: Advanced Features**
 _Goal: Advanced features that differentiate from basic editors_
 
-**Stretch Goals Priority 1:**
+**Phase 5.1 - Improved Writing Experience**
 
 - [ ] Focus mode which greys out all but the current sentence/paragraph
 - [ ] "Typewriter mode" (much like iA Writer)
 - [ ] Image preview popover on hover over local image URL
-- [ ] Better error messages, toasts, empty states etc where needed
 
-**Stretch Goals Priority 2:**
+**Phase 5.2 - Insert Astro Components into MDX files**
 
 - [ ] Discovery of Astro components intended for use in MDX files (from `src/components/mdx/`)
 - [ ] Slash command system for inserting Astro components in MDX files easily
-- [ ] Auto-add typescript imports for MDX components at top of MDX files (only if easy - this can easily be done in Cursor/VSCode before publishing)
-- [ ] Section in app settings to view all discovered Astro components and toggle on and off
-- [ ] Section in settings to optionally override:
+
+**Phase 5.3 - User Preferences Settings & Open in IDE**
+
+- [ ] Add simple preferences/settings window with `Cmd + ,` keyboard shortcut, menu item, cog icon in `UnifiedTitleBar.tsx` etc.
+- [ ] User preferences should be saved to disk somewhere appropriate so they persist between launches.
+- [ ] Section in app settings to view all discovered Astro components and toggle on and off.
+- [ ] Section in settings to optionally override Astro deaults:
   - Path to Astro components for use in MDX files (default: `src/components/mdx/`)
   - Path to content directory (default: `src/content/`)
   - Path to assets directory (default: `src/assets/[collection name]/`)
   - "Published Date" frontmatter proeperty name (default: `date`, `pubDate` or `publishedDate`) - must be of type Date
   - "Title" frontmatter property name (default: `title`) - must be of type String
   - "Draft" frontmatter property name (default: `draft`) - must be of type Boolean
+  - Command for "Open in IDE" button (default: ''), recommended setting: "code" or "cursor"
+- [ ] Button in `UnifiedTitleBar.tsx` to "Open Project in IDE". Only appears if "Open in IDE" command is set in settings. Opens current project in IDE by passing its path to the command (eg. `code /Users/bob/dev/astrosite/` -> opens `astrosite` project in VSCode)
 
-**Stretch Goals Priority 3:**
+**Phase 5.4: Editor/Analysis Mode**
 
-- [ ] Toggleable "review mode" which enables text analysis features...
-  - [ ] Syntax highlighting (colours) by parts of speech (Nouns, Adverbs, Verbs, Conjunctions like iA Writer (see https://ia.net/writer/how-to/edit-and-polish). Should ignore code blocks for this.
-  - [ ] Simple, performant writing analysis algorithms (eg. sentence complexity, readability etc) - like Hemmingway App.
+- [ ] Toggleable "editor mode" which enables text analysis features...
+  - [ ] Coloured Nouns, Adverbs, Verbs, Conjunctions like iA Writer (see https://ia.net/writer/how-to/edit-and-polish) to help with editing. Should ignore code blocks, links, HTML/Astro tags, inline code etc.
+  - [ ] Basic writing analysis algorithms (eg. sentence complexity, readability etc as per Hemmingway App).
+- [ ] Ability to toggle OS-native spelling and grammar checking on and off.
 
-**Deliverable:** Feature-rich editor that provides unique value for Astro content creators
+**Deliverable:** Feature-rich writing & editing app with seamless astro integration.
 
----
+**Phase 6: Pre-Release Tasks**
 
-### Risk Mitigation
-
-**High Risk Items:**
-
-1. **Astro config parsing complexity** → Start with simple cases, add complexity gradually
-2. **CodeMirror customization difficulties** → Research extensively, have fallback plans
-3. **File watching performance** → Use debouncing, limit to relevant directories
-4. **Frontmatter/content synchronization** → Implement robust parsing and validation
+- [ ] Add custom App icons and confirm all package/app metadata is correct
+- [ ] Add "About" dialog and menu item etc
+- [ ] Series of Extensive Code Reviews with specific, focussed goals: "Look for opportunities to..."
+  - Remove any shadcn UI components which are not used
+  - Rename components, methods, variables etc for better readability: eg `comprehensiveMArkdownSyntaxParser` -> `MDSyntaxParser`
+  - Refactor any overly "clever" TS code so it's easier to understand.
+  - Extract TS functions into reusable helper/utility methods so React components easier for developers to parse without distraction.
+  - Extract React components into their own files, aim for only one React component per file in most cases.
+  - Remove all unnececarry wrapper divs (and wrapper React components which add no value).
+  - Remove all redundant or unnececarry tailwind classes.
+  - Remove all unnececary `console.log` and code comments.
+  - Expert review of entire codebase for potential security issues.
+- [ ] Performance optimization & profiling
+- [ ] Automated production buld & Release for macOS (via GitHub actions?)
+- [ ] Update all docs:
+  - Create `docs/developer_guide.md` with comprehensive documentation on the project and how everything works, written for a human audience.
+  - Move all working documentation/notes/specs/prds etc to `docs/archive` and mark as no longer relevant.
+  - Update CLAUDE.md to remove all info on roadmap/planning etc and just contain optimal instuctions for working effectively on this project in the future.
+  - Write a short, punchy README.md
 
 ## Potential Future Features
 
