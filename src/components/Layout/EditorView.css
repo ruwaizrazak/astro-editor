@@ -2,4 +2,7 @@
 .editor-view {
   height: 100%;
   width: 100%;
+  container-type: inline-size;
+  container-name: editor;
+  background-color: var(--editor-color-background);
 }

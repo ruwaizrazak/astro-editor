@@ -1,0 +1,110 @@
+/* iA Writer Editor Theme Variables */
+
+/* Common Colors */
+:root {
+  --editor-color-carat: rgba(0, 195, 255, 1);
+}
+
+/* Light Mode Colors */
+:root {
+  --editor-color-background: rgba(247, 247, 247, 1);
+  --editor-color-text: rgba(25, 25, 25, 1);
+  --editor-color-mdtag: rgba(179, 181, 176, 1);
+  --editor-color-underline: rgba(214, 212, 209, 1);
+  --editor-color-brown: rgba(165, 101, 27, 1);
+  --editor-color-red: rgba(201, 72, 37, 1);
+  --editor-color-pink: rgba(177, 79, 159, 1);
+  --editor-color-blue: rgba(53, 118, 182, 1);
+  --editor-color-green: rgba(66, 131, 44, 1);
+  --editor-color-codeblock-background: rgba(238, 238, 238, 1);
+  --editor-color-selectedtext-background: rgba(185, 234, 250, 1);
+  --editor-color-focusmodeunfocussed-text: rgba(199, 196, 194, 1);
+  
+  /* Future use */
+  --editor-color-highlight-background: rgba(252, 236, 147, 1);
+  --editor-color-highlight-underline: rgba(255, 215, 0, 1);
+  --editor-color-highlight-text: var(--editor-color-text);
+}
+
+/* Dark Mode Colors */
+.dark {
+  --editor-color-background: rgba(26, 26, 26, 1);
+  --editor-color-text: rgba(204, 204, 204, 1);
+  --editor-color-mdtag: rgba(122, 122, 120, 1);
+  --editor-color-underline: rgba(84, 84, 82, 1);
+  --editor-color-brown: rgba(192, 148, 86, 1);
+  --editor-color-red: rgba(216, 133, 107, 1);
+  --editor-color-pink: rgba(186, 142, 177, 1);
+  --editor-color-blue: rgba(124, 159, 192, 1);
+  --editor-color-green: rgba(131, 165, 115, 1);
+  --editor-color-codeblock-background: rgba(37, 37, 37, 1);
+  --editor-color-selectedtext-background: rgba(20, 68, 84, 1);
+  --editor-color-focusmodeunfocussed-text: rgba(112, 112, 112, 1);
+  
+  /* Future use */
+  --editor-color-highlight-background: rgba(68, 59, 15, 1);
+  --editor-color-highlight-underline: rgba(214, 176, 0, 1);
+  --editor-color-highlight-text: rgba(220, 206, 157, 1);
+}
+
+/* Typography Variables */
+:root {
+  /* Font Family */
+  --editor-font-family: 'iA Writer Duo Variable', 'iA Writer Duo', -apple-system, 'Segoe UI', 'Roboto', sans-serif;
+  --editor-font-family-italic: 'iA Writer Duo Variable Italic', 'iA Writer Duo', -apple-system, 'Segoe UI', 'Roboto', sans-serif;
+  
+  /* Base Font Weight */
+  --editor-font-weight-normal: 490;
+  --editor-font-weight-bold: 700;
+  
+  /* Responsive Typography - Tiny Width (default) */
+  --editor-font-size: 11px;
+  --editor-line-height: 17.7px;
+  --editor-font-variation-settings: 'spcg' 1;
+  --editor-content-margin: 24px;
+  --editor-content-max-width: none;
+}
+
+/* Responsive Typography Breakpoints */
+@container editor (min-width: 440px) {
+  /* Small Width */
+  .editor-view {
+    --editor-font-size: 12px;
+    --editor-line-height: 20.9px;
+    --editor-font-variation-settings: 'spcg' 14;
+    --editor-content-margin: 74px;
+  }
+}
+
+@container editor (min-width: 875px) {
+  /* Medium Width */
+  .editor-view {
+    --editor-font-size: 12px;
+    --editor-line-height: 20.9px;
+    --editor-font-variation-settings: 'spcg' 14;
+    --editor-content-margin: auto;
+    --editor-content-max-width: 705px;
+  }
+}
+
+@container editor (min-width: 1250px) {
+  /* Large Width */
+  .editor-view {
+    --editor-font-size: 14px;
+    --editor-line-height: 24.1px;
+    --editor-font-variation-settings: 'spcg' 3;
+    --editor-content-margin: auto;
+    --editor-content-max-width: 800px;
+  }
+}
+
+@container editor (min-width: 1660px) {
+  /* Huge Width */
+  .editor-view {
+    --editor-font-size: 16px;
+    --editor-line-height: 28.6px;
+    --editor-font-variation-settings: 'spcg' 19;
+    --editor-content-margin: auto;
+    --editor-content-max-width: 980px;
+  }
+}

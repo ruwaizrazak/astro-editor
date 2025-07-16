@@ -11,6 +11,7 @@ import { Tag, styleTags, tags } from '@lezer/highlight'
 import { useAppStore } from '../../store'
 import { invoke } from '@tauri-apps/api/core'
 import './EditorView.css'
+import './EditorTheme.css'
 
 // Define comprehensive markdown tags for styling
 const markdownTags = {
@@ -65,6 +66,10 @@ const markdownTags = {
   tableSeparator: Tag.define(), // The | symbols
   tableRow: Tag.define(),
   tableCell: Tag.define(),
+  
+  // Footnotes
+  footnote: Tag.define(),
+  footnoteMark: Tag.define(), // [^1] references
 
   // HTML elements (when mixed with markdown)
   htmlTag: Tag.define(),
@@ -140,6 +145,10 @@ const markdownStyleExtension = {
 
       // Escape
       Escape: markdownTags.escape,
+      
+      // Footnotes
+      'FootnoteReference': markdownTags.footnoteMark,
+      'FootnoteDefinition': markdownTags.footnote,
     }),
   ],
 }
@@ -147,233 +156,202 @@ const markdownStyleExtension = {
 // Create comprehensive highlight style that includes both markdown and standard language tags
 const comprehensiveHighlightStyle = HighlightStyle.define([
   // === MARKDOWN-SPECIFIC TAGS ===
-  // Headings - Purple family
+  // Headings - inherit base size, just make bold
   {
     tag: markdownTags.heading1,
-    fontSize: '1.8em',
-    fontWeight: 'bold',
-    color: '#8B5CF6',
+    fontWeight: 'var(--editor-font-weight-bold)',
   },
   {
     tag: markdownTags.heading2,
-    fontSize: '1.6em',
-    fontWeight: 'bold',
-    color: '#A855F7',
+    fontWeight: 'var(--editor-font-weight-bold)',
   },
   {
     tag: markdownTags.heading3,
-    fontSize: '1.4em',
-    fontWeight: 'bold',
-    color: '#C084FC',
+    fontWeight: 'var(--editor-font-weight-bold)',
   },
   {
     tag: markdownTags.heading4,
-    fontSize: '1.2em',
-    fontWeight: 'bold',
-    color: '#D8B4FE',
+    fontWeight: 'var(--editor-font-weight-bold)',
   },
   {
     tag: markdownTags.heading5,
-    fontSize: '1.1em',
-    fontWeight: 'bold',
-    color: '#E9D5FF',
+    fontWeight: 'var(--editor-font-weight-bold)',
   },
   {
     tag: markdownTags.heading6,
-    fontSize: '1.05em',
-    fontWeight: 'bold',
-    color: '#F3E8FF',
+    fontWeight: 'var(--editor-font-weight-bold)',
   },
-  { tag: markdownTags.headingMark, color: '#6B7280', opacity: '0.6' },
+  { tag: markdownTags.headingMark, color: 'var(--editor-color-mdtag)' },
 
-  // Emphasis and Strong - Orange/Red family
-  { tag: markdownTags.emphasis, fontStyle: 'italic', color: '#F97316' },
-  { tag: markdownTags.emphasisMark, color: '#FB923C', opacity: '0.7' },
-  { tag: markdownTags.strong, fontWeight: 'bold', color: '#DC2626' },
-  { tag: markdownTags.strongMark, color: '#EF4444', opacity: '0.7' },
+  // Emphasis and Strong
+  { tag: markdownTags.emphasis, fontStyle: 'italic', fontFamily: 'var(--editor-font-family-italic)' },
+  { tag: markdownTags.emphasisMark, color: 'var(--editor-color-mdtag)', fontWeight: 'var(--editor-font-weight-bold)' },
+  { tag: markdownTags.strong, fontWeight: 'var(--editor-font-weight-bold)' },
+  { tag: markdownTags.strongMark, color: 'var(--editor-color-mdtag)', fontWeight: 'var(--editor-font-weight-bold)' },
   {
     tag: markdownTags.strikethrough,
     textDecoration: 'line-through',
-    color: '#9CA3AF',
   },
-  { tag: markdownTags.strikethroughMark, color: '#D1D5DB', opacity: '0.7' },
+  { tag: markdownTags.strikethroughMark, color: 'var(--editor-color-mdtag)' },
 
-  // Code - Green family
+  // Code
   {
     tag: markdownTags.inlineCode,
-    backgroundColor: '#F0FDF4',
-    color: '#15803D',
-    fontFamily: 'monospace',
-    padding: '2px 4px',
-    borderRadius: '3px',
+    backgroundColor: 'var(--editor-color-codeblock-background)',
+    fontFamily: 'iA Writer Mono Variable, iA Writer Mono, monospace',
   },
-  { tag: markdownTags.inlineCodeMark, color: '#22C55E', opacity: '0.6' },
+  { tag: markdownTags.inlineCodeMark, color: 'var(--editor-color-mdtag)' },
   {
     tag: markdownTags.codeBlock,
-    backgroundColor: '#F0FDF4',
-    color: '#059669',
-    fontFamily: 'monospace',
+    backgroundColor: 'var(--editor-color-codeblock-background)',
+    fontFamily: 'iA Writer Mono Variable, iA Writer Mono, monospace',
   },
-  { tag: markdownTags.codeBlockMark, color: '#10B981', opacity: '0.6' },
-  { tag: markdownTags.codeFence, color: '#6EE7B7', fontWeight: 'bold' },
+  { tag: markdownTags.codeBlockMark, color: 'var(--editor-color-mdtag)' },
+  { tag: markdownTags.codeFence, color: 'var(--editor-color-mdtag)' },
 
-  // Links and Images - Blue family
-  { tag: markdownTags.link, color: '#2563EB' },
-  { tag: markdownTags.linkMark, color: '#3B82F6', opacity: '0.7' },
-  { tag: markdownTags.linkText, color: '#1D4ED8', textDecoration: 'underline' },
-  { tag: markdownTags.linkUrl, color: '#1E40AF', opacity: '0.8' },
-  { tag: markdownTags.image, color: '#7C3AED' },
-  { tag: markdownTags.imageMark, color: '#8B5CF6', opacity: '0.7' },
-  { tag: markdownTags.imageAlt, color: '#A855F7', fontStyle: 'italic' },
-  { tag: markdownTags.imageUrl, color: '#9333EA', opacity: '0.8' },
+  // Links and Images
+  { tag: markdownTags.link },
+  { tag: markdownTags.linkMark, color: 'var(--editor-color-mdtag)' },
+  { tag: markdownTags.linkText, color: 'var(--editor-color-mdtag)' },
+  { tag: markdownTags.linkUrl, color: 'var(--editor-color-mdtag)', textDecoration: 'underline', textDecorationColor: 'var(--editor-color-underline)' },
+  { tag: markdownTags.image },
+  { tag: markdownTags.imageMark, color: 'var(--editor-color-mdtag)' },
+  { tag: markdownTags.imageAlt, color: 'var(--editor-color-mdtag)' },
+  { tag: markdownTags.imageUrl, color: 'var(--editor-color-mdtag)', textDecoration: 'underline', textDecorationColor: 'var(--editor-color-underline)' },
 
-  // Lists - Teal family
-  { tag: markdownTags.listMark, color: '#0D9488', fontWeight: 'bold' },
-  { tag: markdownTags.listItem, color: '#14B8A6' },
+  // Lists
+  { tag: markdownTags.listMark, color: 'var(--editor-color-mdtag)' },
+  { tag: markdownTags.listItem },
 
-  // Blockquotes - Yellow family
+  // Blockquotes
   {
     tag: markdownTags.blockquote,
-    color: '#D97706',
     fontStyle: 'italic',
-    borderLeft: '4px solid #FBBF24',
-    paddingLeft: '1em',
+    fontFamily: 'var(--editor-font-family-italic)',
   },
-  { tag: markdownTags.blockquoteMark, color: '#F59E0B', opacity: '0.7' },
+  { tag: markdownTags.blockquoteMark, color: 'var(--editor-color-mdtag)' },
 
-  // Horizontal Rules - Gray family
+  // Horizontal Rules
   {
     tag: markdownTags.horizontalRule,
-    color: '#6B7280',
-    backgroundColor: '#E5E7EB',
-    height: '2px',
+    color: 'var(--editor-color-mdtag)',
   },
 
-  // Tables - Indigo family
-  { tag: markdownTags.table, color: '#4F46E5' },
-  { tag: markdownTags.tableHeader, color: '#6366F1', fontWeight: 'bold' },
-  { tag: markdownTags.tableSeparator, color: '#818CF8', opacity: '0.7' },
-  { tag: markdownTags.tableRow, color: '#A5B4FC' },
-  { tag: markdownTags.tableCell, color: '#C7D2FE' },
+  // Tables
+  { tag: markdownTags.table },
+  { tag: markdownTags.tableHeader, fontWeight: 'var(--editor-font-weight-bold)' },
+  { tag: markdownTags.tableSeparator, color: 'var(--editor-color-mdtag)' },
+  { tag: markdownTags.tableRow },
+  { tag: markdownTags.tableCell },
 
-  // HTML - Pink family (for markdown-specific HTML tags)
-  { tag: markdownTags.htmlTag, color: '#EC4899' },
-  { tag: markdownTags.htmlAttribute, color: '#F472B6' },
+  // HTML - use the red family as specified
+  { tag: markdownTags.htmlTag, color: 'var(--editor-color-red)' },
+  { tag: markdownTags.htmlAttribute, color: 'var(--editor-color-brown)' },
 
-  // Escape - Gray
-  { tag: markdownTags.escape, color: '#9CA3AF', opacity: '0.8' },
+  // Escape
+  { tag: markdownTags.escape, color: 'var(--editor-color-mdtag)' },
+  
+  // Footnotes
+  { tag: markdownTags.footnote },
+  { tag: markdownTags.footnoteMark, color: 'var(--editor-color-mdtag)' },
 
   // === STANDARD LANGUAGE TAGS (HTML, CSS, JS, etc.) ===
-  // HTML Tags - Red/Pink family
-  { tag: tags.tagName, color: '#E11D48', fontWeight: 'bold' },
-  { tag: tags.angleBracket, color: '#F43F5E', opacity: '0.8' },
-  { tag: tags.attributeName, color: '#EC4899', fontStyle: 'italic' },
-  { tag: tags.attributeValue, color: '#BE185D' },
+  // HTML Tags - Red/Orange/Green as per spec
+  { tag: tags.tagName, color: 'var(--editor-color-red)' },
+  { tag: tags.angleBracket, color: 'var(--editor-color-red)' },
+  { tag: tags.attributeName, color: 'var(--editor-color-brown)' },
+  { tag: tags.attributeValue, color: 'var(--editor-color-green)' },
 
-  // JavaScript/Programming - Blue family
-  { tag: tags.keyword, color: '#2563EB', fontWeight: 'bold' },
-  { tag: tags.function(tags.variableName), color: '#1D4ED8' },
-  { tag: tags.variableName, color: '#1E40AF' },
-  { tag: tags.className, color: '#3B82F6', fontWeight: 'bold' },
-  { tag: tags.namespace, color: '#60A5FA' },
-  { tag: tags.typeName, color: '#93C5FD' },
+  // JavaScript/Programming - Use iA Writer colors
+  { tag: tags.keyword, color: 'var(--editor-color-blue)', fontWeight: 'var(--editor-font-weight-bold)' },
+  { tag: tags.function(tags.variableName), color: 'var(--editor-color-blue)' },
+  { tag: tags.variableName, color: 'var(--editor-color-text)' },
+  { tag: tags.className, color: 'var(--editor-color-pink)', fontWeight: 'var(--editor-font-weight-bold)' },
+  { tag: tags.namespace, color: 'var(--editor-color-pink)' },
+  { tag: tags.typeName, color: 'var(--editor-color-pink)' },
 
-  // Literals - Green family
-  { tag: tags.string, color: '#059669' },
-  { tag: tags.character, color: '#10B981' },
-  { tag: tags.number, color: '#059669' },
-  { tag: tags.bool, color: '#16A34A', fontWeight: 'bold' },
-  { tag: tags.null, color: '#15803D', fontStyle: 'italic' },
+  // Literals
+  { tag: tags.string, color: 'var(--editor-color-green)' },
+  { tag: tags.character, color: 'var(--editor-color-green)' },
+  { tag: tags.number, color: 'var(--editor-color-blue)' },
+  { tag: tags.bool, color: 'var(--editor-color-blue)', fontWeight: 'var(--editor-font-weight-bold)' },
+  { tag: tags.null, color: 'var(--editor-color-blue)', fontStyle: 'italic' },
 
-  // Comments - Gray family
-  { tag: tags.comment, color: '#6B7280', fontStyle: 'italic' },
-  { tag: tags.blockComment, color: '#9CA3AF', fontStyle: 'italic' },
-  { tag: tags.lineComment, color: '#9CA3AF', fontStyle: 'italic' },
+  // Comments - Use mdtag color
+  { tag: tags.comment, color: 'var(--editor-color-mdtag)', fontStyle: 'italic' },
+  { tag: tags.blockComment, color: 'var(--editor-color-mdtag)', fontStyle: 'italic' },
+  { tag: tags.lineComment, color: 'var(--editor-color-mdtag)', fontStyle: 'italic' },
   {
     tag: tags.docComment,
-    color: '#6B7280',
+    color: 'var(--editor-color-mdtag)',
     fontStyle: 'italic',
-    fontWeight: 'bold',
+    fontWeight: 'var(--editor-font-weight-bold)',
   },
 
-  // Operators and Punctuation - Purple family
-  { tag: tags.operator, color: '#7C3AED' },
-  { tag: tags.punctuation, color: '#8B5CF6' },
-  { tag: tags.bracket, color: '#A855F7' },
-  { tag: tags.paren, color: '#C084FC' },
-  { tag: tags.squareBracket, color: '#DDD6FE' },
+  // Operators and Punctuation
+  { tag: tags.operator, color: 'var(--editor-color-text)' },
+  { tag: tags.punctuation, color: 'var(--editor-color-text)' },
+  { tag: tags.bracket, color: 'var(--editor-color-text)' },
+  { tag: tags.paren, color: 'var(--editor-color-text)' },
+  { tag: tags.squareBracket, color: 'var(--editor-color-text)' },
 
-  // CSS - Cyan family
-  { tag: tags.propertyName, color: '#0891B2', fontWeight: 'bold' },
-  { tag: tags.unit, color: '#06B6D4' },
-  { tag: tags.color, color: '#67E8F9', fontWeight: 'bold' },
+  // CSS
+  { tag: tags.propertyName, color: 'var(--editor-color-blue)', fontWeight: 'var(--editor-font-weight-bold)' },
+  { tag: tags.unit, color: 'var(--editor-color-blue)' },
+  { tag: tags.color, color: 'var(--editor-color-pink)', fontWeight: 'var(--editor-font-weight-bold)' },
 
-  // Special/Meta - Orange family
-  { tag: tags.meta, color: '#EA580C' },
-  { tag: tags.processingInstruction, color: '#F97316' },
+  // Special/Meta
+  { tag: tags.meta, color: 'var(--editor-color-brown)' },
+  { tag: tags.processingInstruction, color: 'var(--editor-color-brown)' },
   {
     tag: tags.definition(tags.variableName),
-    color: '#FB923C',
-    fontWeight: 'bold',
+    color: 'var(--editor-color-text)',
+    fontWeight: 'var(--editor-font-weight-bold)',
   },
   {
     tag: tags.definition(tags.function(tags.variableName)),
-    color: '#FDBA74',
-    fontWeight: 'bold',
+    color: 'var(--editor-color-blue)',
+    fontWeight: 'var(--editor-font-weight-bold)',
   },
 
-  // Invalid/Error - Red family
-  { tag: tags.invalid, color: '#DC2626', textDecoration: 'underline wavy' },
-  { tag: tags.deleted, color: '#EF4444', textDecoration: 'line-through' },
-  { tag: tags.inserted, color: '#10B981', backgroundColor: '#DCFCE7' },
-  { tag: tags.changed, color: '#F59E0B', backgroundColor: '#FEF3C7' },
+  // Invalid/Error
+  { tag: tags.invalid, color: 'var(--editor-color-red)', textDecoration: 'underline wavy' },
+  { tag: tags.deleted, color: 'var(--editor-color-red)', textDecoration: 'line-through' },
+  { tag: tags.inserted, color: 'var(--editor-color-green)' },
+  { tag: tags.changed, color: 'var(--editor-color-brown)' },
 
-  // URLs and Links - Blue variations
-  { tag: tags.url, color: '#1E40AF', textDecoration: 'underline' },
-  { tag: tags.link, color: '#2563EB', textDecoration: 'underline' },
+  // URLs and Links
+  { tag: tags.url, color: 'var(--editor-color-mdtag)', textDecoration: 'underline', textDecorationColor: 'var(--editor-color-underline)' },
+  { tag: tags.link, color: 'var(--editor-color-mdtag)', textDecoration: 'underline', textDecorationColor: 'var(--editor-color-underline)' },
 
-  // Headings (for other languages that have them) - Purple variations
+  // Headings (for other languages that have them)
   {
     tag: tags.heading,
-    fontSize: '1.2em',
-    fontWeight: 'bold',
-    color: '#7C3AED',
+    fontWeight: 'var(--editor-font-weight-bold)',
   },
   {
     tag: tags.heading1,
-    fontSize: '1.8em',
-    fontWeight: 'bold',
-    color: '#8B5CF6',
+    fontWeight: 'var(--editor-font-weight-bold)',
   },
   {
     tag: tags.heading2,
-    fontSize: '1.6em',
-    fontWeight: 'bold',
-    color: '#A855F7',
+    fontWeight: 'var(--editor-font-weight-bold)',
   },
   {
     tag: tags.heading3,
-    fontSize: '1.4em',
-    fontWeight: 'bold',
-    color: '#C084FC',
+    fontWeight: 'var(--editor-font-weight-bold)',
   },
   {
     tag: tags.heading4,
-    fontSize: '1.2em',
-    fontWeight: 'bold',
-    color: '#D8B4FE',
+    fontWeight: 'var(--editor-font-weight-bold)',
   },
   {
     tag: tags.heading5,
-    fontSize: '1.1em',
-    fontWeight: 'bold',
-    color: '#E9D5FF',
+    fontWeight: 'var(--editor-font-weight-bold)',
   },
   {
     tag: tags.heading6,
-    fontSize: '1.05em',
-    fontWeight: 'bold',
-    color: '#F3E8FF',
+    fontWeight: 'var(--editor-font-weight-bold)',
   },
 ])
 
@@ -683,16 +661,21 @@ export const EditorViewComponent: React.FC = () => {
     }),
     EditorView.theme({
       '&': {
-        fontSize: '16px',
-        fontFamily:
-          "'iA Writer Duo', -apple-system, 'Segoe UI', 'Roboto', sans-serif;",
-        padding: '20px 40px',
+        fontSize: 'var(--editor-font-size)',
+        fontFamily: 'var(--editor-font-family)',
+        fontWeight: 'var(--editor-font-weight-normal)',
+        fontVariationSettings: 'var(--editor-font-variation-settings)',
+        backgroundColor: 'var(--editor-color-background)',
+        color: 'var(--editor-color-text)',
+        containerType: 'inline-size',
+        containerName: 'editor',
       },
       '.cm-content': {
-        lineHeight: '1.7',
+        lineHeight: 'var(--editor-line-height)',
         minHeight: '100vh',
-        maxWidth: '65ch',
-        margin: '0 auto',
+        maxWidth: 'var(--editor-content-max-width)',
+        margin: 'var(--editor-content-margin)',
+        padding: '40px 0',
       },
       '.cm-focused': {
         outline: 'none',
@@ -700,10 +683,27 @@ export const EditorViewComponent: React.FC = () => {
       '.cm-editor': {
         borderRadius: '0',
       },
+      '.cm-editor.cm-focused': {
+        outline: 'none',
+      },
       '.cm-scroller': {
         fontVariantLigatures: 'common-ligatures',
       },
-      '.cm-line': {},
+      '.cm-line': {
+        padding: '0',
+      },
+      // Cursor styling
+      '.cm-cursor': {
+        borderLeftColor: 'var(--editor-color-carat)',
+        borderLeftWidth: '2px',
+      },
+      // Selection styling
+      '.cm-selectionBackground': {
+        backgroundColor: 'var(--editor-color-selectedtext-background) !important',
+      },
+      '.cm-focused .cm-selectionBackground': {
+        backgroundColor: 'var(--editor-color-selectedtext-background) !important',
+      },
     }),
     EditorView.lineWrapping,
   ]
