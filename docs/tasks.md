@@ -203,21 +203,30 @@ _Goal: Beautiful, iA Writer-inspired editing experience_
 - [x] Hide initial MDX imports for MDX files
 - [x] Set up to style markdown etc sensibly in editor
 - [ ] Custom CodeMirror theme matching iA Writer aesthetic
-  - [ ] Background and general type treatment / base colours
-  - [ ] Text selection / carat
-  - [ ] Font size and typography grows with viewport width (fluid type)
-  - [ ] All markdown colours
-  - [ ] Colours for HTML tags etc
-  - [ ] Any other colours
-  - [ ] Create hanging hash marks for headings
-- [ ] Improve markdown syntax highlighting and code block display
+  - [ ] Set up editor colour palette variables (see `/docs/ia-writer-ui.md`) so it's easy to switch to dark mode when we add it. Set editor background colour etc.
+  - [ ] Set default typography: size, weight, font-variant etc for all basic elements (text, headings, bold, italic). Remove or override any unwanted pre-existing styles.
+  - [ ] Style carat and text-selection.
+  - [ ] Add MD syntax highlighting colours for all other elements (links, images, footnotes, strikethrough, inline code, code blocks, blockquotes etc)
+  - [ ] Add proper line-height etc and responsive typography (text size, line-height, max measure etc) for all viewport width breakpoints (see `/docs/ia-writer-ui.md`).
+  - [ ] Add colours for HTML/JSX tags which appear in the markdown - keep this very simple
+  - [ ] Style blockquotes niceley
+  - [ ] If possible, "hang" header hashes in the left margin.
+  - [ ] Add nice styling for fenced code blocks with language-specific syntax highlighting.
+- [ ] Opening URLs via Click
+  - Hovering any URL while holding `Opt` changes it to <carat colour> and the pointer to a hand.
+  - Clicking while holding `Opt` opens it in the default browser.
+- [ ] Add More Editor Keyboard Shortcuts
+  - `Opt+Cmd+1` - Turn current line to H1
+  - `Opt+Cmd+2` - Turn current line to H2
+  - `Opt+Cmd+3` - Turn current line to H3
+  - `Opt+Cmd+4` - Turn current line to H4
+  - `Opt+Cmd+0` - Turn current line to plain paragraph
 
 **Phase 3.2**
 
 - [ ] Implement image drag & drop functionality
   - [ ] Auto-copy images to `src/assets/[collection]/` with auto-rename to kebabcase and date prefix etc.
   - [ ] Insert markdown image syntax at drop location
-- [ ] Implement basic auto-formatting on save (should insert nealine at EOF if not there)
 
 **Deliverable:** Beautiful, responsive editor with excellent UX for markdown writing
 
@@ -287,3 +296,5 @@ _Goal: Advanced features that differentiate from basic editors_
 4. **Frontmatter/content synchronization** → Implement robust parsing and validation
 
 ## Potential Future Features
+
+- [ ] AI Editing assistant
