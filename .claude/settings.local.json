@@ -19,7 +19,9 @@
       "Bash(cp:*)",
       "WebFetch(domain:v2.tauri.app)",
       "Bash(cargo test:*)",
-      "WebFetch(domain:discuss.codemirror.net)"
+      "WebFetch(domain:discuss.codemirror.net)",
+      "Bash(pkill:*)",
+      "Bash(cargo check:*)"
     ],
     "deny": []
   }

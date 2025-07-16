@@ -9,6 +9,7 @@ import { EditorSelection, Prec } from '@codemirror/state'
 import { HighlightStyle, syntaxHighlighting } from '@codemirror/language'
 import { Tag, styleTags, tags } from '@lezer/highlight'
 import { useAppStore } from '../../store'
+import { invoke } from '@tauri-apps/api/core'
 import './EditorView.css'
 
 // Define comprehensive markdown tags for styling
@@ -415,7 +416,7 @@ const toggleMarkdown = (view: EditorView, marker: string): boolean => {
   return true
 }
 
-const createMarkdownLink = async (view: EditorView): Promise<boolean> => {
+const createMarkdownLink = (view: EditorView): boolean => {
   const { state } = view
   const { from, to } = state.selection.main
   const selectedText = state.sliceDoc(from, to)
@@ -448,36 +449,19 @@ const createMarkdownLink = async (view: EditorView): Promise<boolean> => {
     }
   }
 
-  // Try to get clipboard content
-  let clipboardUrl = ''
-  try {
-    if (navigator.clipboard && navigator.clipboard.readText) {
-      clipboardUrl = await navigator.clipboard.readText()
-    }
-  } catch {
-    // Clipboard access failed, continue with normal behavior
-  }
-
-  // Check if clipboard contains a URL
-  const isClipboardUrl = clipboardUrl && urlRegex.test(clipboardUrl.trim())
-
   if (selectedText.trim()) {
-    // If text is selected, create link with text as anchor
-    const url = isClipboardUrl ? clipboardUrl.trim() : 'url'
-    const linkText = `[${selectedText}](${url})`
+    // If text is selected, create link with text as anchor and cursor in URL position
+    const linkText = `[${selectedText}]()`
     view.dispatch({
       changes: { from, to, insert: linkText },
-      selection: isClipboardUrl
-        ? EditorSelection.range(from + linkText.length, from + linkText.length)
-        : EditorSelection.range(
-            from + selectedText.length + 3,
-            from + selectedText.length + 6
-          ),
+      selection: EditorSelection.range(
+        from + selectedText.length + 3,
+        from + selectedText.length + 3
+      ),
     })
   } else {
-    // If no text selected, create empty link template
-    const url = isClipboardUrl ? clipboardUrl.trim() : 'url'
-    const linkText = `[text](${url})`
+    // If no text selected, create empty link template with cursor on text
+    const linkText = `[text]()`
     view.dispatch({
       changes: { from, to, insert: linkText },
       selection: EditorSelection.range(from + 1, from + 5),
@@ -566,6 +550,11 @@ export const EditorViewComponent: React.FC = () => {
     useAppStore()
   
   const editorRef = useRef<any>(null)
+  
+  // Initialize global focus flag
+  useEffect(() => {
+    window.isEditorFocused = false
+  }, [])
 
   // Store handles auto-save, just update content
   const onChange = useCallback(
@@ -586,31 +575,55 @@ export const EditorViewComponent: React.FC = () => {
   const handleFocus = useCallback(() => {
     // Set global flag for menu state
     window.isEditorFocused = true
-  }, [])
+    if (currentFile) {
+      void invoke('update_format_menu_state', { enabled: true })
+    }
+  }, [currentFile])
   
   const handleBlurFocus = useCallback(() => {
     // Clear global flag for menu state
     window.isEditorFocused = false
+    void invoke('update_format_menu_state', { enabled: false })
     // Also call the original blur handler
     handleBlur()
   }, [handleBlur])
 
-  // Expose editor functions globally for menu integration
-  useEffect(() => {
-    if (editorRef.current?.view) {
-      const view = editorRef.current.view
+  // Callback when CodeMirror is ready
+  const onEditorReady = useCallback((editor: any) => {
+    console.log('EditorView: onEditorReady called, editor:', editor)
+    if (editor?.view && !globalEditorRef) {
+      const view = editor.view
       globalEditorRef = {
         toggleBold: () => toggleMarkdown(view, '**'),
         toggleItalic: () => toggleMarkdown(view, '*'),
-        createLink: () => void createMarkdownLink(view),
+        createLink: () => createMarkdownLink(view),
         formatHeading: (level) => transformLineToHeading(view, level),
       }
+      console.log('EditorView: globalEditorRef set with commands:', Object.keys(globalEditorRef))
+    } else if (globalEditorRef) {
+      console.log('EditorView: globalEditorRef already set, skipping')
     }
-    
+  }, [])
+
+  // Expose editor functions globally for menu integration
+  useEffect(() => {
+    // Clean up on unmount
     return () => {
+      console.log('EditorView: Clearing globalEditorRef')
       globalEditorRef = null
     }
-  }, [editorRef.current?.view])
+  }, [])
+
+  // Update menu state when file changes
+  useEffect(() => {
+    if (currentFile) {
+      // Enable menu items when a file is open
+      void invoke('update_format_menu_state', { enabled: true })
+    } else {
+      // Disable menu items when no file is open
+      void invoke('update_format_menu_state', { enabled: false })
+    }
+  }, [currentFile])
 
   // Enhanced extensions for better writing experience
   const extensions = [
@@ -632,10 +645,7 @@ export const EditorViewComponent: React.FC = () => {
         },
         {
           key: 'Mod-k',
-          run: view => {
-            void createMarkdownLink(view)
-            return true
-          },
+          run: view => createMarkdownLink(view),
         },
         {
           key: 'Mod-s',
@@ -714,7 +724,12 @@ export const EditorViewComponent: React.FC = () => {
   return (
     <div className="editor-view">
       <CodeMirror
-        ref={editorRef}
+        ref={(editor) => {
+          editorRef.current = editor
+          if (editor) {
+            onEditorReady(editor)
+          }
+        }}
         value={editorContent}
         onChange={onChange}
         onFocus={handleFocus}
@@ -739,4 +754,7 @@ export const EditorViewComponent: React.FC = () => {
 }
 
 // Export function to access editor commands from menu
-export const getEditorCommands = () => globalEditorRef
+export const getEditorCommands = () => {
+  console.log('getEditorCommands called, globalEditorRef:', globalEditorRef)
+  return globalEditorRef
+}

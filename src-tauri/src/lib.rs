@@ -7,14 +7,43 @@ use tauri::{
     menu::{Menu, MenuItem, PredefinedMenuItem, Submenu},
     Emitter, Manager,
 };
+use std::sync::Mutex;
+use std::collections::HashMap;
 
 #[cfg(target_os = "macos")]
 use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
+
+// Store menu item references for later access
+struct MenuState {
+    format_items: HashMap<String, MenuItem<tauri::Wry>>,
+}
+
+impl MenuState {
+    fn new() -> Self {
+        Self {
+            format_items: HashMap::new(),
+        }
+    }
+}
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
 fn greet(name: &str) -> String {
     format!("Hello, {name}! You've been greeted from Rust!")
+}
+
+#[tauri::command]
+async fn update_format_menu_state(app_handle: tauri::AppHandle, enabled: bool) -> Result<(), String> {
+    // Try to enable/disable menu items using stored references
+    if let Some(menu_state) = app_handle.try_state::<Mutex<MenuState>>() {
+        if let Ok(state) = menu_state.lock() {
+            for (_, item) in &state.format_items {
+                let _ = item.set_enabled(enabled);
+            }
+        }
+    }
+    
+    Ok(())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -26,6 +55,9 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .manage(commands::watcher::init_watcher_state())
         .setup(|app| {
+            // Create menu state
+            let mut menu_state = MenuState::new();
+            
             // Create macOS menu bar
             let file_menu = Submenu::with_items(
                 app,
@@ -47,6 +79,26 @@ pub fn run() {
                 ],
             )?;
 
+            // Create format menu items and store references
+            let format_bold = MenuItem::with_id(app, "format_bold", "Bold", false, Some("Cmd+B"))?;
+            let format_italic = MenuItem::with_id(app, "format_italic", "Italic", false, Some("Cmd+I"))?;
+            let format_link = MenuItem::with_id(app, "format_link", "Add Link", false, Some("Cmd+K"))?;
+            let format_h1 = MenuItem::with_id(app, "format_h1", "Heading 1", false, Some("Option+Cmd+1"))?;
+            let format_h2 = MenuItem::with_id(app, "format_h2", "Heading 2", false, Some("Option+Cmd+2"))?;
+            let format_h3 = MenuItem::with_id(app, "format_h3", "Heading 3", false, Some("Option+Cmd+3"))?;
+            let format_h4 = MenuItem::with_id(app, "format_h4", "Heading 4", false, Some("Option+Cmd+4"))?;
+            let format_paragraph = MenuItem::with_id(app, "format_paragraph", "Paragraph", false, Some("Option+Cmd+0"))?;
+            
+            // Store references for later access
+            menu_state.format_items.insert("format_bold".to_string(), format_bold.clone());
+            menu_state.format_items.insert("format_italic".to_string(), format_italic.clone());
+            menu_state.format_items.insert("format_link".to_string(), format_link.clone());
+            menu_state.format_items.insert("format_h1".to_string(), format_h1.clone());
+            menu_state.format_items.insert("format_h2".to_string(), format_h2.clone());
+            menu_state.format_items.insert("format_h3".to_string(), format_h3.clone());
+            menu_state.format_items.insert("format_h4".to_string(), format_h4.clone());
+            menu_state.format_items.insert("format_paragraph".to_string(), format_paragraph.clone());
+
             let edit_menu = Submenu::with_items(
                 app,
                 "Edit",
@@ -61,16 +113,16 @@ pub fn run() {
                     &PredefinedMenuItem::select_all(app, Some("Select All"))?,
                     &PredefinedMenuItem::separator(app)?,
                     // Text formatting
-                    &MenuItem::with_id(app, "format_bold", "Bold", true, Some("Cmd+B"))?,
-                    &MenuItem::with_id(app, "format_italic", "Italic", true, Some("Cmd+I"))?,
-                    &MenuItem::with_id(app, "format_link", "Add Link", true, Some("Cmd+K"))?,
+                    &format_bold,
+                    &format_italic,
+                    &format_link,
                     &PredefinedMenuItem::separator(app)?,
                     // Heading transformations
-                    &MenuItem::with_id(app, "format_h1", "Heading 1", true, Some("Option+Cmd+1"))?,
-                    &MenuItem::with_id(app, "format_h2", "Heading 2", true, Some("Option+Cmd+2"))?,
-                    &MenuItem::with_id(app, "format_h3", "Heading 3", true, Some("Option+Cmd+3"))?,
-                    &MenuItem::with_id(app, "format_h4", "Heading 4", true, Some("Option+Cmd+4"))?,
-                    &MenuItem::with_id(app, "format_paragraph", "Paragraph", true, Some("Option+Cmd+0"))?,
+                    &format_h1,
+                    &format_h2,
+                    &format_h3,
+                    &format_h4,
+                    &format_paragraph,
                 ],
             )?;
 
@@ -127,6 +179,9 @@ pub fn run() {
 
             let menu = Menu::with_items(app, &[&app_menu, &file_menu, &edit_menu, &view_menu])?;
             app.set_menu(menu)?;
+            
+            // Store menu state for later access
+            app.manage(Mutex::new(menu_state));
 
             // Apply window vibrancy with rounded corners on macOS
             #[cfg(target_os = "macos")]
@@ -166,27 +221,35 @@ pub fn run() {
                 }
                 // Text formatting menu items
                 "format_bold" => {
+                    println!("Menu event: format_bold clicked");
                     let _ = app.emit("menu-format-bold", ());
                 }
                 "format_italic" => {
+                    println!("Menu event: format_italic clicked");
                     let _ = app.emit("menu-format-italic", ());
                 }
                 "format_link" => {
+                    println!("Menu event: format_link clicked");
                     let _ = app.emit("menu-format-link", ());
                 }
                 "format_h1" => {
+                    println!("Menu event: format_h1 clicked");
                     let _ = app.emit("menu-format-h1", ());
                 }
                 "format_h2" => {
+                    println!("Menu event: format_h2 clicked");
                     let _ = app.emit("menu-format-h2", ());
                 }
                 "format_h3" => {
+                    println!("Menu event: format_h3 clicked");
                     let _ = app.emit("menu-format-h3", ());
                 }
                 "format_h4" => {
+                    println!("Menu event: format_h4 clicked");
                     let _ = app.emit("menu-format-h4", ());
                 }
                 "format_paragraph" => {
+                    println!("Menu event: format_paragraph clicked");
                     let _ = app.emit("menu-format-paragraph", ());
                 }
                 _ => {}
@@ -209,7 +272,8 @@ pub fn run() {
             save_markdown_content,
             start_watching_project,
             stop_watching_project,
-            copy_text_to_clipboard
+            copy_text_to_clipboard,
+            update_format_menu_state
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
