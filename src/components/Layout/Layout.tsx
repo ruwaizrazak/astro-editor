@@ -171,47 +171,27 @@ export const Layout: React.FC = () => {
 
     // Text formatting menu listeners
     const unlistenFormatBold = listen('menu-format-bold', () => {
-      console.log('Frontend: Received menu-format-bold event')
       const editorCommands = getEditorCommands()
-      console.log('Frontend: editorCommands =', editorCommands)
-      console.log('Frontend: currentFile =', currentFile)
       if (editorCommands && currentFile) {
-        console.log('Frontend: Calling toggleBold()')
         editorCommands.toggleBold()
-      } else {
-        console.log('Frontend: Cannot execute toggleBold - editorCommands or currentFile is null')
-        console.log('Frontend: editorCommands is null?', editorCommands === null)
-        console.log('Frontend: currentFile is null?', currentFile === null)
       }
     })
     const unlistenFormatItalic = listen('menu-format-italic', () => {
-      console.log('Frontend: Received menu-format-italic event')
       const editorCommands = getEditorCommands()
       if (editorCommands && currentFile) {
-        console.log('Frontend: Calling toggleItalic()')
         editorCommands.toggleItalic()
-      } else {
-        console.log('Frontend: Cannot execute toggleItalic - editorCommands or currentFile is null')
       }
     })
     const unlistenFormatLink = listen('menu-format-link', () => {
-      console.log('Frontend: Received menu-format-link event')
       const editorCommands = getEditorCommands()
       if (editorCommands && currentFile) {
-        console.log('Frontend: Calling createLink()')
         editorCommands.createLink()
-      } else {
-        console.log('Frontend: Cannot execute createLink - editorCommands or currentFile is null')
       }
     })
     const unlistenFormatH1 = listen('menu-format-h1', () => {
-      console.log('Frontend: Received menu-format-h1 event')
       const editorCommands = getEditorCommands()
       if (editorCommands && currentFile) {
-        console.log('Frontend: Calling formatHeading(1)')
         editorCommands.formatHeading(1)
-      } else {
-        console.log('Frontend: Cannot execute formatHeading(1) - editorCommands or currentFile is null')
       }
     })
     const unlistenFormatH2 = listen('menu-format-h2', () => {

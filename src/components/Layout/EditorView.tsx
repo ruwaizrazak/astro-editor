@@ -472,15 +472,18 @@ const createMarkdownLink = (view: EditorView): boolean => {
 }
 
 // Transform current line to a specific heading level or plain text
-const transformLineToHeading = (view: EditorView, level: 0 | 1 | 2 | 3 | 4): boolean => {
+const transformLineToHeading = (
+  view: EditorView,
+  level: 0 | 1 | 2 | 3 | 4
+): boolean => {
   const { state } = view
   const { from } = state.selection.main
   const line = state.doc.lineAt(from)
   const lineText = line.text
-  
+
   // Remove existing heading markers (if any)
   const cleanedText = lineText.replace(/^#+\s*/, '')
-  
+
   // Create new text based on desired level
   let newLineText: string
   if (level === 0) {
@@ -491,17 +494,17 @@ const transformLineToHeading = (view: EditorView, level: 0 | 1 | 2 | 3 | 4): boo
     const markers = '#'.repeat(level)
     newLineText = `${markers} ${cleanedText}`
   }
-  
+
   // Replace the entire line
   view.dispatch({
     changes: {
       from: line.from,
       to: line.to,
-      insert: newLineText
+      insert: newLineText,
     },
-    selection: EditorSelection.cursor(line.from + newLineText.length)
+    selection: EditorSelection.cursor(line.from + newLineText.length),
   })
-  
+
   return true
 }
 
@@ -548,9 +551,9 @@ declare global {
 export const EditorViewComponent: React.FC = () => {
   const { editorContent, setEditorContent, currentFile, saveFile, isDirty } =
     useAppStore()
-  
-  const editorRef = useRef<any>(null)
-  
+
+  const editorRef = useRef<{ view?: EditorView }>(null)
+
   // Initialize global focus flag
   useEffect(() => {
     window.isEditorFocused = false
@@ -570,7 +573,7 @@ export const EditorViewComponent: React.FC = () => {
       void saveFile()
     }
   }, [saveFile, currentFile, isDirty])
-  
+
   // Track editor focus for menu state management
   const handleFocus = useCallback(() => {
     // Set global flag for menu state
@@ -579,7 +582,7 @@ export const EditorViewComponent: React.FC = () => {
       void invoke('update_format_menu_state', { enabled: true })
     }
   }, [currentFile])
-  
+
   const handleBlurFocus = useCallback(() => {
     // Clear global flag for menu state
     window.isEditorFocused = false
@@ -589,19 +592,15 @@ export const EditorViewComponent: React.FC = () => {
   }, [handleBlur])
 
   // Callback when CodeMirror is ready
-  const onEditorReady = useCallback((editor: any) => {
-    console.log('EditorView: onEditorReady called, editor:', editor)
+  const onEditorReady = useCallback((editor: { view?: EditorView }) => {
     if (editor?.view && !globalEditorRef) {
       const view = editor.view
       globalEditorRef = {
         toggleBold: () => toggleMarkdown(view, '**'),
         toggleItalic: () => toggleMarkdown(view, '*'),
         createLink: () => createMarkdownLink(view),
-        formatHeading: (level) => transformLineToHeading(view, level),
+        formatHeading: level => transformLineToHeading(view, level),
       }
-      console.log('EditorView: globalEditorRef set with commands:', Object.keys(globalEditorRef))
-    } else if (globalEditorRef) {
-      console.log('EditorView: globalEditorRef already set, skipping')
     }
   }, [])
 
@@ -609,21 +608,9 @@ export const EditorViewComponent: React.FC = () => {
   useEffect(() => {
     // Clean up on unmount
     return () => {
-      console.log('EditorView: Clearing globalEditorRef')
       globalEditorRef = null
     }
   }, [])
-
-  // Update menu state when file changes
-  useEffect(() => {
-    if (currentFile) {
-      // Enable menu items when a file is open
-      void invoke('update_format_menu_state', { enabled: true })
-    } else {
-      // Disable menu items when no file is open
-      void invoke('update_format_menu_state', { enabled: false })
-    }
-  }, [currentFile])
 
   // Enhanced extensions for better writing experience
   const extensions = [
@@ -685,7 +672,7 @@ export const EditorViewComponent: React.FC = () => {
     // Paste event handler for URL link creation
     EditorView.domEventHandlers({
       paste: (event, view) => handlePaste(view, event),
-      keydown: (event) => {
+      keydown: event => {
         // Handle synthetic keyboard events from menu
         if (event.isTrusted === false) {
           // This is a synthetic event from menu, delegate to the editor
@@ -724,10 +711,13 @@ export const EditorViewComponent: React.FC = () => {
   return (
     <div className="editor-view">
       <CodeMirror
-        ref={(editor) => {
-          editorRef.current = editor
-          if (editor) {
-            onEditorReady(editor)
+        ref={editor => {
+          if (editorRef.current !== editor) {
+            // @ts-expect-error - ref assignment is necessary for editor access
+            editorRef.current = editor
+            if (editor) {
+              onEditorReady(editor)
+            }
           }
         }}
         value={editorContent}
@@ -754,7 +744,4 @@ export const EditorViewComponent: React.FC = () => {
 }
 
 // Export function to access editor commands from menu
-export const getEditorCommands = () => {
-  console.log('getEditorCommands called, globalEditorRef:', globalEditorRef)
-  return globalEditorRef
-}
+export const getEditorCommands = () => globalEditorRef
