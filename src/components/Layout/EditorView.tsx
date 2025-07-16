@@ -66,7 +66,7 @@ const markdownTags = {
   tableSeparator: Tag.define(), // The | symbols
   tableRow: Tag.define(),
   tableCell: Tag.define(),
-  
+
   // Footnotes
   footnote: Tag.define(),
   footnoteMark: Tag.define(), // [^1] references
@@ -145,10 +145,10 @@ const markdownStyleExtension = {
 
       // Escape
       Escape: markdownTags.escape,
-      
+
       // Footnotes
-      'FootnoteReference': markdownTags.footnoteMark,
-      'FootnoteDefinition': markdownTags.footnote,
+      FootnoteReference: markdownTags.footnoteMark,
+      FootnoteDefinition: markdownTags.footnote,
     }),
   ],
 }
@@ -181,18 +181,31 @@ const comprehensiveHighlightStyle = HighlightStyle.define([
     tag: markdownTags.heading6,
     fontWeight: 'var(--editor-font-weight-bold)',
   },
-  { tag: markdownTags.headingMark, color: 'var(--editor-color-mdtag)' },
+  { tag: markdownTags.headingMark, color: 'var(--editor-color-text)' },
 
   // Emphasis and Strong
-  { tag: markdownTags.emphasis, fontStyle: 'italic', fontFamily: 'var(--editor-font-family-italic)' },
-  { tag: markdownTags.emphasisMark, color: 'var(--editor-color-mdtag)', fontWeight: 'var(--editor-font-weight-bold)' },
+  {
+    tag: markdownTags.emphasis,
+    fontStyle: 'italic',
+    fontFamily: 'var(--editor-font-family-italic)',
+  },
+  {
+    tag: markdownTags.emphasisMark,
+    color: 'var(--editor-color-text)',
+    fontFamily: 'var(--editor-font-family-italic)',
+  },
   { tag: markdownTags.strong, fontWeight: 'var(--editor-font-weight-bold)' },
-  { tag: markdownTags.strongMark, color: 'var(--editor-color-mdtag)', fontWeight: 'var(--editor-font-weight-bold)' },
+  {
+    tag: markdownTags.strongMark,
+    color: 'var(--editor-color-text)',
+    fontWeight: 'var(--editor-font-weight-bold)',
+  },
   {
     tag: markdownTags.strikethrough,
     textDecoration: 'line-through',
+    color: 'var(--editor-color-mdtag)',
   },
-  { tag: markdownTags.strikethroughMark, color: 'var(--editor-color-mdtag)' },
+  { tag: markdownTags.strikethroughMark, color: 'var(--editor-color-text)' },
 
   // Code
   {
@@ -213,11 +226,21 @@ const comprehensiveHighlightStyle = HighlightStyle.define([
   { tag: markdownTags.link },
   { tag: markdownTags.linkMark, color: 'var(--editor-color-mdtag)' },
   { tag: markdownTags.linkText, color: 'var(--editor-color-mdtag)' },
-  { tag: markdownTags.linkUrl, color: 'var(--editor-color-mdtag)', textDecoration: 'underline', textDecorationColor: 'var(--editor-color-underline)' },
+  {
+    tag: markdownTags.linkUrl,
+    color: 'var(--editor-color-mdtag)',
+    textDecoration: 'underline',
+    textDecorationColor: 'var(--editor-color-underline)',
+  },
   { tag: markdownTags.image },
   { tag: markdownTags.imageMark, color: 'var(--editor-color-mdtag)' },
   { tag: markdownTags.imageAlt, color: 'var(--editor-color-mdtag)' },
-  { tag: markdownTags.imageUrl, color: 'var(--editor-color-mdtag)', textDecoration: 'underline', textDecorationColor: 'var(--editor-color-underline)' },
+  {
+    tag: markdownTags.imageUrl,
+    color: 'var(--editor-color-mdtag)',
+    textDecoration: 'underline',
+    textDecorationColor: 'var(--editor-color-underline)',
+  },
 
   // Lists
   { tag: markdownTags.listMark, color: 'var(--editor-color-mdtag)' },
@@ -239,7 +262,10 @@ const comprehensiveHighlightStyle = HighlightStyle.define([
 
   // Tables
   { tag: markdownTags.table },
-  { tag: markdownTags.tableHeader, fontWeight: 'var(--editor-font-weight-bold)' },
+  {
+    tag: markdownTags.tableHeader,
+    fontWeight: 'var(--editor-font-weight-bold)',
+  },
   { tag: markdownTags.tableSeparator, color: 'var(--editor-color-mdtag)' },
   { tag: markdownTags.tableRow },
   { tag: markdownTags.tableCell },
@@ -250,7 +276,7 @@ const comprehensiveHighlightStyle = HighlightStyle.define([
 
   // Escape
   { tag: markdownTags.escape, color: 'var(--editor-color-mdtag)' },
-  
+
   // Footnotes
   { tag: markdownTags.footnote },
   { tag: markdownTags.footnoteMark, color: 'var(--editor-color-mdtag)' },
@@ -263,10 +289,18 @@ const comprehensiveHighlightStyle = HighlightStyle.define([
   { tag: tags.attributeValue, color: 'var(--editor-color-green)' },
 
   // JavaScript/Programming - Use iA Writer colors
-  { tag: tags.keyword, color: 'var(--editor-color-blue)', fontWeight: 'var(--editor-font-weight-bold)' },
+  {
+    tag: tags.keyword,
+    color: 'var(--editor-color-blue)',
+    fontWeight: 'var(--editor-font-weight-bold)',
+  },
   { tag: tags.function(tags.variableName), color: 'var(--editor-color-blue)' },
   { tag: tags.variableName, color: 'var(--editor-color-text)' },
-  { tag: tags.className, color: 'var(--editor-color-pink)', fontWeight: 'var(--editor-font-weight-bold)' },
+  {
+    tag: tags.className,
+    color: 'var(--editor-color-pink)',
+    fontWeight: 'var(--editor-font-weight-bold)',
+  },
   { tag: tags.namespace, color: 'var(--editor-color-pink)' },
   { tag: tags.typeName, color: 'var(--editor-color-pink)' },
 
@@ -274,13 +308,29 @@ const comprehensiveHighlightStyle = HighlightStyle.define([
   { tag: tags.string, color: 'var(--editor-color-green)' },
   { tag: tags.character, color: 'var(--editor-color-green)' },
   { tag: tags.number, color: 'var(--editor-color-blue)' },
-  { tag: tags.bool, color: 'var(--editor-color-blue)', fontWeight: 'var(--editor-font-weight-bold)' },
+  {
+    tag: tags.bool,
+    color: 'var(--editor-color-blue)',
+    fontWeight: 'var(--editor-font-weight-bold)',
+  },
   { tag: tags.null, color: 'var(--editor-color-blue)', fontStyle: 'italic' },
 
   // Comments - Use mdtag color
-  { tag: tags.comment, color: 'var(--editor-color-mdtag)', fontStyle: 'italic' },
-  { tag: tags.blockComment, color: 'var(--editor-color-mdtag)', fontStyle: 'italic' },
-  { tag: tags.lineComment, color: 'var(--editor-color-mdtag)', fontStyle: 'italic' },
+  {
+    tag: tags.comment,
+    color: 'var(--editor-color-mdtag)',
+    fontStyle: 'italic',
+  },
+  {
+    tag: tags.blockComment,
+    color: 'var(--editor-color-mdtag)',
+    fontStyle: 'italic',
+  },
+  {
+    tag: tags.lineComment,
+    color: 'var(--editor-color-mdtag)',
+    fontStyle: 'italic',
+  },
   {
     tag: tags.docComment,
     color: 'var(--editor-color-mdtag)',
@@ -296,9 +346,17 @@ const comprehensiveHighlightStyle = HighlightStyle.define([
   { tag: tags.squareBracket, color: 'var(--editor-color-text)' },
 
   // CSS
-  { tag: tags.propertyName, color: 'var(--editor-color-blue)', fontWeight: 'var(--editor-font-weight-bold)' },
+  {
+    tag: tags.propertyName,
+    color: 'var(--editor-color-blue)',
+    fontWeight: 'var(--editor-font-weight-bold)',
+  },
   { tag: tags.unit, color: 'var(--editor-color-blue)' },
-  { tag: tags.color, color: 'var(--editor-color-pink)', fontWeight: 'var(--editor-font-weight-bold)' },
+  {
+    tag: tags.color,
+    color: 'var(--editor-color-pink)',
+    fontWeight: 'var(--editor-font-weight-bold)',
+  },
 
   // Special/Meta
   { tag: tags.meta, color: 'var(--editor-color-brown)' },
@@ -315,14 +373,32 @@ const comprehensiveHighlightStyle = HighlightStyle.define([
   },
 
   // Invalid/Error
-  { tag: tags.invalid, color: 'var(--editor-color-red)', textDecoration: 'underline wavy' },
-  { tag: tags.deleted, color: 'var(--editor-color-red)', textDecoration: 'line-through' },
+  {
+    tag: tags.invalid,
+    color: 'var(--editor-color-red)',
+    textDecoration: 'underline wavy',
+  },
+  {
+    tag: tags.deleted,
+    color: 'var(--editor-color-red)',
+    textDecoration: 'line-through',
+  },
   { tag: tags.inserted, color: 'var(--editor-color-green)' },
   { tag: tags.changed, color: 'var(--editor-color-brown)' },
 
   // URLs and Links
-  { tag: tags.url, color: 'var(--editor-color-mdtag)', textDecoration: 'underline', textDecorationColor: 'var(--editor-color-underline)' },
-  { tag: tags.link, color: 'var(--editor-color-mdtag)', textDecoration: 'underline', textDecorationColor: 'var(--editor-color-underline)' },
+  {
+    tag: tags.url,
+    color: 'var(--editor-color-mdtag)',
+    textDecoration: 'underline',
+    textDecorationColor: 'var(--editor-color-underline)',
+  },
+  {
+    tag: tags.link,
+    color: 'var(--editor-color-mdtag)',
+    textDecoration: 'underline',
+    textDecorationColor: 'var(--editor-color-underline)',
+  },
 
   // Headings (for other languages that have them)
   {
@@ -699,10 +775,12 @@ export const EditorViewComponent: React.FC = () => {
       },
       // Selection styling
       '.cm-selectionBackground': {
-        backgroundColor: 'var(--editor-color-selectedtext-background) !important',
+        backgroundColor:
+          'var(--editor-color-selectedtext-background) !important',
       },
       '.cm-focused .cm-selectionBackground': {
-        backgroundColor: 'var(--editor-color-selectedtext-background) !important',
+        backgroundColor:
+          'var(--editor-color-selectedtext-background) !important',
       },
     }),
     EditorView.lineWrapping,
