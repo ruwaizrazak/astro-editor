@@ -6,6 +6,7 @@ import { UnifiedTitleBar } from './UnifiedTitleBar'
 import { Sidebar } from './Sidebar'
 import { MainEditor } from './MainEditor'
 import { FrontmatterPanel } from './FrontmatterPanel'
+import { getEditorCommands } from './EditorView'
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -162,12 +163,76 @@ export const Layout: React.FC = () => {
       'menu-toggle-frontmatter',
       toggleFrontmatterPanel
     )
+    const unlistenNewFile = listen('menu-new-file', () => {
+      if (selectedCollection) {
+        void createNewFile()
+      }
+    })
+
+    // Text formatting menu listeners
+    const unlistenFormatBold = listen('menu-format-bold', () => {
+      const editorCommands = getEditorCommands()
+      if (editorCommands && currentFile) {
+        editorCommands.toggleBold()
+      }
+    })
+    const unlistenFormatItalic = listen('menu-format-italic', () => {
+      const editorCommands = getEditorCommands()
+      if (editorCommands && currentFile) {
+        editorCommands.toggleItalic()
+      }
+    })
+    const unlistenFormatLink = listen('menu-format-link', () => {
+      const editorCommands = getEditorCommands()
+      if (editorCommands && currentFile) {
+        editorCommands.createLink()
+      }
+    })
+    const unlistenFormatH1 = listen('menu-format-h1', () => {
+      const editorCommands = getEditorCommands()
+      if (editorCommands && currentFile) {
+        editorCommands.formatHeading(1)
+      }
+    })
+    const unlistenFormatH2 = listen('menu-format-h2', () => {
+      const editorCommands = getEditorCommands()
+      if (editorCommands && currentFile) {
+        editorCommands.formatHeading(2)
+      }
+    })
+    const unlistenFormatH3 = listen('menu-format-h3', () => {
+      const editorCommands = getEditorCommands()
+      if (editorCommands && currentFile) {
+        editorCommands.formatHeading(3)
+      }
+    })
+    const unlistenFormatH4 = listen('menu-format-h4', () => {
+      const editorCommands = getEditorCommands()
+      if (editorCommands && currentFile) {
+        editorCommands.formatHeading(4)
+      }
+    })
+    const unlistenFormatParagraph = listen('menu-format-paragraph', () => {
+      const editorCommands = getEditorCommands()
+      if (editorCommands && currentFile) {
+        editorCommands.formatHeading(0)
+      }
+    })
 
     return () => {
       void unlistenOpenProject.then(fn => fn())
       void unlistenSave.then(fn => fn())
       void unlistenToggleSidebar.then(fn => fn())
       void unlistenToggleFrontmatter.then(fn => fn())
+      void unlistenNewFile.then(fn => fn())
+      void unlistenFormatBold.then(fn => fn())
+      void unlistenFormatItalic.then(fn => fn())
+      void unlistenFormatLink.then(fn => fn())
+      void unlistenFormatH1.then(fn => fn())
+      void unlistenFormatH2.then(fn => fn())
+      void unlistenFormatH3.then(fn => fn())
+      void unlistenFormatH4.then(fn => fn())
+      void unlistenFormatParagraph.then(fn => fn())
     }
   }, [
     currentFile,
@@ -176,6 +241,8 @@ export const Layout: React.FC = () => {
     setProject,
     toggleSidebar,
     toggleFrontmatterPanel,
+    selectedCollection,
+    createNewFile,
   ])
 
   return (

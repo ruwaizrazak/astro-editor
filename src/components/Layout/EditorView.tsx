@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useRef, useEffect } from 'react'
 import CodeMirror from '@uiw/react-codemirror'
 import { markdown } from '@codemirror/lang-markdown'
 import { EditorView } from '@codemirror/view'
@@ -546,9 +546,26 @@ const handlePaste = (view: EditorView, event: ClipboardEvent): boolean => {
   return false // Let default paste behavior handle if no text selected
 }
 
+// Global reference to editor functions for menu integration
+let globalEditorRef: {
+  toggleBold: () => void
+  toggleItalic: () => void
+  createLink: () => void
+  formatHeading: (level: 0 | 1 | 2 | 3 | 4) => void
+} | null = null
+
+// Extend window to include editor focus tracking
+declare global {
+  interface Window {
+    isEditorFocused: boolean
+  }
+}
+
 export const EditorViewComponent: React.FC = () => {
   const { editorContent, setEditorContent, currentFile, saveFile, isDirty } =
     useAppStore()
+  
+  const editorRef = useRef<any>(null)
 
   // Store handles auto-save, just update content
   const onChange = useCallback(
@@ -564,6 +581,36 @@ export const EditorViewComponent: React.FC = () => {
       void saveFile()
     }
   }, [saveFile, currentFile, isDirty])
+  
+  // Track editor focus for menu state management
+  const handleFocus = useCallback(() => {
+    // Set global flag for menu state
+    window.isEditorFocused = true
+  }, [])
+  
+  const handleBlurFocus = useCallback(() => {
+    // Clear global flag for menu state
+    window.isEditorFocused = false
+    // Also call the original blur handler
+    handleBlur()
+  }, [handleBlur])
+
+  // Expose editor functions globally for menu integration
+  useEffect(() => {
+    if (editorRef.current?.view) {
+      const view = editorRef.current.view
+      globalEditorRef = {
+        toggleBold: () => toggleMarkdown(view, '**'),
+        toggleItalic: () => toggleMarkdown(view, '*'),
+        createLink: () => void createMarkdownLink(view),
+        formatHeading: (level) => transformLineToHeading(view, level),
+      }
+    }
+    
+    return () => {
+      globalEditorRef = null
+    }
+  }, [editorRef.current?.view])
 
   // Enhanced extensions for better writing experience
   const extensions = [
@@ -628,6 +675,14 @@ export const EditorViewComponent: React.FC = () => {
     // Paste event handler for URL link creation
     EditorView.domEventHandlers({
       paste: (event, view) => handlePaste(view, event),
+      keydown: (event) => {
+        // Handle synthetic keyboard events from menu
+        if (event.isTrusted === false) {
+          // This is a synthetic event from menu, delegate to the editor
+          return false // Let the keymap handle it
+        }
+        return false // Let default handling proceed
+      },
     }),
     EditorView.theme({
       '&': {
@@ -659,9 +714,11 @@ export const EditorViewComponent: React.FC = () => {
   return (
     <div className="editor-view">
       <CodeMirror
+        ref={editorRef}
         value={editorContent}
         onChange={onChange}
-        onBlur={handleBlur}
+        onFocus={handleFocus}
+        onBlur={handleBlurFocus}
         extensions={extensions}
         basicSetup={{
           lineNumbers: false,
@@ -680,3 +737,6 @@ export const EditorViewComponent: React.FC = () => {
     </div>
   )
 }
+
+// Export function to access editor commands from menu
+export const getEditorCommands = () => globalEditorRef

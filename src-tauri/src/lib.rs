@@ -59,6 +59,18 @@ pub fn run() {
                     &PredefinedMenuItem::copy(app, Some("Copy"))?,
                     &PredefinedMenuItem::paste(app, Some("Paste"))?,
                     &PredefinedMenuItem::select_all(app, Some("Select All"))?,
+                    &PredefinedMenuItem::separator(app)?,
+                    // Text formatting
+                    &MenuItem::with_id(app, "format_bold", "Bold", true, Some("Cmd+B"))?,
+                    &MenuItem::with_id(app, "format_italic", "Italic", true, Some("Cmd+I"))?,
+                    &MenuItem::with_id(app, "format_link", "Add Link", true, Some("Cmd+K"))?,
+                    &PredefinedMenuItem::separator(app)?,
+                    // Heading transformations
+                    &MenuItem::with_id(app, "format_h1", "Heading 1", true, Some("Option+Cmd+1"))?,
+                    &MenuItem::with_id(app, "format_h2", "Heading 2", true, Some("Option+Cmd+2"))?,
+                    &MenuItem::with_id(app, "format_h3", "Heading 3", true, Some("Option+Cmd+3"))?,
+                    &MenuItem::with_id(app, "format_h4", "Heading 4", true, Some("Option+Cmd+4"))?,
+                    &MenuItem::with_id(app, "format_paragraph", "Paragraph", true, Some("Option+Cmd+0"))?,
                 ],
             )?;
 
@@ -151,6 +163,31 @@ pub fn run() {
                 }
                 "quit" => {
                     app.exit(0);
+                }
+                // Text formatting menu items
+                "format_bold" => {
+                    let _ = app.emit("menu-format-bold", ());
+                }
+                "format_italic" => {
+                    let _ = app.emit("menu-format-italic", ());
+                }
+                "format_link" => {
+                    let _ = app.emit("menu-format-link", ());
+                }
+                "format_h1" => {
+                    let _ = app.emit("menu-format-h1", ());
+                }
+                "format_h2" => {
+                    let _ = app.emit("menu-format-h2", ());
+                }
+                "format_h3" => {
+                    let _ = app.emit("menu-format-h3", ());
+                }
+                "format_h4" => {
+                    let _ = app.emit("menu-format-h4", ());
+                }
+                "format_paragraph" => {
+                    let _ = app.emit("menu-format-paragraph", ());
                 }
                 _ => {}
             });
