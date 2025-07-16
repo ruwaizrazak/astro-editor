@@ -202,31 +202,33 @@ _Goal: Beautiful, iA Writer-inspired editing experience_
 - [x] Ensure all GFM features are fully supported
 - [x] Hide initial MDX imports for MDX files
 - [x] Set up to style markdown etc sensibly in editor
-- [ ] **MANUAL WORK FOR DANNY** - Codify iA Writer style in `/docs/ia-writer-ui.md` (See Figma)
-  - [x] Extract Colours out
-  - [ ] Measure all breakpoints and associated line-heights etc.
-  - [ ] Recreate views in Figma sith a sensible base font-size -> identify all variables, breakpoints etc.
-  - [ ] Play with additions to iA writer style in Figma (blockquotes, heading styling etc)
-  - [ ] Write up `/docs/ia-writer-ui.md` with final detailed UI specifications.
-- [ ] Build Custom CodeMirror theme based on UI specs
-  - [ ] Set up reusable editor colour palette variables (see `/docs/ia-writer-ui.md`) which make it easy to switch to dark mode when we add it. Set editor background colour etc.
-  - [ ] Set default typography: size, weight, font-variant etc for all basic elements (text, headings, bold, italic). Remove or override any unwanted pre-existing styles.
-  - [ ] Style carat and text-selection.
-  - [ ] Add MD syntax highlighting colours for all other elements (links, images, footnotes, strikethrough, inline code, code blocks, blockquotes etc)
-  - [ ] Add proper line-height etc and responsive typography (text size, line-height, max measure etc) for all viewport width breakpoints (see `/docs/ia-writer-ui.md`).
-  - [ ] Add colours for HTML/JSX tags which appear in the markdown - keep this very simple
-  - [ ] Style blockquotes niceley
-  - [ ] If possible, "hang" header hashes in the left margin.
-- [ ] Add nice styling for fenced code blocks with language-specific syntax highlighting.
-- [ ] Opening URLs via Opt Click
-  - Hovering any URL while holding `Opt` changes it to bright blue colour and the pointer to a hand.
-  - Clicking while holding `Opt` opens URL in the default browser.
-- [ ] Add More Editor Keyboard Shortcuts
+- [x] Add More Editor Keyboard Shortcuts
   - `Opt+Cmd+1` - Turn current line to H1
   - `Opt+Cmd+2` - Turn current line to H2
   - `Opt+Cmd+3` - Turn current line to H3
   - `Opt+Cmd+4` - Turn current line to H4
   - `Opt+Cmd+0` - Turn current line to plain paragraph
+- [x] **MANUAL WORK FOR DANNY** - Codify iA Writer style in `/docs/ia-writer-ui.md` (See Figma)
+  - [x] Extract Colours out
+  - [x] Measure all breakpoints and associated line-heights etc.
+  - [x] Recreate views in Figma sith a sensible base font-size -> identify all variables, breakpoints etc.
+  - [x] Write up `/docs/ia-writer-ui.md` with final detailed UI specifications.
+- [ ] Create theme for editor based on `/docs/ia-writer-ui.md` and current best practice for codemirror
+  - [ ] Set up reusable editor colour palette variables (see `/docs/ia-writer-ui.md`) in a way which makse it easy to add a dark mode later. Set editor background colour etc.
+  - [ ] Set default typography: size, weight, font-variant etc for all basic elements (text, headings, bold, italic). Remove or override any unwanted pre-existing styles.
+  - [ ] Add proper line-height etc and responsive typography (text size, line-height, max measure etc) for all viewport width breakpoints (see `/docs/ia-writer-ui.md`).
+  - [ ] Style carat and text-selection.
+  - [ ] Add MD syntax highlighting colours for all other elements (links, images, footnotes, strikethrough, inline code, code blocks, blockquotes etc)
+  - [ ] Style blockquotes niceley
+  - [ ] Add (or retain) colours for HTML/JSX tags which appear in the markdown (not in code blocks) - keep this very simple. Suggest:
+    - Angle Brackets and TagName: red
+    - Attribute/prop names: orange
+    - Attribute/prop values (including quotes etc): green
+  - [ ] If possible, "hang" header hashes in the left margin - this pay need some careful design so as not to complicate the layout
+- [ ] Add nicer styling for fenced code blocks with language-specific syntax highlighting.
+- [ ] Opening URLs via Opt Click
+  - Hovering any URL while holding `Opt` changes the underline to the carat colour and the text to normal text colour and the pointer to a hand.
+  - Clicking while holding `Opt` opens URL in the default browser.
 
 **Phase 3.2 - Drag & Drop Images and Files**
 

@@ -1,0 +1,190 @@
+/*
+AI tools: Do not reference this file unless explicitly asked to.
+*/
+
+@font-face {
+  font-family: 'iA Writer Duo';
+  src: url('../src/assets/fonts/iA-Writer-Duo/Variable/iAWriterDuoV.ttf')
+    format('truetype-variations');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'iA Writer Duo';
+  src: url('../src/assets/fonts/iA-Writer-Duo/Variable/iAWriterDuoV-Italic.ttf')
+    format('truetype-variations');
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+body {
+  /* Color styles - Global */
+  --color-carat: rgba(0, 195, 255, 1);
+
+  /* Color styles - Light Mode */
+  --color-background: rgba(247, 247, 247, 1);
+  --color-text: rgba(25, 25, 25, 1);
+  --color-mdtag: rgba(179, 181, 176, 1);
+  --color-underline: rgba(214, 212, 209, 1);
+  --color-brown: rgba(165, 101, 27, 1);
+  --color-red: rgba(201, 72, 37, 1);
+  --color-pink: rgba(177, 79, 159, 1);
+  --color-blue: rgba(53, 118, 182, 1);
+  --color-green: rgba(66, 131, 44, 1);
+  --color-codeblock-background: rgba(238, 238, 238, 1);
+  --color-selectedtext-background: rgba(185, 234, 250, 1);
+  --color-focusmodeunfocussed-text: rgba(199, 196, 194, 1);
+
+  --color-highlight-background: rgba(252, 236, 147, 1); /* Unused */
+  --color-highlight-underline: rgba(255, 215, 0, 1); /* Unused */
+  --color-highlight-text: var(--color-text); /* Unused */
+}
+
+body.dark {
+  /* Color styles - Dark Mode */
+  --color-background: rgba(26, 26, 26, 1);
+  --color-text: rgba(204, 204, 204, 1);
+  --color-mdtag: rgba(122, 122, 120, 1);
+  --color-underline: rgba(84, 84, 82, 1);
+  --color-brown: rgba(192, 148, 86, 1);
+  --color-red: rgba(216, 133, 107, 1);
+  --color-pink: rgba(186, 142, 177, 1);
+  --color-blue: rgba(124, 159, 192, 1);
+  --color-green: rgba(131, 165, 115, 1);
+  --color-codeblock-background: rgba(37, 37, 37, 1);
+  --color-selectedtext-background: rgba(20, 68, 84, 1);
+  --color-focusmodeunfocussed-text: rgba(112, 112, 112, 1);
+
+  --color-highlight-background: rgba(68, 59, 15, 1); /* Unused */
+  --color-highlight-underline: rgba(214, 176, 0, 1); /* Unused */
+  --color-highlight-text: rgba(220, 206, 157, 1); /* Unused */
+}
+
+/* Reset styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+/* Theme toggle */
+.theme-toggle {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  cursor: pointer;
+}
+
+/* Base Styles */
+
+body {
+  position: relative;
+  font-size: 11px;
+}
+
+.container {
+  padding-top: 74px;
+  background-color: var(--color-background);
+  font-family: 'iA Writer Duo';
+  color: var(--color-text);
+  font-weight: 490;
+  min-height: 100vh;
+  max-width: 100%;
+  overflow-y: scroll;
+}
+
+.mdheading {
+  font-weight: 700;
+}
+
+.mdtag {
+  color: var(--color-mdtag);
+}
+
+.mdurl {
+  color: var(--color-mdtag);
+  text-decoration: underline;
+  text-decoration-color: var(--color-underline);
+}
+
+.mdbold {
+  font-weight: 700;
+}
+
+/* Tiny Screen */
+.container {
+  padding-inline: 24px;
+  color: black;
+}
+
+.content {
+  font-size: 11px;
+  line-height: 17.7px; /* 160.909% */
+  font-variation-settings: 'spcg' 1;
+}
+
+/* Small Screen */
+@media (min-width: 440px) {
+  .container {
+    padding-inline: 74px;
+    color: red;
+  }
+
+  .content {
+    font-size: 12px;
+    line-height: 20.9px; /* 174.167% */
+    font-variation-settings: 'spcg' 14;
+  }
+}
+
+/* Medium Screen */
+@media (min-width: 875px) {
+  .container {
+    padding-inline: 0;
+    color: blue;
+  }
+  .content {
+    max-width: 705px;
+    margin: 0 auto;
+  }
+}
+
+/* Large Screen */
+@media (min-width: 1250px) {
+  .container {
+    padding-inline: 0;
+    color: green;
+  }
+  .content {
+    max-width: 800px;
+    margin: 0 auto;
+
+    font-size: 14px;
+    line-height: 24.4px; /* 174.286% */
+    font-variation-settings: 'spcg' 3;
+  }
+}
+
+/* Extra Large Screen */
+@media (min-width: 1660px) {
+  .container {
+    padding-inline: 0;
+    color: yellow;
+  }
+  .content {
+    max-width: 980px;
+    margin: 0 auto;
+
+    font-size: 16px;
+    line-height: 28.6px; /* 178.75% */
+    font-variation-settings: 'spcg' 19;
+  }
+}
