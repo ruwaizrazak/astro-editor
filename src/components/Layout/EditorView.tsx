@@ -487,6 +487,40 @@ const createMarkdownLink = async (view: EditorView): Promise<boolean> => {
   return true
 }
 
+// Transform current line to a specific heading level or plain text
+const transformLineToHeading = (view: EditorView, level: 0 | 1 | 2 | 3 | 4): boolean => {
+  const { state } = view
+  const { from } = state.selection.main
+  const line = state.doc.lineAt(from)
+  const lineText = line.text
+  
+  // Remove existing heading markers (if any)
+  const cleanedText = lineText.replace(/^#+\s*/, '')
+  
+  // Create new text based on desired level
+  let newLineText: string
+  if (level === 0) {
+    // Plain text - just the cleaned text
+    newLineText = cleanedText
+  } else {
+    // Add heading markers
+    const markers = '#'.repeat(level)
+    newLineText = `${markers} ${cleanedText}`
+  }
+  
+  // Replace the entire line
+  view.dispatch({
+    changes: {
+      from: line.from,
+      to: line.to,
+      insert: newLineText
+    },
+    selection: EditorSelection.cursor(line.from + newLineText.length)
+  })
+  
+  return true
+}
+
 // URL detection regex
 const urlRegex = /^https?:\/\/[^\s]+$/
 
@@ -565,6 +599,27 @@ export const EditorViewComponent: React.FC = () => {
             }
             return true
           },
+        },
+        // Heading transformation shortcuts
+        {
+          key: 'Alt-Mod-1',
+          run: view => transformLineToHeading(view, 1),
+        },
+        {
+          key: 'Alt-Mod-2',
+          run: view => transformLineToHeading(view, 2),
+        },
+        {
+          key: 'Alt-Mod-3',
+          run: view => transformLineToHeading(view, 3),
+        },
+        {
+          key: 'Alt-Mod-4',
+          run: view => transformLineToHeading(view, 4),
+        },
+        {
+          key: 'Alt-Mod-0',
+          run: view => transformLineToHeading(view, 0),
         },
       ])
     ),

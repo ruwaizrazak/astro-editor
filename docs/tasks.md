@@ -218,8 +218,8 @@ _Goal: Beautiful, iA Writer-inspired editing experience_
   - [ ] Style blockquotes niceley
   - [ ] If possible, "hang" header hashes in the left margin.
 - [ ] Add nice styling for fenced code blocks with language-specific syntax highlighting.
-- [ ] Opening URLs via Click
-  - Hovering any URL while holding `Opt` changes it to the carat colour and the pointer to a hand.
+- [ ] Opening URLs via Opt Click
+  - Hovering any URL while holding `Opt` changes it to bright blue colour and the pointer to a hand.
   - Clicking while holding `Opt` opens URL in the default browser.
 - [ ] Add More Editor Keyboard Shortcuts
   - `Opt+Cmd+1` - Turn current line to H1
