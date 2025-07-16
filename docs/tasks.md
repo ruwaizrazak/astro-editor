@@ -202,6 +202,11 @@ _Goal: Beautiful, iA Writer-inspired editing experience_
 - [x] Ensure all GFM features are fully supported
 - [x] Hide initial MDX imports for MDX files
 - [x] Set up to style markdown etc sensibly in editor
+- [ ] **MANUAL WORK FOR DANNY** - Codify iA Writer style in `/docs/ia-writer-ui.md` (See Figma)
+  - [ ] Extract Colours
+  - [ ] Measure breakpoints and associated line-heights etc.
+  - [ ] Recreate all in Figma sith a sensible base font-size.
+  - [ ] Write up `/docs/ia-writer-ui.md` with final detailed UI specifications.
 - [ ] Custom CodeMirror theme matching iA Writer aesthetic
   - [ ] Set up editor colour palette variables (see `/docs/ia-writer-ui.md`) so it's easy to switch to dark mode when we add it. Set editor background colour etc.
   - [ ] Set default typography: size, weight, font-variant etc for all basic elements (text, headings, bold, italic). Remove or override any unwanted pre-existing styles.
