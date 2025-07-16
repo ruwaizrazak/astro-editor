@@ -203,7 +203,7 @@ _Goal: Beautiful, iA Writer-inspired editing experience_
 - [x] Hide initial MDX imports for MDX files
 - [x] Set up to style markdown etc sensibly in editor
 - [ ] **MANUAL WORK FOR DANNY** - Codify iA Writer style in `/docs/ia-writer-ui.md` (See Figma)
-  - [x] Extract Colours
+  - [x] Extract Colours out
   - [ ] Measure all breakpoints and associated line-heights etc.
   - [ ] Recreate views in Figma sith a sensible base font-size -> identify all variables, breakpoints etc.
   - [ ] Play with additions to iA writer style in Figma (blockquotes, heading styling etc)
