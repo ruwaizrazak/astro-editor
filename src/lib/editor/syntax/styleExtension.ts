@@ -42,9 +42,11 @@ export const markdownStyleExtension = {
       Link: markdownTags.link,
       LinkText: markdownTags.linkText,
       URL: markdownTags.linkUrl,
-      'Image/ImageMark': markdownTags.imageMark,
+      // Image syntax - based on actual Lezer parser nodes
+      ImageStart: markdownTags.imageMark, // The ! symbol
+      'Image/LinkMark': markdownTags.imageMark, // The [ ] ( ) brackets
       Image: markdownTags.image,
-      ImageText: markdownTags.imageAlt,
+      LinkLabel: markdownTags.imageAlt, // Alt text in images
       'Image/URL': markdownTags.imageUrl,
 
       // Lists
