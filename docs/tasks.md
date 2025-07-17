@@ -32,10 +32,10 @@ _Goal: Advanced features that differentiate from basic editors_
 
 **Phase 5.1 - User Preferences Settings & Open in IDE Button**
 
-- [ ] Add simple preferences/settings window. Should use standard shadcn/tailwind layout and existing patterns for doing this. We need to devide if we should make a new Tauri window or do it in a dialog in the react app. Look at the Tauri 2 docs for advice on this. Settings panel should have "tabs" down the left for different panes on the right. We only need three panes right now -> General, Project Settings, Frontmatter Mappings. We will add more later. Think like an experienced front-end architect when designing the various React components for this.
-- [ ] User preferences should be saved to disk in the preferences system, project-specific preferences should be saved in the project settings files.
+- [ ] Add simple preferences/settings window. Should use standard shadcn/tailwind layout and existing patterns for doing this. We should use a Suitable component from Shadcn to keep this all within the React app. Settings panel should have "tabs" down the left for different panes on the right. We only need three panes right now -> General, Project Settings, Frontmatter Mappings. We will add more later. We may want to separate these into global settings and project settings somehow, perhaps with headings in the "tabs" sidebar. For now, we should only display project settings for the currently open project. Or if no project is open, display none of them. The right-hand panes should have a standard way of displaying form controls as you would expect in any other app settings panel. Again, use standard components. Think like an experienced front-end architect when designing the various React components for this.
+- [ ] We must have an easy-to-use and repeatable way to read and write settings from our React components using the preferences system we have built. It should not be complicated and should follow an easy-to-understand pattern. To begin with, let's test this simply by writing one global setting From an appropriate form.
 - [ ] Settings panel should be opened with `Cmd+,` keyboard shortcut, via a menu item in the apps osx menubar or via the command pallette.
-- [ ] Path Overides pane allows user to optionally override Astro deaults paths for various things. Will need to update all code that usees these paths in the appropriate places. The defaults should be hard-coded as fallbacks in case there are no saved user preferences. These paths should be relevant to the project root so they still work if a user moves their whole astro repo and reopens it.
+- [ ] Path Overides pane allows user to optionally override Astro deaults paths for various things. Will need to update all code that usees these paths in the appropriate places. The defaults should be hard-coded as fallbacks in case there are no saved user preferences. These paths should be relative to the project root so they still work if a user moves their whole astro repo and reopens it.
   - Path to Astro content directory (default: `src/content/`)
   - Path to Astro assets directory (default: `src/assets/`)
   - Path to Astro components for use in MDX files (default: `src/components/mdx/`) [Not yet used]
@@ -59,10 +59,10 @@ _Goal: Advanced features that differentiate from basic editors_
 **Phase 5.3 - Insert Astro Components into MDX files**
 
 - [ ] Discovery of Astro components intended for use in MDX files (from `src/components/mdx/`)
-- [ ] Pane in settings to view all discovered Astro components and toggle on and off.
+- [ ] Pane in settings to view all discovered Astro components and toggle on and off. Those switched _off_ are saved in the project settings.
 - [ ] Slash command system for inserting Astro components in MDX files easily
 
-**Phase 5.4: Editor/Analysis Mode**
+**Phase 5.4: Copyediting and Analysis Mode**
 
 - [ ] Toggleable "editor mode" which enables text analysis features...
   - [ ] Coloured Nouns, Adverbs, Verbs, Conjunctions like iA Writer (see https://ia.net/writer/how-to/edit-and-polish) to help with editing. Should ignore code blocks, links, HTML/Astro tags, inline code etc.

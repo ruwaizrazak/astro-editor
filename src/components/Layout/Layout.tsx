@@ -11,6 +11,7 @@ import { CommandPalette } from '../CommandPalette'
 import { Toaster } from '../ui/sonner'
 import { toast } from '../../lib/toast'
 import { initializeRustToastBridge } from '../../lib/rust-toast-bridge'
+import { PreferencesDialog } from '../preferences'
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -88,6 +89,9 @@ export const Layout: React.FC = () => {
     closeCurrentFile,
   } = useAppStore()
 
+  // Preferences dialog state
+  const [preferencesOpen, setPreferencesOpen] = useState(false)
+
   // Centralized menu state management - this is where file state lives
   useEffect(() => {
     const shouldEnableMenu = Boolean(currentFile && window.isEditorFocused)
@@ -153,6 +157,11 @@ export const Layout: React.FC = () => {
             if (currentFile) {
               closeCurrentFile()
             }
+            break
+          case ',':
+            e.preventDefault()
+            // Cmd+,: Open Preferences
+            setPreferencesOpen(true)
             break
         }
       }
@@ -333,6 +342,12 @@ export const Layout: React.FC = () => {
 
       {/* Command Palette */}
       <CommandPalette />
+
+      {/* Preferences Dialog */}
+      <PreferencesDialog
+        open={preferencesOpen}
+        onOpenChange={setPreferencesOpen}
+      />
 
       {/* Toast notifications */}
       <Toaster />

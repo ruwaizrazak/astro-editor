@@ -539,7 +539,6 @@ export const useAppStore = create<AppState>((set, get) => ({
       await projectRegistryManager.updateGlobalSettings(settings)
       const updatedSettings = projectRegistryManager.getGlobalSettings()
       set({ globalSettings: updatedSettings })
-      toast.success('Global settings updated')
     } catch (error) {
       toast.error('Failed to update global settings', {
         description:
@@ -565,7 +564,6 @@ export const useAppStore = create<AppState>((set, get) => ({
       const updatedSettings =
         await projectRegistryManager.getEffectiveSettings(currentProjectId)
       set({ currentProjectSettings: updatedSettings })
-      toast.success('Project settings updated')
     } catch (error) {
       toast.error('Failed to update project settings', {
         description:
