@@ -114,7 +114,6 @@ export function parseSchemaJson(schemaJson: string): ParsedSchema | null {
       fields,
     }
   } catch (error) {
-    // Use a more specific error handling approach for production
     if (import.meta.env.DEV) {
       // eslint-disable-next-line no-console
       console.error('Failed to parse schema JSON:', error)

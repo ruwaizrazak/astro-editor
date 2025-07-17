@@ -27,7 +27,7 @@ export const handlePaste = (
     const linkText = `[${selectedText}](${trimmedUrl})`
     const urlStart = from + selectedText.length + 3 // Position after "[selectedText]("
     const urlEnd = urlStart + trimmedUrl.length // End of URL
-    
+
     view.dispatch({
       changes: { from, to, insert: linkText },
       selection: EditorSelection.range(urlStart, urlEnd), // Select just the URL part

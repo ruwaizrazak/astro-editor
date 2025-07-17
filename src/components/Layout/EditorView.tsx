@@ -136,9 +136,3 @@ export const EditorViewComponent: React.FC = () => {
     </div>
   )
 }
-
-// For backward compatibility
-export const getEditorCommands = () => {
-  // This can now be removed - use globalCommandRegistry instead
-  return null
-}

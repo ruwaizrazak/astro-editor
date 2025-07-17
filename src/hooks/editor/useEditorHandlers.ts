@@ -21,7 +21,7 @@ export const useEditorHandlers = () => {
     window.dispatchEvent(new CustomEvent('editor-focus-changed'))
   }, [])
 
-  // Handle editor blur - just clear flag, menu state managed in Layout  
+  // Handle editor blur - just clear flag, menu state managed in Layout
   const handleBlur = useCallback(() => {
     window.isEditorFocused = false
     window.dispatchEvent(new CustomEvent('editor-focus-changed'))

@@ -46,8 +46,6 @@ export class FileContextMenu {
     onRename,
   }: ContextMenuOptions): Promise<void> {
     try {
-      // eslint-disable-next-line no-console
-      console.log('Context menu for file:', file)
       // Create menu items
       const revealItem = await MenuItem.new({
         id: 'reveal-in-finder',
@@ -55,18 +53,12 @@ export class FileContextMenu {
         action: () => {
           void (async () => {
             try {
-              // eslint-disable-next-line no-console
-              console.log('Reveal in Finder clicked for path:', file.path)
               // Get the directory containing the file
               const directory = file.path.substring(
                 0,
                 file.path.lastIndexOf('/')
               )
-              // eslint-disable-next-line no-console
-              console.log('Opening directory:', directory)
               await openPath(directory)
-              // eslint-disable-next-line no-console
-              console.log('openPath completed successfully')
             } catch (error) {
               // eslint-disable-next-line no-console
               console.error('Failed to reveal in Finder:', error)
@@ -81,11 +73,7 @@ export class FileContextMenu {
         action: () => {
           void (async () => {
             try {
-              // eslint-disable-next-line no-console
-              console.log('Copy path clicked for:', file.path)
               await invoke('copy_text_to_clipboard', { text: file.path })
-              // eslint-disable-next-line no-console
-              console.log('Path copied to clipboard successfully')
             } catch (error) {
               // eslint-disable-next-line no-console
               console.error('Failed to copy path:', error)
@@ -100,13 +88,9 @@ export class FileContextMenu {
         action: () => {
           void (async () => {
             try {
-              // eslint-disable-next-line no-console
-              console.log('Duplicate clicked for file:', file.path)
               const duplicatePath = FileContextMenu.generateDuplicatePath(
                 file.path
               )
-              // eslint-disable-next-line no-console
-              console.log('Duplicating to:', duplicatePath)
 
               // Read the original file content
               const content = await invoke('read_file', {
@@ -120,8 +104,6 @@ export class FileContextMenu {
 
               // Create the duplicate file
               await invoke('create_file', { directory, filename, content })
-              // eslint-disable-next-line no-console
-              console.log('File duplicated successfully')
 
               // Refresh the file list if callback is provided
               if (onRefresh) {
@@ -140,8 +122,6 @@ export class FileContextMenu {
         text: 'Rename',
         action: () => {
           try {
-            // eslint-disable-next-line no-console
-            console.log('Rename clicked for file:', file.path)
             if (onRename) {
               onRename(file)
             }
@@ -163,19 +143,11 @@ export class FileContextMenu {
         action: () => {
           void (async () => {
             try {
-              // eslint-disable-next-line no-console
-              console.log('Delete clicked for file:', file.path)
               const confirmed = await FileContextMenu.showConfirmationDialog(
                 file.name || file.path.split('/').pop() || 'file'
               )
-              // eslint-disable-next-line no-console
-              console.log('Delete confirmation result:', confirmed)
               if (confirmed) {
-                // eslint-disable-next-line no-console
-                console.log('Attempting to delete file:', file.path)
                 await remove(file.path)
-                // eslint-disable-next-line no-console
-                console.log('File deleted successfully')
                 // Refresh the file list if callback is provided
                 if (onRefresh) {
                   onRefresh()

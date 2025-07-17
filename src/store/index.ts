@@ -105,33 +105,15 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   loadCollections: async () => {
     const { projectPath } = get()
-    /* eslint-disable no-console */
-    console.log('=== LOADING COLLECTIONS ===')
-    console.log('Project path:', projectPath)
 
     if (!projectPath) {
-      console.log('No project path set, skipping collection load')
       return
     }
 
     try {
-      console.log('Scanning project for collections...')
       const collections = await invoke<Collection[]>('scan_project', {
         projectPath,
       })
-      console.log('Collections loaded:', collections)
-      console.log(
-        'Collection details:',
-        collections.map(c => ({
-          name: c.name,
-          path: c.path,
-          hasSchema: !!c.schema,
-          schemaLength: c.schema?.length || 0,
-          schemaPreview: c.schema?.substring(0, 100) + '...',
-        }))
-      )
-      /* eslint-enable no-console */
-
       set({ collections })
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -152,10 +134,6 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   openFile: async (file: FileEntry) => {
-    /* eslint-disable no-console */
-    console.log('=== OPENING FILE ===')
-    console.log('File:', file)
-
     try {
       const markdownContent = await invoke<MarkdownContent>(
         'parse_markdown_content',
@@ -163,12 +141,6 @@ export const useAppStore = create<AppState>((set, get) => ({
           filePath: file.path,
         }
       )
-      console.log('Parsed markdown content:', {
-        frontmatter: markdownContent.frontmatter,
-        contentLength: markdownContent.content.length,
-        rawFrontmatterLength: markdownContent.raw_frontmatter.length,
-        importsLength: markdownContent.imports.length,
-      })
 
       set({
         currentFile: file,
@@ -178,15 +150,6 @@ export const useAppStore = create<AppState>((set, get) => ({
         imports: markdownContent.imports,
         isDirty: false,
       })
-
-      // Log state after setting
-      const { collections } = get()
-      const currentCollection = collections.find(
-        c => c.name === file.collection
-      )
-      console.log('Current collection after opening file:', currentCollection)
-      console.log('Schema available:', !!currentCollection?.schema)
-      /* eslint-enable no-console */
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Failed to open file:', error)
@@ -240,7 +203,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       if (validationErrors.length > 0) {
         // eslint-disable-next-line no-console
         console.error('Cannot save: Validation errors:', validationErrors)
-        // TODO: Show user-friendly error dialog instead of console.error
+        // TODO: Show user-friendly error dialog
         return
       }
     }
@@ -395,34 +358,20 @@ export const useAppStore = create<AppState>((set, get) => ({
   loadPersistedProject: async () => {
     try {
       const savedPath = localStorage.getItem('astro-editor-last-project')
-      /* eslint-disable no-console */
-      console.log('Persisted project path from localStorage:', savedPath)
 
       if (savedPath) {
         // Verify the project path still exists before setting it
         try {
-          console.log('Verifying project path exists...')
-          const collections = await invoke('scan_project', {
+          await invoke('scan_project', {
             projectPath: savedPath,
           })
-          console.log(
-            'Project scan successful, collections found:',
-            collections
-          )
-
           // If no error, the project path is valid, so restore it
-          console.log('Setting project path:', savedPath)
-          /* eslint-enable no-console */
           get().setProject(savedPath)
         } catch (error) {
           // eslint-disable-next-line no-console
           console.warn('Saved project path no longer valid:', savedPath, error)
-          // Remove invalid path from storage
           localStorage.removeItem('astro-editor-last-project')
         }
-      } else {
-        // eslint-disable-next-line no-console
-        console.log('No persisted project path found')
       }
     } catch (error) {
       // eslint-disable-next-line no-console

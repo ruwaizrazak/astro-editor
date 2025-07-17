@@ -251,14 +251,16 @@ _Goal: Production-ready reliability and performance_
 - [x] Review EditorView.tsx. It is now a HUGE file and me must be able to extract a lot of the functioonality into helpers, utils, other React components etc? Think like an expert front-end architect and plan a detailed refactor to separate things. Be careful not to break or alter the functionality while doing this.
   - [x] Bugs from refactor:
     - [x] Markdown syntax highlighting is no longer working for markdown image tags. It's fine for links.
-    - [ ] Holding Option and hovering over a URL no longer highlights it with a blue background and changes the cursor to a pointer. It still opens fine when clicked.
-    - [ ] The `^` symbol in a footnote is no longer of colour `--color-editor-mdtag`.
-    - [ ] The menubar menu items for bold, italic, add link and all the heading/prargraph ones should be disabled unless a markdown file is open and focussed in the editor window. They are always enabled.
+    - [x] Holding Option and hovering over a URL no longer highlights it with a blue background and changes the cursor to a pointer. It still opens fine when clicked.
+    - [x] The menubar menu items for bold, italic, add link and all the heading/prargraph ones should be disabled unless a markdown file is open and focussed in the editor window. They are always enabled.
+    - [ ] Remove any unnececarry comments and logging (but leave those which are helpful for understanding how thigns work in the future)
+    - [ ] Comprehensively review CLAUDE.md and update with the current structure, features, code patterns, architectural patterns etc. We have mostly been working with the markdown code editor recently. Add instructions to Claude Code for how an when to extract code into `lib` and `hooks` and what patterns to use. Explain how and why some application state is stored in zustand, and some ui state is in `Layout.tsx`. Ensure this file is as useful as possible for future sessions. If you think it makes sense, you can create other markdown files in docs and reference them from CLAUDE.md.
+    - [ ] Add tests for extracted logic where needed
 - [ ] Update `ia-writer-ui.md` to include current size values etc from codebase. Only the line-heights and font sizes need to change, I think? Maybe also add character spacing in place of font variation settings.
 - [ ] Implement simple `Cmd + P` command pallete to execute common commands etc (use https://ui.shadcn.com/docs/components/command): New [Article, Note etc - based on collections in schema], Open Collection, Open Project etc. Must be easily extensible in the future and know the currently selected collection and content item (if any), and perhaps the currently selected text if in the editor pane?. This may be an opportunity to think about how we handle various Internal messaging, commands, etc.
 - [ ] Consider Optimization for potential large content collections (virtualized lists, lazy loading etc?)
 - [ ] Handle crash recovery and unsaved changes detection somehow? Probably just needs some temporary storage if the auto-save fails so users don't loose loads of work if they don't notice?
-- [ ] Better error messages, toasts, empty states etc where needed
+- [ ] Set up easy mechanism for displaying notifications to the user in a toast. USe the shadcn component.
 - [ ] Check keyboard shortcuts are comprehensive and all work. Review all right-click context menus, menubar menus etc and remove anything not implemented and conform to macOS norms
 - [ ] Review all code for opportunities to simplify, refactor, make more readable/maintainable etc **without affecting functionality**.
 
