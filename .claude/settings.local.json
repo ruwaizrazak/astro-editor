@@ -22,7 +22,8 @@
       "WebFetch(domain:discuss.codemirror.net)",
       "Bash(pkill:*)",
       "Bash(cargo check:*)",
-      "Bash(cargo fmt:*)"
+      "Bash(cargo fmt:*)",
+      "Bash(node:*)"
     ],
     "deny": []
   }

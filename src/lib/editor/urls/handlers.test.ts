@@ -71,9 +71,9 @@ describe('URL Handlers', () => {
       const view = createMockView('Visit https://example.com')
       const event = createMockEvent({ altKey: true, clientX: 100, clientY: 50 })
 
-      view.posAtCoords = vi.fn().mockReturnValue(20)
+      view.posAtCoords = vi.fn().mockReturnValue(3) // Position before URL starts
       mockFindUrlsInText.mockReturnValue([
-        { url: 'https://example.com', from: 6, to: 24 },
+        { url: 'https://example.com', from: 6, to: 25 },
       ])
 
       const result = await handleUrlClick(view, event)

@@ -22,20 +22,11 @@ export const findUrlsInText = (
   offset: number = 0
 ): UrlMatch[] => {
   const urls: UrlMatch[] = []
+  const markdownRanges: Array<{ from: number; to: number }> = []
 
-  // Find plain URLs
-  const plainUrlRegex = /https?:\/\/[^\s)]+/g
-  let match
-  while ((match = plainUrlRegex.exec(text)) !== null) {
-    urls.push({
-      url: match[0],
-      from: offset + match.index,
-      to: offset + match.index + match[0].length,
-    })
-  }
-
-  // Find markdown link URLs [text](url) and image URLs ![alt](url)
+  // First, find all markdown link ranges to avoid duplicates
   const markdownLinkRegex = /!?\[([^\]]*)\]\(([^)]+)\)/g
+  let match
   while ((match = markdownLinkRegex.exec(text)) !== null) {
     const linkUrl = match[2]
     const linkText = match[1]
@@ -45,10 +36,38 @@ export const findUrlsInText = (
       // Position of the URL part within the markdown link/image
       // For images: ![alt](url) - need to account for the extra ! character
       const urlStart = match.index + (linkText?.length || 0) + (isImage ? 4 : 3) // after "!](" or "]("
+      const urlEnd = urlStart + linkUrl.length
+
       urls.push({
         url: linkUrl,
         from: offset + urlStart,
-        to: offset + urlStart + linkUrl.length,
+        to: offset + urlEnd,
+      })
+
+      // Track the entire markdown link range to avoid plain URL detection inside it
+      markdownRanges.push({
+        from: match.index,
+        to: match.index + match[0].length,
+      })
+    }
+  }
+
+  // Find plain URLs, but skip those inside markdown links
+  const plainUrlRegex = /https?:\/\/[^\s)]+/g
+  while ((match = plainUrlRegex.exec(text)) !== null) {
+    const urlStart = match.index
+    const urlEnd = match.index + match[0].length
+
+    // Check if this URL is inside a markdown link
+    const isInsideMarkdown = markdownRanges.some(
+      range => urlStart >= range.from && urlEnd <= range.to
+    )
+
+    if (!isInsideMarkdown) {
+      urls.push({
+        url: match[0],
+        from: offset + urlStart,
+        to: offset + urlEnd,
       })
     }
   }

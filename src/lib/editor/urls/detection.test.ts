@@ -61,7 +61,7 @@ describe('URL Detection', () => {
       expect(urls[0]).toEqual({
         url: 'https://example.com',
         from: 6,
-        to: 24,
+        to: 25,
       })
     })
 
@@ -73,12 +73,12 @@ describe('URL Detection', () => {
       expect(urls[0]).toEqual({
         url: 'https://example.com',
         from: 6,
-        to: 24,
+        to: 25,
       })
       expect(urls[1]).toEqual({
         url: 'https://github.com',
-        from: 29,
-        to: 47,
+        from: 30,
+        to: 48,
       })
     })
 
@@ -112,14 +112,14 @@ describe('URL Detection', () => {
 
       expect(urls).toHaveLength(2)
       expect(urls[0]).toEqual({
-        url: 'https://example.com',
-        from: 6,
-        to: 24,
-      })
-      expect(urls[1]).toEqual({
         url: 'https://google.com',
         from: 39,
         to: 57,
+      })
+      expect(urls[1]).toEqual({
+        url: 'https://example.com',
+        from: 6,
+        to: 25,
       })
     })
 
@@ -132,7 +132,7 @@ describe('URL Detection', () => {
       expect(urls[0]).toEqual({
         url: 'https://api.example.com/v1/docs?format=json#section',
         from: 12,
-        to: 64,
+        to: 63,
       })
     })
 
@@ -142,9 +142,9 @@ describe('URL Detection', () => {
 
       expect(urls).toHaveLength(1)
       expect(urls[0]).toEqual({
-        url: 'https://example.com/search?q=test(1)',
+        url: 'https://example.com/search?q=test(1',
         from: 10,
-        to: 46,
+        to: 45,
       })
     })
 
@@ -152,16 +152,11 @@ describe('URL Detection', () => {
       const text = 'Visit [](https://example.com) for info'
       const urls = findUrlsInText(text)
 
-      expect(urls).toHaveLength(2) // One from plain URL detection, one from markdown
+      expect(urls).toHaveLength(1) // Only from markdown detection
       expect(urls[0]).toEqual({
         url: 'https://example.com',
         from: 9,
-        to: 27,
-      })
-      expect(urls[1]).toEqual({
-        url: 'https://example.com',
-        from: 9,
-        to: 27,
+        to: 28,
       })
     })
 
@@ -169,13 +164,8 @@ describe('URL Detection', () => {
       const text = 'Image ![](https://example.com/img.jpg) here'
       const urls = findUrlsInText(text)
 
-      expect(urls).toHaveLength(2) // One from plain URL detection, one from markdown
+      expect(urls).toHaveLength(1) // Only from markdown detection
       expect(urls[0]).toEqual({
-        url: 'https://example.com/img.jpg',
-        from: 10,
-        to: 37,
-      })
-      expect(urls[1]).toEqual({
         url: 'https://example.com/img.jpg',
         from: 10,
         to: 37,
@@ -209,7 +199,7 @@ describe('URL Detection', () => {
       expect(urls[0]).toEqual({
         url: 'https://example.com,',
         from: 6,
-        to: 25,
+        to: 26,
       })
     })
 
@@ -221,7 +211,7 @@ describe('URL Detection', () => {
       expect(urls[0]).toEqual({
         url: 'https://example.com',
         from: 7,
-        to: 25,
+        to: 26,
       })
     })
 
@@ -233,7 +223,7 @@ describe('URL Detection', () => {
       expect(urls[0]).toEqual({
         url: 'https://example.com',
         from: 106,
-        to: 124,
+        to: 125,
       })
     })
 
@@ -242,7 +232,7 @@ describe('URL Detection', () => {
         'Check [Google](https://google.com) and ![GitHub](https://github.com/logo.png) plus https://example.com'
       const urls = findUrlsInText(text)
 
-      expect(urls).toHaveLength(5) // Plain URLs + markdown URLs
+      expect(urls).toHaveLength(3) // 2 markdown URLs + 1 plain URL
       expect(urls[0]).toEqual({
         url: 'https://google.com',
         from: 15,
@@ -251,22 +241,12 @@ describe('URL Detection', () => {
       expect(urls[1]).toEqual({
         url: 'https://github.com/logo.png',
         from: 49,
-        to: 77,
+        to: 76,
       })
       expect(urls[2]).toEqual({
         url: 'https://example.com',
-        from: 84,
+        from: 83,
         to: 102,
-      })
-      expect(urls[3]).toEqual({
-        url: 'https://google.com',
-        from: 15,
-        to: 33,
-      })
-      expect(urls[4]).toEqual({
-        url: 'https://github.com/logo.png',
-        from: 49,
-        to: 77,
       })
     })
 

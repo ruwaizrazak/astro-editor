@@ -162,7 +162,7 @@ describe('Markdown Formatting', () => {
         linkUrl: 'https://github.com',
         linkStart: 39,
         linkEnd: 67,
-        urlStart: 47,
+        urlStart: 48,
         urlEnd: 66,
       })
     })
