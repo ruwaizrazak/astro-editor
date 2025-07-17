@@ -404,6 +404,30 @@ const comprehensiveHighlightStyle = HighlightStyle.define([
 - **Red/Pink family:** HTML tags
 - **Gray family:** Comments, utility elements
 
+### CSS Styling System
+
+The editor uses a **CSS variable-based theming system** that separates concerns between CodeMirror syntax highlighting and visual styling.
+
+**Key Files:**
+- `src/components/Layout/EditorTheme.css` - Color variables and typography
+- `src/components/Layout/EditorView.css` - Container setup and integration
+
+#### Core Patterns
+
+1. **CSS Variables for Theming**: All colors and typography defined as CSS variables for easy theme switching
+2. **Semantic Color Naming**: Variables named by purpose (`--editor-color-mdtag`) not appearance
+3. **Dark Mode via CSS Class**: Light/dark themes switched by adding `.dark` class
+4. **Responsive Typography**: Font sizes scale with viewport width using media queries
+5. **iA Writer Typography**: Custom variable fonts with specific weights and line heights
+
+#### Integration with CodeMirror
+
+- **Separation of Concerns**: CodeMirror identifies tokens, CSS variables provide colors
+- **Class-based Styling**: Special features like inline code use CSS classes for styling
+- **Container Queries Ready**: Editor container set up for future responsive features
+
+**When working with CSS:** Check the theme files above for existing variables and patterns. All editor colors should use CSS variables, never hardcoded values.
+
 ### Editor Features
 
 - ✅ **Markdown:** Headings, bold, italic, ~~strikethrough~~, links, lists, blockquotes, tables
