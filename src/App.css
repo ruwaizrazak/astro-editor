@@ -282,8 +282,11 @@ th:not(.cm-editor *) {
 }
 
 /* CodeMirror isolation - prevent global styles from interfering */
-.cm-editor {
+.cm-editor,
+.cm-editor *,
+.cm-focused {
   isolation: isolate;
+  outline: none !important;
 }
 
 /* Buttons and interactive elements should have pointer cursor */

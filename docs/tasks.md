@@ -214,18 +214,14 @@ _Goal: Beautiful, iA Writer-inspired editing experience_
   - [x] Recreate views in Figma sith a sensible base font-size -> identify all variables, breakpoints etc.
   - [x] Write up `/docs/ia-writer-ui.md` with final detailed UI specifications.
 - [ ] Create theme for editor based on `/docs/ia-writer-ui.md` and current best practice for codemirror
-  - [ ] Set up reusable editor colour palette variables (see `/docs/ia-writer-ui.md`) in a way which makse it easy to add a dark mode later. Set editor background colour etc.
-  - [ ] Set default typography: size, weight, font-variant etc for all basic elements (text, headings, bold, italic). Remove or override any unwanted pre-existing styles.
-  - [ ] Add proper line-height etc and responsive typography (text size, line-height, max measure etc) for all viewport width breakpoints (see `/docs/ia-writer-ui.md`).
-  - [ ] Style carat and text-selection.
-  - [ ] Add MD syntax highlighting colours for all other elements (links, images, footnotes, strikethrough, inline code, code blocks, blockquotes etc)
-  - [ ] Style blockquotes niceley
-  - [ ] Add (or retain) colours for HTML/JSX tags which appear in the markdown (not in code blocks) - keep this very simple. Suggest:
-    - Angle Brackets and TagName: red
-    - Attribute/prop names: orange
-    - Attribute/prop values (including quotes etc): green
+  - [x] Set up reusable editor colour palette variables (see `/docs/ia-writer-ui.md`) in a way which makse it easy to add a dark mode later. Set editor background colour etc.
+  - [x] Set default typography: size, weight, font-variant etc for all basic elements (text, headings, bold, italic). Remove or override any unwanted pre-existing styles.
+  - [x] Add proper line-height etc and responsive typography (text size, line-height, max measure etc) for all viewport width breakpoints (see `/docs/ia-writer-ui.md`).
+  - [x] Style carat and text-selection.
+  - [x] Add MD syntax highlighting colours for all other elements (links, images, footnotes, strikethrough, inline code, code blocks, blockquotes etc)
+  - [x] Style blockquotes niceley
+  - [x] Add (or retain) colours for HTML/JSX tags which appear in the markdown (not in code blocks) - keep this very simple. Suggest:
   - [ ] If possible, "hang" header hashes in the left margin - this pay need some careful design so as not to complicate the layout
-- [ ] Add nicer styling for fenced code blocks with language-specific syntax highlighting.
 - [ ] Opening URLs via Opt Click
   - Hovering any URL while holding `Opt` changes the underline to the carat colour and the text to normal text colour and the pointer to a hand.
   - Clicking while holding `Opt` opens URL in the default browser.

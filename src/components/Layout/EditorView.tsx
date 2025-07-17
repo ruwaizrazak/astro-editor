@@ -756,19 +756,20 @@ export const EditorViewComponent: React.FC = () => {
       '.cm-editor': {
         backgroundColor: 'var(--editor-color-background)',
         borderRadius: '0',
+        outline: 'none',
       },
       '.cm-content': {
         lineHeight: 'var(--editor-line-height)',
         minHeight: '100vh',
         maxWidth: 'var(--editor-content-max-width)',
         margin: '0 auto',
-        padding: '40px 24px',
+        padding: '40px 0',
       },
       '.cm-focused': {
         outline: 'none',
       },
       '.cm-editor.cm-focused': {
-        outline: 'none',
+        outline: 'none !important',
       },
       '.cm-scroller': {
         fontVariantLigatures: 'common-ligatures',
@@ -780,7 +781,8 @@ export const EditorViewComponent: React.FC = () => {
       // Cursor styling
       '.cm-cursor': {
         borderLeftColor: 'var(--editor-color-carat)',
-        borderLeftWidth: '2px',
+        borderLeftWidth: '3px',
+        height: '1.1em',
       },
       // Selection styling
       '.cm-selectionBackground': {
@@ -796,7 +798,7 @@ export const EditorViewComponent: React.FC = () => {
   ]
 
   return (
-    <div className="editor-view">
+    <div className="editor-view" style={{ padding: '0 24px' }}>
       <CodeMirror
         ref={editor => {
           if (editorRef.current !== editor) {
