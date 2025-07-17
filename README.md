@@ -2,6 +2,20 @@
 
 Vibed coded and very WIP
 
-## Tech
+# Features
+
+# Usage
+
+## Loading an Astro Project
+
+## Frontmatter
+
+## The Editor Window
+
+## Settings
+
+#
+
+# Development
 
 - Tailwind V4 with shadcn UI components
