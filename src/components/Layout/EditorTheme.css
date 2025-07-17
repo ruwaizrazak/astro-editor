@@ -1,5 +1,21 @@
 /* iA Writer Editor Theme Variables */
 
+/* Fenced Code Block Styling */
+/* Since CodeMirror doesn't add classes to fenced code content lines,
+   we need to use JavaScript to detect and style them */
+
+.cm-fenced-code-block {
+  background-color: var(--editor-color-codeblock-background);
+  font-family: 'iA Writer Mono Variable', 'iA Writer Mono', monospace;
+  padding: 2px 0;
+}
+
+/* Style the fence markers themselves */
+.cm-line:has([class*="ͼb"]) {
+  background-color: var(--editor-color-codeblock-background);
+  font-family: 'iA Writer Mono Variable', 'iA Writer Mono', monospace;
+}
+
 /* Common Colors */
 :root {
   --editor-color-carat: rgba(0, 195, 255, 1);
@@ -65,8 +81,10 @@
   --editor-content-max-width: none;
 }
 
-/* Responsive Typography Breakpoints */
-@container editor (min-width: 440px) {
+/* Responsive Typography Breakpoints using regular media queries for now */
+/* Since container queries may not be fully supported in current WebKit */
+
+@media (min-width: 440px) {
   /* Small Width */
   .editor-view {
     --editor-font-size: 12px;
@@ -76,7 +94,7 @@
   }
 }
 
-@container editor (min-width: 875px) {
+@media (min-width: 875px) {
   /* Medium Width */
   .editor-view {
     --editor-font-size: 12px;
@@ -87,7 +105,7 @@
   }
 }
 
-@container editor (min-width: 1250px) {
+@media (min-width: 1250px) {
   /* Large Width */
   .editor-view {
     --editor-font-size: 14px;
@@ -98,7 +116,7 @@
   }
 }
 
-@container editor (min-width: 1660px) {
+@media (min-width: 1660px) {
   /* Huge Width */
   .editor-view {
     --editor-font-size: 16px;
