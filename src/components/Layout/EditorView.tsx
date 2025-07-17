@@ -79,8 +79,6 @@ const markdownTags = {
   escape: Tag.define(), // \* \` etc
 }
 
-
-
 // Create style extension that maps parser tags to our custom tags
 const markdownStyleExtension = {
   props: [
@@ -183,7 +181,11 @@ const comprehensiveHighlightStyle = HighlightStyle.define([
     tag: markdownTags.heading6,
     fontWeight: 'var(--editor-font-weight-bold)',
   },
-  { tag: markdownTags.headingMark, color: 'var(--editor-color-text)' },
+  {
+    tag: markdownTags.headingMark,
+    color: 'var(--editor-color-text)',
+    fontWeight: 'var(--editor-font-weight-bold)',
+  },
 
   // Emphasis and Strong
   {
@@ -658,10 +660,8 @@ export const EditorViewComponent: React.FC = () => {
         createLink: () => createMarkdownLink(view),
         formatHeading: level => transformLineToHeading(view, level),
       }
-      
     }
   }, [])
-
 
   // Expose editor functions globally for menu integration
   useEffect(() => {
@@ -746,10 +746,16 @@ export const EditorViewComponent: React.FC = () => {
         fontFamily: 'var(--editor-font-family)',
         fontWeight: 'var(--editor-font-weight-normal)',
         fontVariationSettings: 'var(--editor-font-variation-settings)',
+        letterSpacing: 'var(--editor-letter-spacing)',
+        WebkitFontSmoothing: 'subpixel-antialiased',
         backgroundColor: 'var(--editor-color-background)',
         color: 'var(--editor-color-text)',
         containerType: 'inline-size',
         containerName: 'editor',
+      },
+      '.cm-editor': {
+        backgroundColor: 'var(--editor-color-background)',
+        borderRadius: '0',
       },
       '.cm-content': {
         lineHeight: 'var(--editor-line-height)',
@@ -761,14 +767,12 @@ export const EditorViewComponent: React.FC = () => {
       '.cm-focused': {
         outline: 'none',
       },
-      '.cm-editor': {
-        borderRadius: '0',
-      },
       '.cm-editor.cm-focused': {
         outline: 'none',
       },
       '.cm-scroller': {
         fontVariantLigatures: 'common-ligatures',
+        backgroundColor: 'var(--editor-color-background)',
       },
       '.cm-line': {
         padding: '0',
