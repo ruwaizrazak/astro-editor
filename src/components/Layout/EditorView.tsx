@@ -37,7 +37,7 @@ export const EditorViewComponent: React.FC = () => {
   const editorRef = useRef<{ view?: EditorView }>(null)
   const [isAltPressed, setIsAltPressed] = useState(false)
 
-  // Initialize global focus flag
+  // Initialize global focus flag (menu state managed in Layout)
   useEffect(() => {
     window.isEditorFocused = false
   }, [])

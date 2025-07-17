@@ -248,10 +248,9 @@ _Goal: Production-ready reliability and performance_
 - [x] Bugs
   - [x] Codemirror is showing an autocomplete menu for HTML tags when I type `<` - turn it off.
   - [x] Syntax highlighting for markdown (bold, italic etc) does not work inside HTML tags. Can we make it easily or not? - Research
-- [ ] Review EditorView.tsx. It is now a HUGE file and me must be able to extract a lot of the functioonality into helpers, utils, other React components etc? Think like an expert front-end architect and plan a detailed refactor to separate things. Be careful not to break or alter the functionality while doing this.
-  - [ ] Bugs from refactor:
-    - [ ] When pasting any url into the editor, a space is added at the end.
-    - [ ] MArkdown syntax highlighting is no longer working for markdown image tags. It's fine for links.
+- [x] Review EditorView.tsx. It is now a HUGE file and me must be able to extract a lot of the functioonality into helpers, utils, other React components etc? Think like an expert front-end architect and plan a detailed refactor to separate things. Be careful not to break or alter the functionality while doing this.
+  - [x] Bugs from refactor:
+    - [x] Markdown syntax highlighting is no longer working for markdown image tags. It's fine for links.
     - [ ] Holding Option and hovering over a URL no longer highlights it with a blue background and changes the cursor to a pointer. It still opens fine when clicked.
     - [ ] The `^` symbol in a footnote is no longer of colour `--color-editor-mdtag`.
     - [ ] The menubar menu items for bold, italic, add link and all the heading/prargraph ones should be disabled unless a markdown file is open and focussed in the editor window. They are always enabled.

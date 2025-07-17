@@ -84,6 +84,27 @@ export const Layout: React.FC = () => {
     closeCurrentFile,
   } = useAppStore()
 
+  // Centralized menu state management - this is where file state lives
+  useEffect(() => {
+    const shouldEnableMenu = Boolean(currentFile && window.isEditorFocused)
+    void invoke('update_format_menu_state', { enabled: shouldEnableMenu })
+  }, [currentFile])
+
+  // Initialize menu as disabled and set up focus tracking
+  useEffect(() => {
+    window.isEditorFocused = false
+    void invoke('update_format_menu_state', { enabled: false })
+
+    // Listen for editor focus changes
+    const handleEditorFocusChange = () => {
+      const shouldEnableMenu = Boolean(currentFile && window.isEditorFocused)
+      void invoke('update_format_menu_state', { enabled: shouldEnableMenu })
+    }
+
+    window.addEventListener('editor-focus-changed', handleEditorFocusChange)
+    return () => window.removeEventListener('editor-focus-changed', handleEditorFocusChange)
+  }, [currentFile])
+
   // macOS keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -145,10 +166,6 @@ export const Layout: React.FC = () => {
 
   // Load persisted project on app start
   useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log('=== APP INITIALIZATION ===')
-    // eslint-disable-next-line no-console
-    console.log('Loading persisted project...')
     void loadPersistedProject()
   }, [loadPersistedProject])
 

@@ -1,5 +1,4 @@
 import { useCallback } from 'react'
-import { invoke } from '@tauri-apps/api/core'
 import { useAppStore } from '../../store'
 
 /**
@@ -16,20 +15,16 @@ export const useEditorHandlers = () => {
     [setEditorContent]
   )
 
-  // Handle editor focus
+  // Handle editor focus - just set flag, menu state managed in Layout
   const handleFocus = useCallback(() => {
-    // Set global flag for menu state
     window.isEditorFocused = true
-    if (currentFile) {
-      void invoke('update_format_menu_state', { enabled: true })
-    }
-  }, [currentFile])
+    window.dispatchEvent(new CustomEvent('editor-focus-changed'))
+  }, [])
 
-  // Handle editor blur
+  // Handle editor blur - just clear flag, menu state managed in Layout  
   const handleBlur = useCallback(() => {
-    // Clear global flag for menu state
     window.isEditorFocused = false
-    void invoke('update_format_menu_state', { enabled: false })
+    window.dispatchEvent(new CustomEvent('editor-focus-changed'))
 
     // Manual save on blur for immediate feedback
     if (currentFile && isDirty) {
