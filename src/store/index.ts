@@ -119,7 +119,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       set({ collections })
     } catch (error) {
       toast.error('Failed to load collections', {
-        description: error instanceof Error ? error.message : 'Unknown error occurred',
+        description:
+          error instanceof Error ? error.message : 'Unknown error occurred',
       })
       // eslint-disable-next-line no-console
       console.error('Failed to load collections:', error)
@@ -134,7 +135,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       set({ files })
     } catch (error) {
       toast.error('Failed to load collection files', {
-        description: error instanceof Error ? error.message : 'Unknown error occurred',
+        description:
+          error instanceof Error ? error.message : 'Unknown error occurred',
       })
       // eslint-disable-next-line no-console
       console.error('Failed to load collection files:', error)
@@ -251,7 +253,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       }
 
       set({ isDirty: false })
-      
+
       // Show success toast
       toast.success('File saved successfully')
 
@@ -562,7 +564,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
       if (newFile) {
         await get().openFile(newFile)
-        
+
         // Show success toast
         toast.success('New file created successfully')
 
@@ -596,7 +598,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       }
     } catch (error) {
       toast.error('Failed to create new file', {
-        description: error instanceof Error ? error.message : 'Unknown error occurred',
+        description:
+          error instanceof Error ? error.message : 'Unknown error occurred',
       })
       // eslint-disable-next-line no-console
       console.error('Failed to create new file:', error)

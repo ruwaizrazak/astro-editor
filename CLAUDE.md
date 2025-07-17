@@ -16,6 +16,7 @@
 - Draft detection and date-based file sorting
 - Advanced editor features: URL clicking, drag & drop, markdown commands
 - Comprehensive keyboard shortcuts and menu integration
+- Toast notification system for user feedback throughout the app
 
 ## Core Rules
 
@@ -57,6 +58,37 @@
 - ✅ Responsive UI with resizable panels
 
 **Current Focus:** Polish, usability improvements, and command palette implementation
+
+## Notification System
+
+### Toast Notifications
+The app uses a comprehensive toast notification system for user feedback. See `@docs/toast-system.md` for complete documentation.
+
+**Key Components:**
+- `src/lib/toast.ts` - Main API for dispatching notifications
+- `src/lib/theme-provider.tsx` - Custom theme provider (replaces next-themes)
+- `src/lib/rust-toast-bridge.ts` - Rust-to-frontend event bridge
+- `src/components/ui/sonner.tsx` - Customized shadcn/ui component
+
+**Usage:**
+```typescript
+import { toast } from '../lib/toast'
+
+toast.success('File saved successfully')
+toast.error('Operation failed', { 
+  description: 'Detailed error message',
+  action: { label: 'Retry', onClick: () => retry() }
+})
+```
+
+### Theme System
+The app uses a **custom theme provider** (`src/lib/theme-provider.tsx`) instead of `next-themes` for Tauri compatibility. This provider:
+- Manages light/dark mode switching
+- Integrates with existing CSS variables system
+- Supports system theme detection
+- Provides context for toast notifications
+
+The theme provider wraps the entire app in `App.tsx` and works with our existing CSS variable system defined in `App.css`. For shadcn/ui components that expect theme context, this provider ensures compatibility.
 
 ## Technology Stack
 
@@ -154,6 +186,9 @@ src/
 │   │   ├── paste/           # Paste handling
 │   │   ├── syntax/          # Custom syntax highlighting
 │   │   └── urls/            # URL detection and handling
+│   ├── toast.ts             # Toast notification API
+│   ├── theme-provider.tsx   # Custom theme provider (Tauri-compatible)
+│   ├── rust-toast-bridge.ts # Rust-to-frontend event bridge
 │   └── schema.ts            # Zod schema parsing
 ├── hooks/
 │   └── editor/              # Editor-specific hooks
@@ -333,6 +368,7 @@ The app uses multiple event systems:
 2. **Custom DOM Events**: For component communication
 3. **CodeMirror Transactions**: For editor state changes
 4. **Zustand Subscriptions**: For store changes
+5. **Toast Events**: For Rust-to-frontend notifications via rust-toast-bridge
 
 Example:
 ```typescript
@@ -342,6 +378,11 @@ window.dispatchEvent(new CustomEvent('editor-focus-changed'))
 // Tauri event for menu actions
 listen('menu-format-bold', () => {
   globalCommandRegistry.execute('toggleBold')
+})
+
+// Toast event from Rust backend
+listen('rust-toast', (event) => {
+  toast.success(event.payload.message)
 })
 ```
 
@@ -601,6 +642,7 @@ scheduleAutoSave: () => {
 - `docs/architecture-guide.md` - Comprehensive architecture patterns
 - `docs/tasks.md` - Current roadmap and status
 - `docs/ia-writer-ui.md` - UI design specifications
+- `docs/toast-system.md` - Complete toast notification system documentation
 
 ## Troubleshooting
 
@@ -611,6 +653,8 @@ scheduleAutoSave: () => {
 - **Schema parsing errors:** Check `src/content/config.ts` syntax
 - **Version conflicts:** Use Tauri v2, shadcn/ui v4, Tailwind v4 docs only
 - **Editor commands not working:** Verify command registry setup
+- **Toast notifications not working:** Check `@docs/toast-system.md` for troubleshooting
+- **Theme switching issues:** Verify theme provider is wrapping app in `App.tsx`
 
 ### Performance Issues
 - **Slow editor:** Check for unnecessary re-renders
@@ -645,6 +689,8 @@ The architecture supports:
 - Command pattern implemented for editor operations
 - Custom syntax highlighting system established
 - Testing infrastructure comprehensive
+- Toast notification system implemented with Rust bridge
+- Custom theme provider added for Tauri compatibility
 
 ---
 

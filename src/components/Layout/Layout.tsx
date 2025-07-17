@@ -179,11 +179,11 @@ export const Layout: React.FC = () => {
   // Initialize Rust toast bridge
   useEffect(() => {
     let cleanup: (() => void) | undefined
-    
-    initializeRustToastBridge().then(unlisten => {
+
+    void initializeRustToastBridge().then(unlisten => {
       cleanup = unlisten
     })
-    
+
     return () => {
       cleanup?.()
     }
@@ -200,7 +200,8 @@ export const Layout: React.FC = () => {
         }
       } catch (error) {
         toast.error('Failed to open project', {
-          description: error instanceof Error ? error.message : 'Unknown error occurred',
+          description:
+            error instanceof Error ? error.message : 'Unknown error occurred',
         })
         if (import.meta.env.DEV) {
           // eslint-disable-next-line no-console
@@ -328,7 +329,7 @@ export const Layout: React.FC = () => {
           </div>
         )}
       </div>
-      
+
       {/* Toast notifications */}
       <Toaster />
     </div>

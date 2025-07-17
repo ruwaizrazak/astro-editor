@@ -13,7 +13,7 @@ interface ToastOptions {
 
 /**
  * Toast utility for displaying notifications throughout the app
- * 
+ *
  * Usage:
  * - toast.success('File saved successfully')
  * - toast.error('Failed to load project', { description: 'Please check permissions' })
@@ -94,7 +94,7 @@ export const toast = {
   /**
    * Dismiss a specific toast by ID
    */
-  dismiss: (id?: string) => {
+  dismiss: (id?: string | number) => {
     return sonnerToast.dismiss(id)
   },
 
@@ -125,4 +125,13 @@ export const toast = {
 }
 
 // Export individual toast functions for convenience
-export const { success, error, warning, info, message, loading, dismiss, promise } = toast
+export const {
+  success,
+  error,
+  warning,
+  info,
+  message,
+  loading,
+  dismiss,
+  promise,
+} = toast
