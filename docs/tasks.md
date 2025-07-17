@@ -35,28 +35,32 @@ _Goal: Advanced features that differentiate from basic editors_
 - [ ] Add simple preferences/settings window. Should use standard shadcn/tailwind layout and existing patterns for doing this. We need to devide if we should make a new Tauri window or do it in a dialog in the react app. Look at the Tauri 2 docs for advice on this. Settings panel should have "tabs" down the left for different panes on the right. We only need three panes right now -> General, Path Overrides, Frontmatter Mappings. We will add more later. Think like an experienced front-end architect when designing the various React components for this.
 - [ ] User preferences should be saved to disk somewhere appropriate in the application files so they persist between launches. Look at the `@docs/recovery-system.md` for ideas on where to save these. Follow normal conventions for this kinda thing.
 - [ ] Settings panel should be opened with `Cmd+,` keyboard shortcut, via a menu item in the apps osx menubar or via the command pallette.
-- [ ] Path Overides pane allows user to optionally override Astro deaults paths for various things. Will need to update all code that usees these paths in the appropriate places. The defaults should be hard-coded as fallbacks in case there are no saved user preferences. These paths should probably be relevant to the project root so they still work if a user moves their whole astro repo and reopens it. For now, these should not be repo-specific. Make these paths global - ie Assume that if someone uses these custom paths for one of their Astro projects, they'll be the same in the other ones. We can change this later when we look at saving projects details to disk.
+- [ ] Path Overides pane allows user to optionally override Astro deaults paths for various things. Will need to update all code that usees these paths in the appropriate places. The defaults should be hard-coded as fallbacks in case there are no saved user preferences. These paths should be relevant to the project root so they still work if a user moves their whole astro repo and reopens it.
   - Path to Astro content directory (default: `src/content/`)
   - Path to Astro assets directory (default: `src/assets/`)
   - Path to Astro components for use in MDX files (default: `src/components/mdx/`) [Not yet used]
-- [ ] Frontmatter mappings
-  - "Published Date" frontmatter proeperty name (default: `date`, `pubDate` or `publishedDate`) - must be of type Date
-  - "Title" frontmatter property name (default: `title`) - must be of type String
-  - "Draft" frontmatter property name (default: `draft`) - must be of type Boolean
-  - Command for "Open in IDE" button (default: ''), recommended setting: "code" or "cursor"
-- [ ] Button in `UnifiedTitleBar.tsx` to "Open Project in IDE". Only appears if "Open in IDE" command is set in settings. Opens current project in IDE by passing its path to the command (eg. `code /Users/bob/dev/astrosite/` -> opens `astrosite` project in VSCode)
+- [ ] Frontmatter mappings pane allows users to override the default "special" frontmatter names we use in the app. These should look at the project's schema and only show valid options in dropdowns. Currently there are only four we care about:
+  - "Published Date" used for ordering in the file list (default: `date`, `pubDate` or `publishedDate`) - must of type date in the schema
+  - "Title" gets special treatment in the frontmatter panel (default: `title`) - must of type text in the schema
+  - "Description" gets special treatment in the frontmatter panel (default: `description`) - must of type text in the schema
+  - "Draft" gets a special marker in the file list (default: `draft`) - must of type boolean in the schema
+- [ ] General panel only needs one setting for now:
+  - Command for "Open in IDE" (default: ''), recommended setting: "code" or "cursor"
+- [ ] If above setting is set, add three commands to the command palette.:
+  - Opens Project in IDE -> eg `code /path/to/project/root`
+  - Open collection in IDE -> eg `code /path/to/project/root/src/content/collectionname`. Only available when a collection is open.
+  - Open file in IDE -> eg `code /path/to/currently/openfile.md`. Only available when a file is selected.
 
 **Phase 5.2 - Improved Writing Experience**
 
-- [ ] Focus mode which greys out all but the current sentence/paragraph
 - [ ] "Typewriter mode" (much like iA Writer)
-- [ ] Image preview popover on hover over local image URL
+- [ ] Small image preview popover when hovering over local image URL for >1.5 seconds -> use shadcn components for this
 
 **Phase 5.3 - Insert Astro Components into MDX files**
 
 - [ ] Discovery of Astro components intended for use in MDX files (from `src/components/mdx/`)
+- [ ] Pane in settings to view all discovered Astro components and toggle on and off.
 - [ ] Slash command system for inserting Astro components in MDX files easily
-- [ ] Section in app settings to view all discovered Astro components and toggle on and off.
 
 **Phase 5.4: Editor/Analysis Mode**
 
