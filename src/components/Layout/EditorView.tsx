@@ -7,6 +7,7 @@ import {
   ViewUpdate,
   Decoration,
   DecorationSet,
+  dropCursor,
 } from '@codemirror/view'
 import { keymap } from '@codemirror/view'
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
@@ -22,6 +23,7 @@ import { Tag, styleTags, tags } from '@lezer/highlight'
 import { useAppStore } from '../../store'
 import { invoke } from '@tauri-apps/api/core'
 import { openPath } from '@tauri-apps/plugin-opener'
+import { listen } from '@tauri-apps/api/event'
 import './EditorView.css'
 import './EditorTheme.css'
 
@@ -736,6 +738,58 @@ const handlePaste = (view: EditorView, event: ClipboardEvent): boolean => {
   return false // Let default paste behavior handle if no text selected
 }
 
+// Handle Tauri file drop events
+const handleTauriFileDrop = (payload: unknown, editorView: EditorView | null) => {
+  if (!editorView) return
+
+  console.log('Files dropped via Tauri - payload type:', typeof payload, 'payload:', payload)
+  
+  // Handle different payload formats
+  let filePaths: string[] = []
+  
+  if (Array.isArray(payload)) {
+    filePaths = payload
+  } else if (typeof payload === 'string') {
+    filePaths = [payload]
+  } else if (payload && typeof payload === 'object' && 'paths' in payload) {
+    // In case the payload has a 'paths' property
+    filePaths = (payload as { paths: string[] }).paths
+  } else {
+    console.error('Unexpected payload format:', payload)
+    return
+  }
+
+  if (filePaths.length === 0) return
+  
+  // Insert file paths at current cursor position
+  const { state } = editorView
+  const { from } = state.selection.main
+  
+  // Format each file path as markdown link or image
+  const formattedPaths = filePaths.map(filePath => {
+    // Get filename from path
+    const filename = filePath.split('/').pop() || filePath.split('\\').pop() || filePath
+    
+    // Check if it's an image by extension
+    const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.bmp', '.ico']
+    const extension = filename.toLowerCase().substring(filename.lastIndexOf('.'))
+    const isImage = imageExtensions.includes(extension)
+    
+    // Return markdown formatted string
+    if (isImage) {
+      return `![${filename}](${filePath})`
+    } else {
+      return `[${filename}](${filePath})`
+    }
+  })
+  
+  const insertText = formattedPaths.join('\n')
+  editorView.dispatch({
+    changes: { from, insert: insertText },
+    selection: { anchor: from + insertText.length },
+  })
+}
+
 // Global reference to editor functions for menu integration
 let globalEditorRef: {
   toggleBold: () => void
@@ -864,10 +918,39 @@ export const EditorViewComponent: React.FC = () => {
     }
   }, [])
 
+  // Listen for Tauri file drop events
+  useEffect(() => {
+    const setupTauriListeners = async () => {
+      console.log('Setting up Tauri file drop listeners')
+      
+      try {
+        // Listen for file drop events
+        const unlistenDrop = await listen('tauri://drag-drop', (event) => {
+          console.log('Tauri drag-drop event:', event.payload)
+          handleTauriFileDrop(event.payload, editorRef.current?.view || null)
+        })
+
+        // Return cleanup function
+        return () => {
+          unlistenDrop()
+        }
+      } catch (error) {
+        console.error('Failed to setup Tauri listeners:', error)
+      }
+    }
+
+    const cleanup = setupTauriListeners()
+    
+    return () => {
+      cleanup.then(cleanupFn => cleanupFn?.())
+    }
+  }, [])
+
   // Enhanced extensions for better writing experience
   const extensions = [
     altKeyState,
     urlHoverPlugin,
+    dropCursor(),
     markdown({
       extensions: [markdownStyleExtension],
     }),
@@ -1024,7 +1107,7 @@ export const EditorViewComponent: React.FC = () => {
         basicSetup={{
           lineNumbers: false,
           foldGutter: false,
-          dropCursor: false,
+          dropCursor: false, // We're adding our own custom dropCursor
           allowMultipleSelections: false,
           indentOnInput: true,
           bracketMatching: true,
