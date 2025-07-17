@@ -617,6 +617,37 @@ pub async fn save_crash_report(app: tauri::AppHandle, report: Value) -> Result<(
     Ok(())
 }
 
+#[tauri::command]
+pub async fn get_app_data_dir(app: tauri::AppHandle) -> Result<String, String> {
+    let app_data_dir = app
+        .path()
+        .resolve("", BaseDirectory::AppLocalData)
+        .map_err(|e| format!("Failed to resolve app data directory: {e}"))?;
+
+    Ok(app_data_dir.to_string_lossy().to_string())
+}
+
+#[tauri::command]
+pub async fn read_file_content(file_path: String) -> Result<String, String> {
+    std::fs::read_to_string(&file_path).map_err(|e| format!("Failed to read file: {e}"))
+}
+
+#[tauri::command]
+pub async fn write_file_content(file_path: String, content: String) -> Result<(), String> {
+    // Create parent directories if they don't exist
+    if let Some(parent) = std::path::Path::new(&file_path).parent() {
+        std::fs::create_dir_all(parent)
+            .map_err(|e| format!("Failed to create directories: {e}"))?;
+    }
+
+    std::fs::write(&file_path, content).map_err(|e| format!("Failed to write file: {e}"))
+}
+
+#[tauri::command]
+pub async fn create_directory(path: String) -> Result<(), String> {
+    std::fs::create_dir_all(&path).map_err(|e| format!("Failed to create directory: {e}"))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1058,7 +1089,7 @@ Regular markdown content here."#;
 
         // Create an existing file with today's date
         let date_prefix = Local::now().format("%Y-%m-%d").to_string();
-        let existing_file = assets_dir.join(format!("{}-test-file.md", date_prefix));
+        let existing_file = assets_dir.join(format!("{date_prefix}-test-file.md"));
         fs::write(&existing_file, b"existing").unwrap();
 
         // Create source file
@@ -1077,7 +1108,7 @@ Regular markdown content here."#;
         let relative_path = result.unwrap();
 
         // Should have -1 suffix
-        assert!(relative_path.contains(&format!("{}-test-file-1.md", date_prefix)));
+        assert!(relative_path.contains(&format!("{date_prefix}-test-file-1.md")));
 
         // Both files should exist
         assert!(existing_file.exists());

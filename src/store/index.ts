@@ -8,6 +8,11 @@ import {
 } from '../lib/schema'
 import { saveRecoveryData, saveCrashReport } from '../lib/recovery'
 import { toast } from '../lib/toast'
+import {
+  projectRegistryManager,
+  GlobalSettings,
+  ProjectSettings,
+} from '../lib/project-registry'
 
 export interface FileEntry {
   id: string
@@ -37,6 +42,11 @@ interface AppState {
   // Project state
   projectPath: string | null
   collections: Collection[]
+  currentProjectId: string | null
+
+  // Settings state
+  globalSettings: GlobalSettings | null
+  currentProjectSettings: ProjectSettings | null
 
   // UI state
   sidebarVisible: boolean
@@ -72,12 +82,18 @@ interface AppState {
   startFileWatcher: () => Promise<void>
   stopFileWatcher: () => Promise<void>
   loadPersistedProject: () => Promise<void>
+  initializeProjectRegistry: () => Promise<void>
+  updateGlobalSettings: (settings: Partial<GlobalSettings>) => Promise<void>
+  updateProjectSettings: (settings: Partial<ProjectSettings>) => Promise<void>
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
   // Initial state
   projectPath: null,
   collections: [],
+  currentProjectId: null,
+  globalSettings: null,
+  currentProjectSettings: null,
   sidebarVisible: true,
   frontmatterPanelVisible: true,
   currentFile: null,
@@ -93,16 +109,40 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   // Actions
   setProject: (path: string) => {
-    set({ projectPath: path })
-    // Persist project path to localStorage
-    try {
-      localStorage.setItem('astro-editor-last-project', path)
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.warn('Failed to persist project path:', error)
-    }
-    void get().loadCollections()
-    void get().startFileWatcher()
+    void (async () => {
+      try {
+        // Register the project and get its ID
+        const projectId = await projectRegistryManager.registerProject(path)
+
+        // Load project settings
+        const projectSettings =
+          await projectRegistryManager.getEffectiveSettings(projectId)
+
+        set({
+          projectPath: path,
+          currentProjectId: projectId,
+          currentProjectSettings: projectSettings,
+        })
+
+        // Persist project path to localStorage as fallback
+        try {
+          localStorage.setItem('astro-editor-last-project', path)
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.warn('Failed to persist project path:', error)
+        }
+
+        await get().loadCollections()
+        await get().startFileWatcher()
+      } catch (error) {
+        toast.error('Failed to set project', {
+          description:
+            error instanceof Error ? error.message : 'Unknown error occurred',
+        })
+        // eslint-disable-next-line no-console
+        console.error('Failed to set project:', error)
+      }
+    })()
   },
 
   loadCollections: async () => {
@@ -411,28 +451,118 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   loadPersistedProject: async () => {
     try {
-      const savedPath = localStorage.getItem('astro-editor-last-project')
+      await get().initializeProjectRegistry()
 
-      if (savedPath) {
-        // Verify the project path still exists before setting it
-        try {
-          await invoke('scan_project', {
-            projectPath: savedPath,
-          })
-          // If no error, the project path is valid, so restore it
-          get().setProject(savedPath)
-        } catch (error) {
-          toast.info('Previous project no longer available', {
-            description: 'The last opened project could not be found.',
-          })
-          // eslint-disable-next-line no-console
-          console.warn('Saved project path no longer valid:', savedPath, error)
-          localStorage.removeItem('astro-editor-last-project')
+      // Try to load the last opened project from registry
+      const lastProjectId = projectRegistryManager.getLastOpenedProjectId()
+      if (lastProjectId) {
+        const projectData =
+          await projectRegistryManager.getProjectData(lastProjectId)
+        if (projectData) {
+          try {
+            // Verify the project path still exists before setting it
+            await invoke('scan_project', {
+              projectPath: projectData.metadata.path,
+            })
+            // If no error, the project path is valid, so restore it
+            get().setProject(projectData.metadata.path)
+          } catch (error) {
+            toast.info('Previous project no longer available', {
+              description: 'The last opened project could not be found.',
+            })
+            // eslint-disable-next-line no-console
+            console.warn(
+              'Saved project path no longer valid:',
+              projectData.metadata.path,
+              error
+            )
+          }
+        }
+      }
+
+      // Fallback to localStorage if no registry data
+      if (!get().projectPath) {
+        const savedPath = localStorage.getItem('astro-editor-last-project')
+        if (savedPath) {
+          try {
+            await invoke('scan_project', {
+              projectPath: savedPath,
+            })
+            get().setProject(savedPath)
+          } catch (error) {
+            toast.info('Previous project no longer available', {
+              description: 'The last opened project could not be found.',
+            })
+            // eslint-disable-next-line no-console
+            console.warn(
+              'Saved project path no longer valid:',
+              savedPath,
+              error
+            )
+            localStorage.removeItem('astro-editor-last-project')
+          }
         }
       }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.warn('Failed to load persisted project:', error)
+    }
+  },
+
+  initializeProjectRegistry: async () => {
+    try {
+      await projectRegistryManager.initialize()
+      const globalSettings = projectRegistryManager.getGlobalSettings()
+      set({ globalSettings })
+    } catch (error) {
+      toast.error('Failed to initialize project registry', {
+        description:
+          error instanceof Error ? error.message : 'Unknown error occurred',
+      })
+      // eslint-disable-next-line no-console
+      console.error('Failed to initialize project registry:', error)
+    }
+  },
+
+  updateGlobalSettings: async (settings: Partial<GlobalSettings>) => {
+    try {
+      await projectRegistryManager.updateGlobalSettings(settings)
+      const updatedSettings = projectRegistryManager.getGlobalSettings()
+      set({ globalSettings: updatedSettings })
+      toast.success('Global settings updated')
+    } catch (error) {
+      toast.error('Failed to update global settings', {
+        description:
+          error instanceof Error ? error.message : 'Unknown error occurred',
+      })
+      // eslint-disable-next-line no-console
+      console.error('Failed to update global settings:', error)
+    }
+  },
+
+  updateProjectSettings: async (settings: Partial<ProjectSettings>) => {
+    const { currentProjectId } = get()
+    if (!currentProjectId) {
+      toast.error('No project is currently open')
+      return
+    }
+
+    try {
+      await projectRegistryManager.updateProjectSettings(
+        currentProjectId,
+        settings
+      )
+      const updatedSettings =
+        await projectRegistryManager.getEffectiveSettings(currentProjectId)
+      set({ currentProjectSettings: updatedSettings })
+      toast.success('Project settings updated')
+    } catch (error) {
+      toast.error('Failed to update project settings', {
+        description:
+          error instanceof Error ? error.message : 'Unknown error occurred',
+      })
+      // eslint-disable-next-line no-console
+      console.error('Failed to update project settings:', error)
     }
   },
 

@@ -299,7 +299,11 @@ pub fn run() {
             update_format_menu_state,
             copy_file_to_assets,
             save_recovery_data,
-            save_crash_report
+            save_crash_report,
+            get_app_data_dir,
+            read_file_content,
+            write_file_content,
+            create_directory
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

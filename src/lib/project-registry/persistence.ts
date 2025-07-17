@@ -1,0 +1,170 @@
+/**
+ * Project registry persistence layer
+ *
+ * Handles saving and loading project data using the application support directory
+ */
+
+import { invoke } from '@tauri-apps/api/core'
+import { ProjectRegistry, GlobalSettings, ProjectData } from './types'
+import { DEFAULT_PROJECT_REGISTRY, DEFAULT_GLOBAL_SETTINGS } from './defaults'
+
+/**
+ * Get the application support directory paths
+ */
+async function getAppSupportPaths() {
+  const appDataDir = await invoke<string>('get_app_data_dir')
+  return {
+    preferencesDir: `${appDataDir}/preferences`,
+    projectsDir: `${appDataDir}/preferences/projects`,
+    globalSettingsPath: `${appDataDir}/preferences/global-settings.json`,
+    projectRegistryPath: `${appDataDir}/preferences/project-registry.json`,
+  }
+}
+
+/**
+ * Ensure preferences directory exists
+ */
+async function ensurePreferencesDir() {
+  const { preferencesDir, projectsDir } = await getAppSupportPaths()
+
+  try {
+    await invoke('create_directory', { path: preferencesDir })
+    await invoke('create_directory', { path: projectsDir })
+  } catch {
+    // Directories might already exist, that's fine
+  }
+}
+
+/**
+ * Load the project registry from disk
+ */
+export async function loadProjectRegistry(): Promise<ProjectRegistry> {
+  try {
+    const { projectRegistryPath } = await getAppSupportPaths()
+    const content = await invoke<string>('read_file_content', {
+      filePath: projectRegistryPath,
+    })
+
+    const registry = JSON.parse(content) as ProjectRegistry
+
+    // Validate and migrate if needed
+    return {
+      ...DEFAULT_PROJECT_REGISTRY,
+      ...registry,
+      version: registry.version || 1,
+    }
+  } catch {
+    // File doesn't exist or is invalid, return defaults
+    return { ...DEFAULT_PROJECT_REGISTRY }
+  }
+}
+
+/**
+ * Save the project registry to disk
+ */
+export async function saveProjectRegistry(
+  registry: ProjectRegistry
+): Promise<void> {
+  try {
+    await ensurePreferencesDir()
+    const { projectRegistryPath } = await getAppSupportPaths()
+
+    await invoke('write_file_content', {
+      filePath: projectRegistryPath,
+      content: JSON.stringify(registry, null, 2),
+    })
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to save project registry:', error)
+    throw error
+  }
+}
+
+/**
+ * Load global settings from disk
+ */
+export async function loadGlobalSettings(): Promise<GlobalSettings> {
+  try {
+    const { globalSettingsPath } = await getAppSupportPaths()
+    const content = await invoke<string>('read_file_content', {
+      filePath: globalSettingsPath,
+    })
+
+    const settings = JSON.parse(content) as GlobalSettings
+
+    // Validate and migrate if needed
+    return {
+      ...DEFAULT_GLOBAL_SETTINGS,
+      ...settings,
+      version: settings.version || 1,
+    }
+  } catch {
+    // File doesn't exist or is invalid, return defaults
+    return { ...DEFAULT_GLOBAL_SETTINGS }
+  }
+}
+
+/**
+ * Save global settings to disk
+ */
+export async function saveGlobalSettings(
+  settings: GlobalSettings
+): Promise<void> {
+  try {
+    await ensurePreferencesDir()
+    const { globalSettingsPath } = await getAppSupportPaths()
+
+    await invoke('write_file_content', {
+      filePath: globalSettingsPath,
+      content: JSON.stringify(settings, null, 2),
+    })
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to save global settings:', error)
+    throw error
+  }
+}
+
+/**
+ * Load project-specific data from disk
+ */
+export async function loadProjectData(
+  projectId: string
+): Promise<ProjectData | null> {
+  try {
+    const { projectsDir } = await getAppSupportPaths()
+    const projectFilePath = `${projectsDir}/${projectId}.json`
+
+    const content = await invoke<string>('read_file_content', {
+      filePath: projectFilePath,
+    })
+
+    return JSON.parse(content) as ProjectData
+  } catch {
+    // File doesn't exist or is invalid
+    return null
+  }
+}
+
+/**
+ * Save project-specific data to disk
+ */
+export async function saveProjectData(
+  projectId: string,
+  data: ProjectData
+): Promise<void> {
+  try {
+    await ensurePreferencesDir()
+    const { projectsDir } = await getAppSupportPaths()
+    const projectFilePath = `${projectsDir}/${projectId}.json`
+
+    await invoke('write_file_content', {
+      filePath: projectFilePath,
+      content: JSON.stringify(data, null, 2),
+    })
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to save project data:', error)
+    throw error
+  }
+}
