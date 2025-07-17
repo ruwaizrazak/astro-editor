@@ -12,7 +12,7 @@ export const handlePaste = (
   event: ClipboardEvent
 ): boolean => {
   const clipboardText = event.clipboardData?.getData('text/plain')
-  if (!clipboardText || !isValidUrl(clipboardText)) {
+  if (!clipboardText || !isValidUrl(clipboardText.trim())) {
     return false // Let default paste behavior handle non-URLs
   }
 

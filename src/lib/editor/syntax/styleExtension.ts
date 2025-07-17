@@ -45,6 +45,7 @@ export const markdownStyleExtension = {
       'Image/ImageMark': markdownTags.imageMark,
       Image: markdownTags.image,
       ImageText: markdownTags.imageAlt,
+      'Image/URL': markdownTags.imageUrl,
 
       // Lists
       ListMark: markdownTags.listMark,

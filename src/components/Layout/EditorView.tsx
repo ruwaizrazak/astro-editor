@@ -11,6 +11,13 @@ import {
 import './EditorView.css'
 import './EditorTheme.css'
 
+// Extend window to include editor focus tracking
+declare global {
+  interface Window {
+    isEditorFocused: boolean
+  }
+}
+
 /**
  * Refactored EditorView component - much simpler and more focused
  *

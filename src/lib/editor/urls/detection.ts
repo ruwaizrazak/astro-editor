@@ -34,19 +34,17 @@ export const findUrlsInText = (
     })
   }
 
-  // Find markdown link URLs [text](url)
-  const markdownLinkRegex = /\[([^\]]*)\]\(([^)]+)\)/g
+  // Find markdown link URLs [text](url) and image URLs ![alt](url)
+  const markdownLinkRegex = /!?\[([^\]]*)\]\(([^)]+)\)/g
   while ((match = markdownLinkRegex.exec(text)) !== null) {
     const linkUrl = match[2]
     const linkText = match[1]
-    if (
-      linkUrl &&
-      linkText &&
-      linkUrl.startsWith('http') &&
-      match.index !== undefined
-    ) {
-      // Position of the URL part within the markdown link
-      const urlStart = match.index + linkText.length + 3 // after "]("
+    const isImage = match[0].startsWith('!')
+
+    if (linkUrl && linkUrl.startsWith('http') && match.index !== undefined) {
+      // Position of the URL part within the markdown link/image
+      // For images: ![alt](url) - need to account for the extra ! character
+      const urlStart = match.index + (linkText?.length || 0) + (isImage ? 4 : 3) // after "!](" or "]("
       urls.push({
         url: linkUrl,
         from: offset + urlStart,
