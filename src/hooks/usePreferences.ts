@@ -12,6 +12,8 @@ export const usePreferences = () => {
     updateGlobalSettings,
     updateProjectSettings,
     currentProjectId,
+    collections,
+    projectPath,
   } = useAppStore()
 
   const updateGlobal = useCallback(
@@ -28,6 +30,11 @@ export const usePreferences = () => {
     [updateProjectSettings]
   )
 
+  // Get project name from path
+  const projectName = projectPath
+    ? projectPath.split('/').pop() || 'Unknown Project'
+    : null
+
   return {
     globalSettings,
     currentProjectSettings,
@@ -35,5 +42,8 @@ export const usePreferences = () => {
     updateProject,
     hasProject: !!currentProjectId,
     currentProjectId,
+    collections,
+    projectPath,
+    projectName,
   }
 }

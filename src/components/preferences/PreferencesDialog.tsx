@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Settings } from 'lucide-react'
+import { Settings, Folder, FileText } from 'lucide-react'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -25,27 +25,47 @@ import {
   SidebarProvider,
 } from '@/components/ui/sidebar'
 import { GeneralPane } from './panes/GeneralPane'
+import { ProjectSettingsPane } from './panes/ProjectSettingsPane'
+import { FrontmatterMappingsPane } from './panes/FrontmatterMappingsPane'
+import { usePreferences } from '../../hooks/usePreferences'
 
 interface PreferencesDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-type PreferencePane = 'general'
+type PreferencePane = 'general' | 'project' | 'frontmatter'
 
-const getNavigationItems = () => [
-  {
-    id: 'general' as const,
-    name: 'General',
-    icon: Settings,
-    available: true,
-  },
-]
+const getNavigationItems = (hasProject: boolean) =>
+  [
+    {
+      id: 'general' as const,
+      name: 'General',
+      icon: Settings,
+      available: true,
+    },
+    {
+      id: 'project' as const,
+      name: 'Project Settings',
+      icon: Folder,
+      available: hasProject,
+    },
+    {
+      id: 'frontmatter' as const,
+      name: 'Frontmatter Mappings',
+      icon: FileText,
+      available: hasProject,
+    },
+  ].filter(item => item.available)
 
 const getPaneTitle = (pane: PreferencePane): string => {
   switch (pane) {
     case 'general':
       return 'General'
+    case 'project':
+      return 'Project Settings'
+    case 'frontmatter':
+      return 'Frontmatter Mappings'
     default:
       return 'General'
   }
@@ -56,7 +76,15 @@ export const PreferencesDialog: React.FC<PreferencesDialogProps> = ({
   onOpenChange,
 }) => {
   const [activePane, setActivePane] = useState<PreferencePane>('general')
-  const navigationItems = getNavigationItems()
+  const { hasProject } = usePreferences()
+  const navigationItems = getNavigationItems(hasProject)
+
+  // Reset to general pane if current pane becomes unavailable
+  React.useEffect(() => {
+    if (!navigationItems.some(item => item.id === activePane)) {
+      setActivePane('general')
+    }
+  }, [navigationItems, activePane])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -94,7 +122,7 @@ export const PreferencesDialog: React.FC<PreferencesDialogProps> = ({
             </SidebarContent>
           </Sidebar>
 
-          <main className="flex h-[500px] flex-1 flex-col overflow-hidden">
+          <main className="flex flex-1 flex-col overflow-hidden">
             <header className="flex h-16 shrink-0 items-center gap-2">
               <div className="flex items-center gap-2 px-4">
                 <Breadcrumb>
@@ -115,6 +143,8 @@ export const PreferencesDialog: React.FC<PreferencesDialogProps> = ({
 
             <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 pt-0">
               {activePane === 'general' && <GeneralPane />}
+              {activePane === 'project' && <ProjectSettingsPane />}
+              {activePane === 'frontmatter' && <FrontmatterMappingsPane />}
             </div>
           </main>
         </SidebarProvider>
