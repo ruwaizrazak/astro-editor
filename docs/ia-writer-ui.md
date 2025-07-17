@@ -67,6 +67,7 @@ These colour variables should be available in CSS inside the editor and anywhere
 
 - Font: iA Writer Duo Variable
 - Weight: 490
+- Letter Spacing: 0.07em
 
 ### Markdown Headings
 
@@ -82,70 +83,65 @@ These colour variables should be available in CSS inside the editor and anywhere
 
 ## Typography - Breakpoints
 
-### Tiny Width (Defaul)
+### Tiny Width (Default)
 
-Appiles: Editor Pane width under 440px
-Font Size: 11px
-Line Height: 17.7px
-font-variation-settings: 'spcg' 1
+Applies: Editor Pane width under 440px
+Font Size: 16.5px
+Line Height: 1.609 (26.65px)
 
 ### Small Width
 
-Appiles: Editor Pane width over 439px and under 875px
-Font Size: 12px
-Line Height: 20.9px
-font-variation-settings: 'spcg' 14
+Applies: Editor Pane width over 439px and under 875px
+Font Size: 18px
+Line Height: 1.742 (31.36px)
 
 ### Medium Width
 
-Appiles: Editor Pane width over 874px and under 1250px
-Font Size: 12px
-Line Height: 20.9px
-font-variation-settings: 'spcg' 14
+Applies: Editor Pane width over 874px and under 1250px
+Font Size: 18px
+Line Height: 1.742 (31.36px)
 
 ### Large Width
 
-Appiles: Editor Pane width over 1249px and under 1660px
-Font Size: 14px
-Line Height: 24.1px
-font-variation-settings: 'spcg' 3
+Applies: Editor Pane width over 1249px and under 1660px
+Font Size: 21px
+Line Height: 1.721 (36.14px)
 
 ### Huge Width
 
-Appiles: Editor Pane width over 1659px
-Font Size: 16px
-Line Height: 28.6px
-font-variation-settings: 'spcg' 19
+Applies: Editor Pane width over 1659px
+Font Size: 24px
+Line Height: 1.7916 (43px)
 
 ## Content Measure
 
-### Tiny Width (Defaul)
+### Tiny Width (Default)
 
-Appiles: Editor Pane width under 440px
+Applies: Editor Pane width under 440px
 Left and Right Margin: 24px
 Content Width: Fluid
 
 ### Small Width
 
-Appiles: Editor Pane width over 439px and under 875px
+Applies: Editor Pane width over 439px and under 875px
 Left and Right Margin: 74px
 Content Width: Fluid
 
 ### Medium Width
 
-Appiles: Editor Pane width over 874px and under 1250px
+Applies: Editor Pane width over 874px and under 1250px
 Left and Right Margin: Auto
 Content Width: 705px
 
 ### Large Width
 
-Appiles: Editor Pane width over 1249px and under 1660px
+Applies: Editor Pane width over 1249px and under 1660px
 Left and Right Margin: Auto
 Content Width: 800px
 
 ### Huge Width
 
-Appiles: Editor Pane width over 1659px
+Applies: Editor Pane width over 1659px
 Left and Right Margin: Auto
 Content Width: 980px
 
