@@ -7,6 +7,9 @@ import { Sidebar } from './Sidebar'
 import { MainEditor } from './MainEditor'
 import { FrontmatterPanel } from './FrontmatterPanel'
 import { globalCommandRegistry } from '../../lib/editor/commands'
+import { Toaster } from '../ui/sonner'
+import { toast } from '../../lib/toast'
+import { initializeRustToastBridge } from '../../lib/rust-toast-bridge'
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -173,6 +176,19 @@ export const Layout: React.FC = () => {
     void loadPersistedProject()
   }, [loadPersistedProject])
 
+  // Initialize Rust toast bridge
+  useEffect(() => {
+    let cleanup: (() => void) | undefined
+    
+    initializeRustToastBridge().then(unlisten => {
+      cleanup = unlisten
+    })
+    
+    return () => {
+      cleanup?.()
+    }
+  }, [])
+
   // Menu event listeners
   useEffect(() => {
     const handleOpenProject = async () => {
@@ -180,9 +196,12 @@ export const Layout: React.FC = () => {
         const projectPath = await invoke<string>('select_project_folder')
         if (projectPath) {
           setProject(projectPath)
+          toast.success('Project opened successfully')
         }
       } catch (error) {
-        // Handle error in production apps appropriately
+        toast.error('Failed to open project', {
+          description: error instanceof Error ? error.message : 'Unknown error occurred',
+        })
         if (import.meta.env.DEV) {
           // eslint-disable-next-line no-console
           console.error('Failed to open project:', error)
@@ -309,6 +328,9 @@ export const Layout: React.FC = () => {
           </div>
         )}
       </div>
+      
+      {/* Toast notifications */}
+      <Toaster />
     </div>
   )
 }

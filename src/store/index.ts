@@ -7,6 +7,7 @@ import {
   getDefaultValueForField,
 } from '../lib/schema'
 import { saveRecoveryData, saveCrashReport } from '../lib/recovery'
+import { toast } from '../lib/toast'
 
 export interface FileEntry {
   id: string
@@ -117,6 +118,9 @@ export const useAppStore = create<AppState>((set, get) => ({
       })
       set({ collections })
     } catch (error) {
+      toast.error('Failed to load collections', {
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
+      })
       // eslint-disable-next-line no-console
       console.error('Failed to load collections:', error)
     }
@@ -129,6 +133,9 @@ export const useAppStore = create<AppState>((set, get) => ({
       })
       set({ files })
     } catch (error) {
+      toast.error('Failed to load collection files', {
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
+      })
       // eslint-disable-next-line no-console
       console.error('Failed to load collection files:', error)
     }
@@ -152,6 +159,9 @@ export const useAppStore = create<AppState>((set, get) => ({
         isDirty: false,
       })
     } catch (error) {
+      toast.error('Failed to open file', {
+        description: `Could not open ${file.name}: ${error instanceof Error ? error.message : 'Unknown error occurred'}`,
+      })
       // eslint-disable-next-line no-console
       console.error('Failed to open file:', error)
 
@@ -209,9 +219,11 @@ export const useAppStore = create<AppState>((set, get) => ({
       })
 
       if (validationErrors.length > 0) {
+        toast.error('Cannot save: Validation errors', {
+          description: validationErrors.join(', '),
+        })
         // eslint-disable-next-line no-console
         console.error('Cannot save: Validation errors:', validationErrors)
-        // TODO: Show user-friendly error dialog
         return
       }
     }
@@ -239,12 +251,18 @@ export const useAppStore = create<AppState>((set, get) => ({
       }
 
       set({ isDirty: false })
+      
+      // Show success toast
+      toast.success('File saved successfully')
 
       // Clear the recently saved file after a delay
       setTimeout(() => {
         set({ recentlySavedFile: null })
       }, 1000)
     } catch (error) {
+      toast.error('Save failed', {
+        description: `Could not save file: ${error instanceof Error ? error.message : 'Unknown error occurred'}. Recovery data has been saved.`,
+      })
       // eslint-disable-next-line no-console
       console.error('Save failed:', error)
       // eslint-disable-next-line no-console
@@ -366,6 +384,9 @@ export const useAppStore = create<AppState>((set, get) => ({
         }
       })
     } catch (error) {
+      toast.warning('File watcher failed to start', {
+        description: 'Changes to files may not be automatically detected.',
+      })
       // eslint-disable-next-line no-console
       console.error('Failed to start file watcher:', error)
     }
@@ -378,6 +399,9 @@ export const useAppStore = create<AppState>((set, get) => ({
     try {
       await invoke('stop_watching_project', { projectPath })
     } catch (error) {
+      toast.warning('Failed to stop file watcher', {
+        description: 'File watcher may still be running in the background.',
+      })
       // eslint-disable-next-line no-console
       console.error('Failed to stop file watcher:', error)
     }
@@ -396,6 +420,9 @@ export const useAppStore = create<AppState>((set, get) => ({
           // If no error, the project path is valid, so restore it
           get().setProject(savedPath)
         } catch (error) {
+          toast.info('Previous project no longer available', {
+            description: 'The last opened project could not be found.',
+          })
           // eslint-disable-next-line no-console
           console.warn('Saved project path no longer valid:', savedPath, error)
           localStorage.removeItem('astro-editor-last-project')
@@ -535,6 +562,9 @@ export const useAppStore = create<AppState>((set, get) => ({
 
       if (newFile) {
         await get().openFile(newFile)
+        
+        // Show success toast
+        toast.success('New file created successfully')
 
         // Open frontmatter panel if we have a title field
         const { frontmatterPanelVisible, toggleFrontmatterPanel } = get()
@@ -565,6 +595,9 @@ export const useAppStore = create<AppState>((set, get) => ({
         }, 200)
       }
     } catch (error) {
+      toast.error('Failed to create new file', {
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
+      })
       // eslint-disable-next-line no-console
       console.error('Failed to create new file:', error)
     }
