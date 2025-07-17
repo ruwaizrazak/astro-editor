@@ -937,15 +937,15 @@ export const EditorViewComponent: React.FC = () => {
         margin: '0 auto',
         padding: '40px 0',
       },
+      '.cm-scroller': {
+        fontVariantLigatures: 'common-ligatures',
+        backgroundColor: 'var(--editor-color-background)',
+      },
       '.cm-focused': {
         outline: 'none',
       },
       '.cm-editor.cm-focused': {
         outline: 'none !important',
-      },
-      '.cm-scroller': {
-        fontVariantLigatures: 'common-ligatures',
-        backgroundColor: 'var(--editor-color-background)',
       },
       '.cm-line': {
         padding: '0',
@@ -956,14 +956,12 @@ export const EditorViewComponent: React.FC = () => {
         borderLeftWidth: '3px',
         height: '1.1em',
       },
-      // Selection styling
+      // Selection styling - only fix the artifacts without breaking functionality
       '.cm-selectionBackground': {
-        backgroundColor:
-          'var(--editor-color-selectedtext-background) !important',
+        backgroundColor: 'var(--editor-color-selectedtext-background) !important',
       },
       '.cm-focused .cm-selectionBackground': {
-        backgroundColor:
-          'var(--editor-color-selectedtext-background) !important',
+        backgroundColor: 'var(--editor-color-selectedtext-background) !important',
       },
       // URL Alt+Click hover styling - keep it simple
       '&.alt-pressed .cm-content': {

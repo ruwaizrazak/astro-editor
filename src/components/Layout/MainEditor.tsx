@@ -20,7 +20,7 @@ export const MainEditor: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-x-hidden overflow-y-scroll">
+      <div className="flex-1 overflow-x-hidden overflow-y-auto">
         {currentFile ? <EditorView /> : <WelcomeScreen />}
       </div>
       <StatusBar />

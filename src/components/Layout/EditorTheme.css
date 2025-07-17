@@ -97,6 +97,7 @@
   --editor-content-max-width: none;
 }
 
+
 /* Responsive Typography Breakpoints using regular media queries for now */
 /* Since container queries may not be fully supported in current WebKit */
 

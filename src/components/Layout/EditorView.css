@@ -1,8 +1,13 @@
 /* Minimal container for CodeMirror */
 .editor-view {
-  height: 100%;
+  min-height: 100%;
   width: 100%;
   container-type: inline-size;
   container-name: editor;
   background-color: var(--editor-color-background);
+}
+
+/* Fix selection artifacts - hide selections when editor loses focus */
+.editor-view:not(:focus-within) .cm-selectionBackground {
+  visibility: hidden !important;
 }
