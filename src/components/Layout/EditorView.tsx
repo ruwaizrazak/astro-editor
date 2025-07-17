@@ -1223,7 +1223,7 @@ export const EditorViewComponent: React.FC = () => {
           indentOnInput: true,
           bracketMatching: true,
           closeBrackets: true,
-          autocompletion: true,
+          autocompletion: false,
           highlightSelectionMatches: false,
           highlightActiveLine: false,
         }}
