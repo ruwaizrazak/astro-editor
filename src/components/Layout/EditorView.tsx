@@ -761,10 +761,16 @@ const handleTauriFileDrop = async (payload: unknown, editorView: EditorView | nu
 
   if (filePaths.length === 0) return
   
-  // Get current project path and collection
-  const { projectPath, currentCollection } = useAppStore.getState()
-  if (!projectPath || !currentCollection) {
-    console.error('No project path or collection selected')
+  // Get current project path and collection from current file
+  const { projectPath, currentFile } = useAppStore.getState()
+  if (!projectPath || !currentFile) {
+    console.error('No project path or file open')
+    return
+  }
+  
+  const currentCollection = currentFile.collection
+  if (!currentCollection) {
+    console.error('Current file has no collection')
     return
   }
   

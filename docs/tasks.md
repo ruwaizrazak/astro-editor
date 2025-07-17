@@ -233,7 +233,7 @@ _Goal: Beautiful, iA Writer-inspired editing experience_
   - If non-image file: insert markdown link tag and focus link text
   - Work in stages:
     - [x] Dragging a file into the editor uses CodeMirrors dropCursor() to insert the file path into the doc.
-    - [ ] Next do the backend work to copy and rename it to the astro folder, and insert the relative URL instead.
+    - [x] Next do the backend work to copy and rename it to the astro folder, and insert the relative URL instead.
     - [ ] Ensure any backend code or helper functions have unit tests.
 
 **Deliverable:** Beautiful, responsive editor with excellent UX for markdown writing
