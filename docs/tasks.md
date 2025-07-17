@@ -221,7 +221,7 @@ _Goal: Beautiful, iA Writer-inspired editing experience_
   - [x] Add MD syntax highlighting colours for all other elements (links, images, footnotes, strikethrough, inline code, code blocks, blockquotes etc)
   - [x] Style blockquotes niceley
   - [x] Add (or retain) colours for HTML/JSX tags which appear in the markdown (not in code blocks) - keep this very simple. Suggest:
-- [ ] Opening URLs via Opt Click
+- [x] Opening URLs via Opt Click
   - Hovering any URL while holding `Opt` changes the underline to the carat colour and the text to normal text colour and the pointer to a hand.
   - Clicking while holding `Opt` opens URL in the default browser.
 
@@ -241,10 +241,9 @@ _Goal: Production-ready reliability and performance_
 
 **Phase 4.1 - Polish, Resiliance & Usability**
 
-- [ ] Implement simple `Cmd + P` command pallete to execute common commands etc (use https://ui.shadcn.com/docs/components/command): New [Article, Note etc - based on collections in schema], Open Collection, Open Project etc. Must be easily extensible in the future and know the currently selected collection and content item (if any).
-- [ ] Add simple search functionality when in large collections (by filename and title [if present] only)
-- [ ] Optimize for large content collections (virtualized lists, lazy loading etc)
-- [ ] Handle crash recovery and unsaved changes detection
+- [ ] Implement simple `Cmd + P` command pallete to execute common commands etc (use https://ui.shadcn.com/docs/components/command): New [Article, Note etc - based on collections in schema], Open Collection, Open Project etc. Must be easily extensible in the future and know the currently selected collection and content item (if any), and perhaps the currently selected text if in the editor pane?. This may be an opportunity to think about how we handle various Internal messaging, commands, etc.
+- [ ] Consider Optimization for potential large content collections (virtualized lists, lazy loading etc?)
+- [ ] Handle crash recovery and unsaved changes detection somehow? Probably just needs some temporary storage if the auto-save fails so users don't loose loads of work if they don't notice?
 - [ ] Better error messages, toasts, empty states etc where needed
 - [ ] Check keyboard shortcuts are comprehensive and all work. Review all right-click context menus, menubar menus etc and remove anything not implemented and conform to macOS norms
 - [ ] Review all code for opportunities to simplify, refactor, make more readable/maintainable etc **without affecting functionality**.
@@ -317,3 +316,4 @@ _Goal: Advanced features that differentiate from basic editors_
 
 - [ ] AI Editing assistant
 - [ ] "hang" header hashes in the left margin as per iA Writer
+- [ ] Add very simple search functionality (by filename and title [if present] only)
