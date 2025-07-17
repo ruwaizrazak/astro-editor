@@ -8,6 +8,18 @@
   border-radius: 2px;
 }
 
+/* URL Alt+Click Styling */
+.alt-pressed .cm-content {
+  cursor: default !important;
+}
+
+/* Simple URL hover styling when Alt is pressed - just background and cursor */
+.url-alt-hover:hover {
+  background-color: color-mix(in srgb, var(--editor-color-carat) 15%, transparent) !important;
+  cursor: pointer !important;
+  border-radius: 3px;
+}
+
 /* Common Colors */
 :root {
   --editor-color-carat: rgba(0, 195, 255, 1);

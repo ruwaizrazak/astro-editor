@@ -1,15 +1,16 @@
-import React, { useCallback, useRef, useEffect } from 'react'
+import React, { useCallback, useRef, useEffect, useState } from 'react'
 import CodeMirror from '@uiw/react-codemirror'
 import { markdown } from '@codemirror/lang-markdown'
-import { EditorView } from '@codemirror/view'
+import { EditorView, ViewPlugin, ViewUpdate, Decoration, DecorationSet } from '@codemirror/view'
 import { keymap } from '@codemirror/view'
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
 import { searchKeymap } from '@codemirror/search'
-import { EditorSelection, Prec } from '@codemirror/state'
+import { EditorSelection, Prec, StateField, StateEffect } from '@codemirror/state'
 import { HighlightStyle, syntaxHighlighting } from '@codemirror/language'
 import { Tag, styleTags, tags } from '@lezer/highlight'
 import { useAppStore } from '../../store'
 import { invoke } from '@tauri-apps/api/core'
+import { openPath } from '@tauri-apps/plugin-opener'
 import './EditorView.css'
 import './EditorTheme.css'
 
@@ -570,6 +571,119 @@ const transformLineToHeading = (
 // URL detection regex
 const urlRegex = /^https?:\/\/[^\s]+$/
 
+// Enhanced URL detection for both plain URLs and markdown links
+const findUrlsInText = (text: string, offset: number = 0): Array<{url: string, from: number, to: number}> => {
+  const urls: Array<{url: string, from: number, to: number}> = []
+  
+  // Find plain URLs
+  const plainUrlRegex = /https?:\/\/[^\s\)]+/g
+  let match
+  while ((match = plainUrlRegex.exec(text)) !== null) {
+    urls.push({
+      url: match[0],
+      from: offset + match.index,
+      to: offset + match.index + match[0].length
+    })
+  }
+  
+  // Find markdown link URLs [text](url)
+  const markdownLinkRegex = /\[([^\]]*)\]\(([^)]+)\)/g
+  while ((match = markdownLinkRegex.exec(text)) !== null) {
+    const linkUrl = match[2]
+    if (linkUrl.startsWith('http')) {
+      // Position of the URL part within the markdown link
+      const urlStart = match.index + match[1].length + 3 // after "]("
+      urls.push({
+        url: linkUrl,
+        from: offset + urlStart,
+        to: offset + urlStart + linkUrl.length
+      })
+    }
+  }
+  
+  return urls
+}
+
+// Create a state effect for Alt key changes
+const altKeyEffect = StateEffect.define<boolean>()
+
+// State field to track Alt key state
+const altKeyState = StateField.define<boolean>({
+  create: () => false,
+  update: (value, tr) => {
+    for (let effect of tr.effects) {
+      if (effect.is(altKeyEffect)) {
+        return effect.value
+      }
+    }
+    return value
+  }
+})
+
+// Simple approach: just add the decoration class, let CSS handle the rest
+const urlHoverPlugin = ViewPlugin.fromClass(class {
+  decorations: DecorationSet
+
+  constructor(view: EditorView) {
+    this.decorations = this.buildDecorations(view)
+  }
+
+  update(update: ViewUpdate) {
+    if (update.docChanged || update.viewportChanged || 
+        update.state.field(altKeyState) !== update.startState.field(altKeyState)) {
+      this.decorations = this.buildDecorations(update.view)
+    }
+  }
+
+  buildDecorations(view: EditorView): DecorationSet {
+    const isAltPressed = view.state.field(altKeyState)
+    if (!isAltPressed) return Decoration.none
+
+    const widgets: Array<{from: number, to: number}> = []
+    
+    // Scan through visible lines for URLs
+    for (let { from, to } of view.visibleRanges) {
+      const text = view.state.doc.sliceString(from, to)
+      const urls = findUrlsInText(text, from)
+      widgets.push(...urls)
+    }
+
+    return Decoration.set(
+      widgets.map(({ from, to }) =>
+        Decoration.mark({
+          class: 'url-alt-hover'
+        }).range(from, to)
+      )
+    )
+  }
+}, {
+  decorations: v => v.decorations
+})
+
+// Handle Alt+Click on URLs to open them in browser
+const handleUrlClick = async (view: EditorView, event: MouseEvent): Promise<boolean> => {
+  if (!event.altKey) return false
+  
+  const pos = view.posAtCoords({ x: event.clientX, y: event.clientY })
+  if (pos === null) return false
+  
+  const doc = view.state.doc
+  const line = doc.lineAt(pos)
+  const urls = findUrlsInText(line.text, line.from)
+  
+  // Check if click position is within any URL
+  const clickedUrl = urls.find(url => pos >= url.from && pos <= url.to)
+  if (!clickedUrl) return false
+  
+  try {
+    await openPath(clickedUrl.url)
+    return true // Prevent default click behavior
+  } catch (error) {
+    console.error('Failed to open URL:', error)
+    return false
+  }
+}
+
 const handlePaste = (view: EditorView, event: ClipboardEvent): boolean => {
   const clipboardText = event.clipboardData?.getData('text/plain')
   if (!clipboardText || !urlRegex.test(clipboardText.trim())) {
@@ -612,11 +726,60 @@ export const EditorViewComponent: React.FC = () => {
     useAppStore()
 
   const editorRef = useRef<{ view?: EditorView }>(null)
+  const [isAltPressed, setIsAltPressed] = useState(false)
 
   // Initialize global focus flag
   useEffect(() => {
     window.isEditorFocused = false
   }, [])
+
+  // Track Alt key state for URL clicking
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.altKey && !isAltPressed) {
+        setIsAltPressed(true)
+        // Update CodeMirror state
+        if (editorRef.current?.view) {
+          editorRef.current.view.dispatch({
+            effects: altKeyEffect.of(true)
+          })
+        }
+      }
+    }
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (!e.altKey && isAltPressed) {
+        setIsAltPressed(false)
+        // Update CodeMirror state
+        if (editorRef.current?.view) {
+          editorRef.current.view.dispatch({
+            effects: altKeyEffect.of(false)
+          })
+        }
+      }
+    }
+
+    // Handle window blur to reset Alt state
+    const handleBlur = () => {
+      setIsAltPressed(false)
+      // Update CodeMirror state
+      if (editorRef.current?.view) {
+        editorRef.current.view.dispatch({
+          effects: altKeyEffect.of(false)
+        })
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    document.addEventListener('keyup', handleKeyUp)
+    window.addEventListener('blur', handleBlur)
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      document.removeEventListener('keyup', handleKeyUp)
+      window.removeEventListener('blur', handleBlur)
+    }
+  }, [isAltPressed])
 
   // Store handles auto-save, just update content
   const onChange = useCallback(
@@ -673,6 +836,8 @@ export const EditorViewComponent: React.FC = () => {
 
   // Enhanced extensions for better writing experience
   const extensions = [
+    altKeyState,
+    urlHoverPlugin,
     markdown({
       extensions: [markdownStyleExtension],
     }),
@@ -728,9 +893,16 @@ export const EditorViewComponent: React.FC = () => {
     ),
     // Default keymaps with lower precedence
     keymap.of([...defaultKeymap, ...historyKeymap, ...searchKeymap]),
-    // Paste event handler for URL link creation
+    // Event handlers for URL link creation and Alt+Click
     EditorView.domEventHandlers({
       paste: (event, view) => handlePaste(view, event),
+      click: (event, view) => {
+        // Handle Alt+Click for URL opening
+        if (event.altKey) {
+          void handleUrlClick(view, event)
+        }
+        return false // Let default handling proceed
+      },
       keydown: event => {
         // Handle synthetic keyboard events from menu
         if (event.isTrusted === false) {
@@ -793,6 +965,10 @@ export const EditorViewComponent: React.FC = () => {
         backgroundColor:
           'var(--editor-color-selectedtext-background) !important',
       },
+      // URL Alt+Click hover styling - keep it simple
+      '&.alt-pressed .cm-content': {
+        cursor: 'default',
+      },
     }),
     EditorView.lineWrapping,
   ]
@@ -800,6 +976,7 @@ export const EditorViewComponent: React.FC = () => {
   return (
     <div className="editor-view" style={{ padding: '0 24px' }}>
       <CodeMirror
+        className={`editor-codemirror ${isAltPressed ? 'alt-pressed' : ''}`}
         ref={editor => {
           if (editorRef.current !== editor) {
             // @ts-expect-error - ref assignment is necessary for editor access
@@ -826,7 +1003,6 @@ export const EditorViewComponent: React.FC = () => {
           highlightSelectionMatches: false,
           highlightActiveLine: false,
         }}
-        className="editor-codemirror"
       />
     </div>
   )

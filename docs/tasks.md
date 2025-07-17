@@ -221,7 +221,6 @@ _Goal: Beautiful, iA Writer-inspired editing experience_
   - [x] Add MD syntax highlighting colours for all other elements (links, images, footnotes, strikethrough, inline code, code blocks, blockquotes etc)
   - [x] Style blockquotes niceley
   - [x] Add (or retain) colours for HTML/JSX tags which appear in the markdown (not in code blocks) - keep this very simple. Suggest:
-  - [ ] If possible, "hang" header hashes in the left margin - this pay need some careful design so as not to complicate the layout
 - [ ] Opening URLs via Opt Click
   - Hovering any URL while holding `Opt` changes the underline to the carat colour and the text to normal text colour and the pointer to a hand.
   - Clicking while holding `Opt` opens URL in the default browser.
@@ -317,3 +316,4 @@ _Goal: Advanced features that differentiate from basic editors_
 ## Potential Future Features
 
 - [ ] AI Editing assistant
+- [ ] "hang" header hashes in the left margin as per iA Writer
