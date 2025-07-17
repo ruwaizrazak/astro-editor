@@ -1,4 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
+import { Command } from '@tauri-apps/plugin-shell'
 import {
   FileText,
   FolderOpen,
@@ -8,6 +9,9 @@ import {
   PanelRight,
   RefreshCw,
   Plus,
+  ExternalLink,
+  Code,
+  Folder,
 } from 'lucide-react'
 import { AppCommand, CommandContext } from './types'
 import { Collection } from '../../store'
@@ -158,6 +162,89 @@ export function generateCollectionCommands(
 }
 
 /**
+ * Helper function to execute IDE commands
+ */
+async function executeIdeCommand(ideCommand: string, path: string) {
+  try {
+    const command = Command.create(ideCommand, [path])
+    await command.execute()
+    toast.success(`Opened in ${ideCommand}`)
+  } catch (error) {
+    toast.error('Failed to open in IDE', {
+      description: error instanceof Error ? error.message : 'Unknown error occurred',
+    })
+  }
+}
+
+/**
+ * IDE-related commands
+ */
+export const ideCommands: AppCommand[] = [
+  {
+    id: 'open-project-in-ide',
+    label: 'Open Project in IDE',
+    description: 'Open the current project in your preferred IDE',
+    icon: Code,
+    group: 'ide',
+    execute: async (context: CommandContext) => {
+      const ideCommand = context.globalSettings?.general?.ideCommand
+      if (ideCommand && context.projectPath) {
+        await executeIdeCommand(ideCommand, context.projectPath)
+      }
+    },
+    isAvailable: (context: CommandContext) => {
+      return Boolean(
+        context.globalSettings?.general?.ideCommand && 
+        context.projectPath
+      )
+    },
+  },
+  {
+    id: 'open-collection-in-ide',
+    label: 'Open Collection in IDE',
+    description: 'Open the current collection directory in your preferred IDE',
+    icon: Folder,
+    group: 'ide',
+    execute: async (context: CommandContext) => {
+      const ideCommand = context.globalSettings?.general?.ideCommand
+      if (ideCommand && context.selectedCollection && context.projectPath) {
+        // Find the collection to get its path
+        const collection = context.collections.find(c => c.name === context.selectedCollection)
+        if (collection) {
+          await executeIdeCommand(ideCommand, collection.path)
+        }
+      }
+    },
+    isAvailable: (context: CommandContext) => {
+      return Boolean(
+        context.globalSettings?.general?.ideCommand && 
+        context.selectedCollection &&
+        context.projectPath
+      )
+    },
+  },
+  {
+    id: 'open-file-in-ide',
+    label: 'Open File in IDE',
+    description: 'Open the current file in your preferred IDE',
+    icon: ExternalLink,
+    group: 'ide',
+    execute: async (context: CommandContext) => {
+      const ideCommand = context.globalSettings?.general?.ideCommand
+      if (ideCommand && context.currentFile) {
+        await executeIdeCommand(ideCommand, context.currentFile.path)
+      }
+    },
+    isAvailable: (context: CommandContext) => {
+      return Boolean(
+        context.globalSettings?.general?.ideCommand && 
+        context.currentFile
+      )
+    },
+  },
+]
+
+/**
  * Get all available commands based on current context
  */
 export function getAllCommands(context: CommandContext): AppCommand[] {
@@ -167,6 +254,7 @@ export function getAllCommands(context: CommandContext): AppCommand[] {
     ...fileCommands,
     ...navigationCommands,
     ...projectCommands,
+    ...ideCommands,
     ...collectionCommands,
   ].filter(command => command.isAvailable(context))
 }

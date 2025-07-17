@@ -1,4 +1,5 @@
 import { type FileEntry, type Collection } from '../../store'
+import { type GlobalSettings } from '../project-registry'
 
 /**
  * Command system types for the application command palette
@@ -11,6 +12,7 @@ export interface CommandContext {
   collections: Collection[]
   projectPath: string | null
   isDirty: boolean
+  globalSettings: GlobalSettings | null
 
   // Store actions
   createNewFile: () => Promise<void>
@@ -36,7 +38,7 @@ export interface AppCommand {
   label: string
   description?: string
   icon?: React.ComponentType<{ className?: string }>
-  group: 'file' | 'navigation' | 'project'
+  group: 'file' | 'navigation' | 'project' | 'ide'
   execute: (context: CommandContext) => void | Promise<void>
   isAvailable: (context: CommandContext) => boolean
 }

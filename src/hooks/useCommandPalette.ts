@@ -42,6 +42,7 @@ export function useCommandPalette() {
       { key: 'file', heading: 'File' },
       { key: 'navigation', heading: 'Navigation' },
       { key: 'project', heading: 'Project' },
+      { key: 'ide', heading: 'IDE' },
     ]
 
     return groupOrder

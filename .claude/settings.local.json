@@ -23,7 +23,8 @@
       "Bash(pkill:*)",
       "Bash(cargo check:*)",
       "Bash(cargo fmt:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(npm add:*)"
     ],
     "deny": []
   }

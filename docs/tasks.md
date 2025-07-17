@@ -53,9 +53,9 @@ _Goal: Advanced features that differentiate from basic editors_
 
 **Bugs at this stage**
 
-- [ ] Add menu item to main menu to open preferences dialog.
-- [ ] Add "Open Preferences" to command panel
+- [ ] Add "Open Preferences" to command palette
 - [ ] Change the label (pill) in CollectionList.tsx to show the number of content items, not the number of fields in the schema.
+- [ ] Add menu item in main menu to open preferences dialog.
 
 **Phase 5.2 - Improved Writing Experience**
 
