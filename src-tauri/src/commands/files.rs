@@ -1,7 +1,7 @@
+use chrono::Local;
 use serde_json::Value;
 use std::collections::HashMap;
 use std::path::PathBuf;
-use chrono::Local;
 
 #[tauri::command]
 pub async fn read_file(file_path: String) -> Result<String, String> {
@@ -42,36 +42,33 @@ pub async fn rename_file(old_path: String, new_path: String) -> Result<(), Strin
 
 /// Convert a string to kebab case
 fn to_kebab_case(s: &str) -> String {
-    s.to_lowercase()
-        .replace(' ', "-")
-        .replace('_', "-")
+    let parts: Vec<&str> = s.split('.').collect();
+    let extension = if parts.len() > 1 { parts.last() } else { None };
+
+    let filename = if parts.len() > 1 {
+        parts[..parts.len() - 1].join(".")
+    } else {
+        s.to_string()
+    };
+
+    // Convert filename to kebab case
+    let kebab_filename = filename
+        .to_lowercase()
+        .replace([' ', '_'], "-")
         .chars()
-        .filter(|c| c.is_alphanumeric() || *c == '-' || *c == '.')
+        .filter(|c| c.is_alphanumeric() || *c == '-')
         .collect::<String>()
-        .split('.')
-        .enumerate()
-        .map(|(i, part)| {
-            if i == 0 {
-                // Process filename part
-                part.chars()
-                    .fold(String::new(), |mut acc, c| {
-                        if acc.is_empty() || acc.ends_with('-') {
-                            acc.push(c);
-                        } else if acc.chars().last().unwrap().is_ascii_lowercase() && c.is_ascii_uppercase() {
-                            acc.push('-');
-                            acc.push(c.to_ascii_lowercase());
-                        } else {
-                            acc.push(c);
-                        }
-                        acc
-                    })
-            } else {
-                // Keep extension as is
-                part.to_string()
-            }
-        })
+        .split('-')
+        .filter(|s| !s.is_empty())
         .collect::<Vec<_>>()
-        .join(".")
+        .join("-");
+
+    // Reconstruct with extension if present
+    if let Some(ext) = extension {
+        format!("{}.{}", kebab_filename, ext.to_lowercase())
+    } else {
+        kebab_filename
+    }
 }
 
 #[tauri::command]
@@ -81,66 +78,65 @@ pub async fn copy_file_to_assets(
     collection: String,
 ) -> Result<String, String> {
     use std::fs;
-    
+
     // Create the assets directory structure
     let assets_dir = PathBuf::from(&project_path)
         .join("src")
         .join("assets")
         .join(&collection);
-    
+
     fs::create_dir_all(&assets_dir)
         .map_err(|e| format!("Failed to create assets directory: {e}"))?;
-    
+
     // Get the source file info
     let source = PathBuf::from(&source_path);
     let file_name = source
         .file_name()
         .ok_or("Invalid source file path")?
         .to_string_lossy();
-    
+
     // Extract extension
     let extension = source
         .extension()
         .and_then(|ext| ext.to_str())
         .unwrap_or("");
-    
+
     // Create the base filename with date prefix
     let date_prefix = Local::now().format("%Y-%m-%d").to_string();
-    let name_without_ext = file_name.trim_end_matches(&format!(".{}", extension));
+    let name_without_ext = file_name.trim_end_matches(&format!(".{extension}"));
     let kebab_name = to_kebab_case(name_without_ext);
-    
+
     // Build the new filename
-    let mut base_name = format!("{}-{}", date_prefix, kebab_name);
+    let mut base_name = format!("{date_prefix}-{kebab_name}");
     if !extension.is_empty() {
         base_name.push('.');
         base_name.push_str(extension);
     }
-    
+
     // Handle conflicts by appending -1, -2, etc.
     let mut final_path = assets_dir.join(&base_name);
     let mut counter = 1;
-    
+
     while final_path.exists() {
         let name_with_counter = if extension.is_empty() {
-            format!("{}-{}-{}", date_prefix, kebab_name, counter)
+            format!("{date_prefix}-{kebab_name}-{counter}")
         } else {
-            format!("{}-{}-{}.{}", date_prefix, kebab_name, counter, extension)
+            format!("{date_prefix}-{kebab_name}-{counter}.{extension}")
         };
         final_path = assets_dir.join(name_with_counter);
         counter += 1;
     }
-    
+
     // Copy the file
-    fs::copy(&source_path, &final_path)
-        .map_err(|e| format!("Failed to copy file: {e}"))?;
-    
+    fs::copy(&source_path, &final_path).map_err(|e| format!("Failed to copy file: {e}"))?;
+
     // Return the relative path from the project root (for markdown)
     let relative_path = final_path
         .strip_prefix(&project_path)
         .map_err(|_| "Failed to create relative path")?
         .to_string_lossy()
         .to_string();
-    
+
     // Convert to forward slashes for markdown compatibility
     Ok(relative_path.replace('\\', "/"))
 }
@@ -919,5 +915,143 @@ Regular markdown content here."#;
         assert_eq!(lines[second_frontmatter_end + 1], "");
         // Should have imports next
         assert!(lines[second_frontmatter_end + 2].starts_with("import"));
+    }
+
+    #[test]
+    fn test_to_kebab_case() {
+        assert_eq!(to_kebab_case("My Image.png"), "my-image.png");
+        assert_eq!(to_kebab_case("some_file_name.jpg"), "some-file-name.jpg");
+        assert_eq!(to_kebab_case("UPPERCASE.PDF"), "uppercase.pdf");
+        assert_eq!(
+            to_kebab_case("Mixed Case File Name.txt"),
+            "mixed-case-file-name.txt"
+        );
+        assert_eq!(
+            to_kebab_case("already-kebab-case.md"),
+            "already-kebab-case.md"
+        );
+        assert_eq!(
+            to_kebab_case("file with   spaces.png"),
+            "file-with-spaces.png"
+        );
+        assert_eq!(
+            to_kebab_case("file___with___underscores.js"),
+            "file-with-underscores.js"
+        );
+    }
+
+    #[tokio::test]
+    async fn test_copy_file_to_assets() {
+        use std::fs;
+        use tempfile::TempDir;
+
+        // Create temporary directories
+        let source_dir = TempDir::new().unwrap();
+        let project_dir = TempDir::new().unwrap();
+
+        // Create a test file
+        let test_file_path = source_dir.path().join("Test Image.png");
+        fs::write(&test_file_path, b"fake image data").unwrap();
+
+        // Copy file to assets
+        let result = copy_file_to_assets(
+            test_file_path.to_str().unwrap().to_string(),
+            project_dir.path().to_str().unwrap().to_string(),
+            "blog".to_string(),
+        )
+        .await;
+
+        assert!(result.is_ok());
+        let relative_path = result.unwrap();
+
+        // Check the returned path format
+        assert!(relative_path.starts_with("src/assets/blog/"));
+        assert!(relative_path.contains("-test-image.png"));
+
+        // Check file was actually copied
+        let dest_path = project_dir.path().join(&relative_path);
+        assert!(dest_path.exists());
+
+        let content = fs::read(&dest_path).unwrap();
+        assert_eq!(content, b"fake image data");
+    }
+
+    #[tokio::test]
+    async fn test_copy_file_to_assets_with_conflict() {
+        use chrono::Local;
+        use std::fs;
+        use tempfile::TempDir;
+
+        // Create temporary directories
+        let source_dir = TempDir::new().unwrap();
+        let project_dir = TempDir::new().unwrap();
+
+        // Create assets directory
+        let assets_dir = project_dir.path().join("src/assets/posts");
+        fs::create_dir_all(&assets_dir).unwrap();
+
+        // Create an existing file with today's date
+        let date_prefix = Local::now().format("%Y-%m-%d").to_string();
+        let existing_file = assets_dir.join(format!("{}-test-file.md", date_prefix));
+        fs::write(&existing_file, b"existing").unwrap();
+
+        // Create source file
+        let test_file_path = source_dir.path().join("Test File.md");
+        fs::write(&test_file_path, b"new content").unwrap();
+
+        // Copy file - should add -1 suffix
+        let result = copy_file_to_assets(
+            test_file_path.to_str().unwrap().to_string(),
+            project_dir.path().to_str().unwrap().to_string(),
+            "posts".to_string(),
+        )
+        .await;
+
+        assert!(result.is_ok());
+        let relative_path = result.unwrap();
+
+        // Should have -1 suffix
+        assert!(relative_path.contains(&format!("{}-test-file-1.md", date_prefix)));
+
+        // Both files should exist
+        assert!(existing_file.exists());
+        let new_file = project_dir.path().join(&relative_path);
+        assert!(new_file.exists());
+    }
+
+    #[tokio::test]
+    async fn test_copy_file_to_assets_creates_directory() {
+        use std::fs;
+        use tempfile::TempDir;
+
+        // Create temporary directories
+        let source_dir = TempDir::new().unwrap();
+        let project_dir = TempDir::new().unwrap();
+
+        // Create a test file
+        let test_file_path = source_dir.path().join("document.pdf");
+        fs::write(&test_file_path, b"pdf content").unwrap();
+
+        // Assets directory doesn't exist yet
+        let assets_dir = project_dir.path().join("src/assets/newsletters");
+        assert!(!assets_dir.exists());
+
+        // Copy file - should create directory
+        let result = copy_file_to_assets(
+            test_file_path.to_str().unwrap().to_string(),
+            project_dir.path().to_str().unwrap().to_string(),
+            "newsletters".to_string(),
+        )
+        .await;
+
+        assert!(result.is_ok());
+
+        // Directory should now exist
+        assert!(assets_dir.exists());
+
+        // File should be copied
+        let relative_path = result.unwrap();
+        let dest_path = project_dir.path().join(&relative_path);
+        assert!(dest_path.exists());
     }
 }

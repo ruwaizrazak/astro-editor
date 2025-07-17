@@ -739,80 +739,161 @@ const handlePaste = (view: EditorView, event: ClipboardEvent): boolean => {
 }
 
 // Handle Tauri file drop events
-const handleTauriFileDrop = async (payload: unknown, editorView: EditorView | null) => {
+const handleTauriFileDrop = async (
+  payload: unknown,
+  editorView: EditorView | null
+) => {
   if (!editorView) return
 
-  console.log('Files dropped via Tauri - payload type:', typeof payload, 'payload:', payload)
-  
   // Handle different payload formats
   let filePaths: string[] = []
-  
+
   if (Array.isArray(payload)) {
-    filePaths = payload
+    filePaths = payload as string[]
   } else if (typeof payload === 'string') {
     filePaths = [payload]
   } else if (payload && typeof payload === 'object' && 'paths' in payload) {
     // In case the payload has a 'paths' property
     filePaths = (payload as { paths: string[] }).paths
   } else {
+    // eslint-disable-next-line no-console
     console.error('Unexpected payload format:', payload)
     return
   }
 
   if (filePaths.length === 0) return
-  
+
   // Get current project path and collection from current file
   const { projectPath, currentFile } = useAppStore.getState()
-  if (!projectPath || !currentFile) {
-    console.error('No project path or file open')
+  if (!projectPath) {
+    // Insert the original file paths as fallback
+    const fallbackText = filePaths
+      .map(filePath => {
+        const filename =
+          filePath.split('/').pop() || filePath.split('\\').pop() || filePath
+        const imageExtensions = [
+          '.png',
+          '.jpg',
+          '.jpeg',
+          '.gif',
+          '.webp',
+          '.svg',
+          '.bmp',
+          '.ico',
+        ]
+        const extension = filename
+          .toLowerCase()
+          .substring(filename.lastIndexOf('.'))
+        const isImage = imageExtensions.includes(extension)
+        return isImage
+          ? `![${filename}](${filePath})`
+          : `[${filename}](${filePath})`
+      })
+      .join('\n')
+
+    editorView.dispatch({
+      changes: {
+        from: editorView.state.selection.main.from,
+        to: editorView.state.selection.main.from,
+        insert: fallbackText,
+      },
+    })
     return
   }
-  
+
+  if (!currentFile) {
+    // Insert the original file paths as fallback
+    const fallbackText = filePaths
+      .map(filePath => {
+        const filename =
+          filePath.split('/').pop() || filePath.split('\\').pop() || filePath
+        const imageExtensions = [
+          '.png',
+          '.jpg',
+          '.jpeg',
+          '.gif',
+          '.webp',
+          '.svg',
+          '.bmp',
+          '.ico',
+        ]
+        const extension = filename
+          .toLowerCase()
+          .substring(filename.lastIndexOf('.'))
+        const isImage = imageExtensions.includes(extension)
+        return isImage
+          ? `![${filename}](${filePath})`
+          : `[${filename}](${filePath})`
+      })
+      .join('\n')
+
+    editorView.dispatch({
+      changes: {
+        from: editorView.state.selection.main.from,
+        to: editorView.state.selection.main.from,
+        insert: fallbackText,
+      },
+    })
+    return
+  }
+
   const currentCollection = currentFile.collection
   if (!currentCollection) {
-    console.error('Current file has no collection')
     return
   }
-  
+
   // Insert file paths at current cursor position
   const { state } = editorView
   const { from } = state.selection.main
-  
+
   // Process each file path
-  const formattedPaths = await Promise.all(filePaths.map(async (filePath) => {
-    // Get filename from path
-    const filename = filePath.split('/').pop() || filePath.split('\\').pop() || filePath
-    
-    // Check if it's an image by extension
-    const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.bmp', '.ico']
-    const extension = filename.toLowerCase().substring(filename.lastIndexOf('.'))
-    const isImage = imageExtensions.includes(extension)
-    
-    try {
-      // Copy file to assets folder and get new path
-      const newPath = await invoke<string>('copy_file_to_assets', {
-        sourcePath: filePath,
-        projectPath: projectPath,
-        collection: currentCollection
-      })
-      
-      // Return markdown formatted string with new path
-      if (isImage) {
-        return `![${filename}](/${newPath})`
-      } else {
-        return `[${filename}](/${newPath})`
+  const formattedPaths = await Promise.all(
+    filePaths.map(async filePath => {
+      // Get filename from path
+      const filename =
+        filePath.split('/').pop() || filePath.split('\\').pop() || filePath
+
+      // Check if it's an image by extension
+      const imageExtensions = [
+        '.png',
+        '.jpg',
+        '.jpeg',
+        '.gif',
+        '.webp',
+        '.svg',
+        '.bmp',
+        '.ico',
+      ]
+      const extension = filename
+        .toLowerCase()
+        .substring(filename.lastIndexOf('.'))
+      const isImage = imageExtensions.includes(extension)
+
+      try {
+        // Copy file to assets folder and get new path
+        const newPath = await invoke<string>('copy_file_to_assets', {
+          sourcePath: filePath,
+          projectPath: projectPath,
+          collection: currentCollection,
+        })
+
+        // Return markdown formatted string with new path
+        if (isImage) {
+          return `![${filename}](/${newPath})`
+        } else {
+          return `[${filename}](/${newPath})`
+        }
+      } catch {
+        // Fallback to original path if copy fails
+        if (isImage) {
+          return `![${filename}](${filePath})`
+        } else {
+          return `[${filename}](${filePath})`
+        }
       }
-    } catch (error) {
-      console.error('Failed to copy file to assets:', error)
-      // Fallback to original path if copy fails
-      if (isImage) {
-        return `![${filename}](${filePath})`
-      } else {
-        return `[${filename}](${filePath})`
-      }
-    }
-  }))
-  
+    })
+  )
+
   const insertText = formattedPaths.join('\n')
   editorView.dispatch({
     changes: { from, insert: insertText },
@@ -951,28 +1032,28 @@ export const EditorViewComponent: React.FC = () => {
   // Listen for Tauri file drop events
   useEffect(() => {
     const setupTauriListeners = async () => {
-      console.log('Setting up Tauri file drop listeners')
-      
       try {
         // Listen for file drop events
-        const unlistenDrop = await listen('tauri://drag-drop', (event) => {
-          console.log('Tauri drag-drop event:', event.payload)
-          handleTauriFileDrop(event.payload, editorRef.current?.view || null)
+        const unlistenDrop = await listen('tauri://drag-drop', event => {
+          void handleTauriFileDrop(
+            event.payload,
+            editorRef.current?.view || null
+          )
         })
 
         // Return cleanup function
         return () => {
           unlistenDrop()
         }
-      } catch (error) {
-        console.error('Failed to setup Tauri listeners:', error)
+      } catch {
+        // Ignore errors in setting up Tauri listeners
       }
     }
 
     const cleanup = setupTauriListeners()
-    
+
     return () => {
-      cleanup.then(cleanupFn => cleanupFn?.())
+      void cleanup.then(cleanupFn => cleanupFn?.())
     }
   }, [])
 
