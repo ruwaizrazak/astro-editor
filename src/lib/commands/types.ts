@@ -21,6 +21,7 @@ export interface CommandContext {
   saveFile: () => Promise<void>
   closeCurrentFile: () => void
   loadCollections: () => Promise<void>
+  loadCollectionFiles: (collectionPath: string) => Promise<void>
 
   // Future extensibility
   editorSelection?: {

@@ -140,8 +140,16 @@ export function generateCollectionCommands(
     description: `Switch to the ${collection.name} collection`,
     icon: FileText,
     group: 'navigation' as const,
-    execute: (context: CommandContext) => {
+    execute: async (context: CommandContext) => {
       context.setSelectedCollection(collection.name)
+      try {
+        await context.loadCollectionFiles(collection.path)
+      } catch (error) {
+        toast.error('Failed to load collection files', {
+          description:
+            error instanceof Error ? error.message : 'Unknown error occurred',
+        })
+      }
     },
     isAvailable: (context: CommandContext) => {
       return context.selectedCollection !== collection.name

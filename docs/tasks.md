@@ -30,31 +30,33 @@ _Goal: Production-ready reliability and performance_
 **Phase 5: Advanced Features**
 _Goal: Advanced features that differentiate from basic editors_
 
-**Phase 5.1 - Improved Writing Experience**
+**Phase 5.1 - User Preferences Settings & Open in IDE Button**
 
-- [ ] Focus mode which greys out all but the current sentence/paragraph
-- [ ] "Typewriter mode" (much like iA Writer)
-- [ ] Image preview popover on hover over local image URL
-
-**Phase 5.2 - Insert Astro Components into MDX files**
-
-- [ ] Discovery of Astro components intended for use in MDX files (from `src/components/mdx/`)
-- [ ] Slash command system for inserting Astro components in MDX files easily
-
-**Phase 5.3 - User Preferences Settings & Open in IDE**
-
-- [ ] Add simple preferences/settings window with `Cmd + ,` keyboard shortcut, menu item, cog icon in `UnifiedTitleBar.tsx` etc.
-- [ ] User preferences should be saved to disk somewhere appropriate so they persist between launches.
-- [ ] Section in app settings to view all discovered Astro components and toggle on and off.
-- [ ] Section in settings to optionally override Astro deaults:
-  - Path to Astro components for use in MDX files (default: `src/components/mdx/`)
-  - Path to content directory (default: `src/content/`)
-  - Path to assets directory (default: `src/assets/[collection name]/`)
+- [ ] Add simple preferences/settings window. Should use standard shadcn/tailwind layout and existing patterns for doing this. We need to devide if we should make a new Tauri window or do it in a dialog in the react app. Look at the Tauri 2 docs for advice on this. Settings panel should have "tabs" down the left for different panes on the right. We only need three panes right now -> General, Path Overrides, Frontmatter Mappings. We will add more later. Think like an experienced front-end architect when designing the various React components for this.
+- [ ] User preferences should be saved to disk somewhere appropriate in the application files so they persist between launches. Look at the `@docs/recovery-system.md` for ideas on where to save these. Follow normal conventions for this kinda thing.
+- [ ] Settings panel should be opened with `Cmd+,` keyboard shortcut, via a menu item in the apps osx menubar or via the command pallette.
+- [ ] Path Overides pane allows user to optionally override Astro deaults paths for various things. Will need to update all code that usees these paths in the appropriate places. The defaults should be hard-coded as fallbacks in case there are no saved user preferences. These paths should probably be relevant to the project root so they still work if a user moves their whole astro repo and reopens it. For now, these should not be repo-specific. Make these paths global - ie Assume that if someone uses these custom paths for one of their Astro projects, they'll be the same in the other ones. We can change this later when we look at saving projects details to disk.
+  - Path to Astro content directory (default: `src/content/`)
+  - Path to Astro assets directory (default: `src/assets/`)
+  - Path to Astro components for use in MDX files (default: `src/components/mdx/`) [Not yet used]
+- [ ] Frontmatter mappings
   - "Published Date" frontmatter proeperty name (default: `date`, `pubDate` or `publishedDate`) - must be of type Date
   - "Title" frontmatter property name (default: `title`) - must be of type String
   - "Draft" frontmatter property name (default: `draft`) - must be of type Boolean
   - Command for "Open in IDE" button (default: ''), recommended setting: "code" or "cursor"
 - [ ] Button in `UnifiedTitleBar.tsx` to "Open Project in IDE". Only appears if "Open in IDE" command is set in settings. Opens current project in IDE by passing its path to the command (eg. `code /Users/bob/dev/astrosite/` -> opens `astrosite` project in VSCode)
+
+**Phase 5.2 - Improved Writing Experience**
+
+- [ ] Focus mode which greys out all but the current sentence/paragraph
+- [ ] "Typewriter mode" (much like iA Writer)
+- [ ] Image preview popover on hover over local image URL
+
+**Phase 5.3 - Insert Astro Components into MDX files**
+
+- [ ] Discovery of Astro components intended for use in MDX files (from `src/components/mdx/`)
+- [ ] Slash command system for inserting Astro components in MDX files easily
+- [ ] Section in app settings to view all discovered Astro components and toggle on and off.
 
 **Phase 5.4: Editor/Analysis Mode**
 

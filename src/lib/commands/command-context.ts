@@ -20,6 +20,7 @@ export function useCommandContext(): CommandContext {
     saveFile,
     closeCurrentFile,
     loadCollections,
+    loadCollectionFiles,
   } = useAppStore()
 
   return {
@@ -36,6 +37,7 @@ export function useCommandContext(): CommandContext {
     saveFile,
     closeCurrentFile,
     loadCollections,
+    loadCollectionFiles,
     // Future: editor selection context could be added here
   }
 }
