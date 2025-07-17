@@ -253,7 +253,7 @@ _Goal: Production-ready reliability and performance_
     - [x] Markdown syntax highlighting is no longer working for markdown image tags. It's fine for links.
     - [x] Holding Option and hovering over a URL no longer highlights it with a blue background and changes the cursor to a pointer. It still opens fine when clicked.
     - [x] The menubar menu items for bold, italic, add link and all the heading/prargraph ones should be disabled unless a markdown file is open and focussed in the editor window. They are always enabled.
-    - [ ] Remove any unnececarry comments and logging (but leave those which are helpful for understanding how thigns work in the future)
+    - [x] Remove any unnececarry comments and logging (but leave those which are helpful for understanding how thigns work in the future)
     - [ ] Comprehensively review CLAUDE.md and update with the current structure, features, code patterns, architectural patterns etc. We have mostly been working with the markdown code editor recently. Add instructions to Claude Code for how an when to extract code into `lib` and `hooks` and what patterns to use. Explain how and why some application state is stored in zustand, and some ui state is in `Layout.tsx`. Ensure this file is as useful as possible for future sessions. If you think it makes sense, you can create other markdown files in docs and reference them from CLAUDE.md.
     - [ ] Add tests for extracted logic where needed
 - [ ] Update `ia-writer-ui.md` to include current size values etc from codebase. Only the line-heights and font sizes need to change, I think? Maybe also add character spacing in place of font variation settings.

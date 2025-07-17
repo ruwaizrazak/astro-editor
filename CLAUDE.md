@@ -11,14 +11,17 @@
 - Dynamic frontmatter forms generated from Zod schemas
 - File management: create, rename, duplicate, delete with context menus
 - Real-time auto-save every 2 seconds
-- CodeMirror 6 editor with markdown support
+- CodeMirror 6 editor with markdown support and custom syntax highlighting
 - Resizable panels for optimal writing layout
 - Draft detection and date-based file sorting
+- Advanced editor features: URL clicking, drag & drop, markdown commands
+- Comprehensive keyboard shortcuts and menu integration
 
 ## Core Rules
 
 ### New Sessions
 - Read `docs/tasks.md` for current status and next steps
+- Review `docs/architecture-guide.md` for architectural patterns
 - Check git status and project structure for recent changes
 
 ### Progress Tracking
@@ -39,52 +42,121 @@
 
 ## Current Status
 
-**Phase 2.3 - Complete** (UI refinement and code quality)
-- All core functionality implemented
-- shadcn/ui components integrated
-- Comprehensive test suite (121 tests passing)
-- File operations: create, rename, duplicate, context menus
-- Auto-save every 2 seconds
-- Frontmatter panel with dynamic forms
+**Phase 3.1 - In Progress** (Advanced editor features)
+- ✅ Core functionality implemented with comprehensive test suite (83 frontend, 42 Rust tests)
+- ✅ Major EditorView.tsx refactor extracting functionality into modular lib/editor system
+- ✅ Advanced editor features: URL clicking, drag & drop, paste handling, markdown commands
+- ✅ Command registry pattern for extensible editor operations
+- ✅ Custom syntax highlighting system with comprehensive markdown support
+- ✅ File operations with native context menus
+- ✅ Auto-save with conflict resolution
+- ✅ Responsive UI with resizable panels
 
-**Next:** Phase 3 - Editor experience improvements
+**Current Focus:** Polish, usability improvements, and command palette implementation
 
 ## Technology Stack
 
 - **Framework:** Tauri v2 (Rust + React)
 - **Frontend:** React 19 + TypeScript (strict)
-- **State:** Zustand with persistence
+- **State:** Zustand with persistence + local UI state
 - **Styling:** Tailwind v4 + shadcn/ui
-- **Editor:** CodeMirror 6
+- **Editor:** CodeMirror 6 with custom extensions
 - **Testing:** Vitest + React Testing Library, Cargo
 - **Quality:** ESLint, Prettier, Clippy
 
 **CRITICAL:** Use Tauri v2 documentation only. v1 approaches don't work.
 
-## Architecture
+## Architecture Overview
+
+**See `docs/architecture-guide.md` for comprehensive architectural patterns.**
+
+### Core Architecture Principles
+
+1. **Separation of Concerns**: Business logic (Zustand) vs UI orchestration (Layout) vs Editor logic (lib/editor)
+2. **Modular Design**: Feature-based modules with clear interfaces
+3. **Command Pattern**: Centralized command registry for editor operations
+4. **Event-Driven Communication**: Multiple event systems for different concerns
+5. **Performance-First**: Memoization, debouncing, and lazy loading patterns
 
 ### App Layout Structure
 - **UnifiedTitleBar:** macOS-style window chrome with menu integration
-- **Layout:** Main container with ResizablePanelGroup system
+- **Layout:** Main orchestrator container with ResizablePanelGroup system
   - **Sidebar:** Collection/file navigation (collapsible)
-  - **MainEditor:** CodeMirror 6 markdown editor
+  - **MainEditor:** CodeMirror 6 markdown editor with extracted modules
   - **FrontmatterPanel:** Dynamic forms from Zod schemas (resizable)
+
+### State Management Philosophy
+
+#### Global State (Zustand)
+Use for state that:
+- Represents business data (files, content, frontmatter)
+- Needs persistence across sessions
+- Is accessed by multiple unrelated components
+- Drives core application functionality
+
+```typescript
+// Business state in Zustand
+projectPath: string | null
+currentFile: FileEntry | null
+editorContent: string
+frontmatter: Record<string, unknown>
+isDirty: boolean
+```
+
+#### Local State (React Components)
+Keep state local when it:
+- Only affects UI presentation
+- Is derived from props or global state
+- Doesn't need persistence
+- Is tightly coupled to component lifecycle
+
+```typescript
+// UI state in Layout.tsx
+const [windowWidth, setWindowWidth] = useState(window.innerWidth)
+window.isEditorFocused = false // Global flag for menu coordination
+```
+
+**Why This Split?**
+- **Performance**: Local state changes don't trigger global re-renders
+- **Clarity**: Clear ownership of different concerns
+- **Testability**: Business logic can be tested independently of UI
+- **Maintainability**: Changes to UI don't affect business logic
 
 ### Data Flow
 1. **Project Discovery:** Parse `src/content/config.ts` → extract collections & schemas
 2. **File Loading:** Read markdown → separate frontmatter/content → populate editor
 3. **Editing:** Direct store updates → auto-save every 2 seconds
 4. **File Operations:** Tauri commands for create/rename/duplicate/delete
+5. **Editor Operations:** Command registry → CodeMirror transactions
 
-### Frontend Structure
+### Frontend Structure (Updated)
 ```
 src/
-├── components/Layout/    # Main app components (Layout, Sidebar, etc.)
-├── components/ui/        # shadcn/ui components (30+)
-├── store/index.ts        # Zustand state management
-├── lib/schema.ts         # Zod schema parsing
-├── types/common.ts       # Shared interfaces
-└── test/                 # Vitest test files
+├── components/
+│   ├── Layout/              # Main app components
+│   │   ├── Layout.tsx       # Main orchestrator (UI state)
+│   │   ├── EditorView.tsx   # Editor component (refactored)
+│   │   ├── Sidebar.tsx      # File navigation
+│   │   └── FrontmatterPanel.tsx
+│   └── ui/                  # shadcn/ui components (30+)
+├── lib/
+│   ├── editor/              # Extracted editor modules
+│   │   ├── commands/        # Command pattern implementation
+│   │   ├── dragdrop/        # Drag & drop handling
+│   │   ├── extensions/      # CodeMirror extensions
+│   │   ├── markdown/        # Markdown utilities
+│   │   ├── paste/           # Paste handling
+│   │   ├── syntax/          # Custom syntax highlighting
+│   │   └── urls/            # URL detection and handling
+│   └── schema.ts            # Zod schema parsing
+├── hooks/
+│   └── editor/              # Editor-specific hooks
+│       ├── useEditorSetup.ts
+│       ├── useEditorHandlers.ts
+│       └── useTauriListeners.ts
+├── store/index.ts           # Zustand state management
+├── types/common.ts          # Shared interfaces
+└── test/                    # Vitest test files
 ```
 
 ### Backend Structure (Rust)
@@ -94,6 +166,70 @@ src-tauri/src/
 ├── models/              # Data structures (Collection, FileEntry)
 └── parser.rs            # TypeScript config parsing
 ```
+
+## Front-End Architect Guidelines
+
+### Code Extraction Patterns
+
+#### When to Extract to `lib/`
+
+Extract code into `lib/` when:
+1. **Complexity Threshold**: 50+ lines of related logic
+2. **Reusability**: Used by 2+ components
+3. **Testability**: Needs unit tests
+4. **Domain Logic**: Business rules or algorithms
+5. **External Integration**: APIs, file system, etc.
+
+Example module structure:
+```
+lib/editor/commands/
+├── index.ts           # Public API exports
+├── types.ts           # TypeScript interfaces
+├── CommandRegistry.ts # Core implementation
+├── editorCommands.ts  # Command definitions
+└── menuIntegration.ts # Menu-specific logic
+```
+
+#### When to Extract to `hooks/`
+
+Create custom hooks for:
+1. **Stateful Logic**: Uses React hooks internally
+2. **Component Logic**: Tightly coupled to React lifecycle
+3. **Shared Behavior**: Same logic needed in multiple components
+4. **Side Effects**: Manages subscriptions, timers, etc.
+
+Example hook patterns:
+```typescript
+// Setup hook - initialization and configuration
+export const useEditorSetup = (
+  onSave: () => void,
+  onFocus: () => void,
+  onBlur: () => void
+) => {
+  // Returns configured extensions and setup functions
+}
+
+// Handler hook - event management
+export const useEditorHandlers = () => {
+  // Returns memoized event handlers
+}
+```
+
+#### Extraction Process
+
+1. **Identify the concern**: What single responsibility does this code have?
+2. **Define the interface**: What's the minimal public API?
+3. **Extract with tests**: Write tests for the extracted module
+4. **Update imports**: Use index.ts for clean imports
+5. **Document the module**: Add JSDoc comments for public APIs
+
+### Module Organization Best Practices
+
+1. **Feature-Based Modules**: Group related functionality together
+2. **Clear Public APIs**: Use index.ts to define what's exposed
+3. **Type Safety**: Separate types.ts for interfaces
+4. **Dependency Management**: Avoid circular dependencies
+5. **Testing Strategy**: Test modules independently
 
 ## Development Commands
 
@@ -164,104 +300,103 @@ const BadField = ({ name, onChange }) => { /* Don't do this */ }
 
 **Why:** Enables component extraction, prevents infinite loops, maintains real-time updates and auto-save.
 
-### State Management
-- Single Zustand store in `src/store/index.ts`
-- Async actions for file operations
-- State persistence for project/UI preferences
-- Auto-save every 2 seconds with debouncing
+### Command Pattern (Editor Operations)
 
-### File Operations
-- All I/O through Tauri commands
-- File watching with change detection
-- Frontmatter parsing and validation
-- MDX import handling
+The editor uses a centralized command registry for all operations:
 
-### Form Generation
-- Parse Zod schemas from `src/content/config.ts` into JSON
-- Generate dynamic forms for frontmatter editing
-- Field types: string, number, boolean, date, enum, array
-- Auto-focus title field on new file creation
-- Schema field ordering preserved in saved frontmatter
+```typescript
+// Global registry instance
+export const globalCommandRegistry = new CommandRegistry()
 
-## Editor Styling System
+// Type-safe command execution
+globalCommandRegistry.execute('toggleBold')
+globalCommandRegistry.execute('formatHeading', 1)
+```
 
-### CodeMirror 6 Markdown Highlighting Architecture
+**Benefits:**
+- Decouples command definition from UI triggers
+- Enables keyboard shortcuts, menus, and buttons to share logic
+- Provides central place for command state management
+- Facilitates testing and extensibility
 
-The editor uses a **comprehensive custom highlighting system** that replaces CodeMirror's default highlighting entirely. This provides complete control over markdown and code syntax appearance.
+### Event-Driven Communication
 
-**Location:** `src/components/Layout/EditorView.tsx`
+The app uses multiple event systems:
 
-### Two-Part Styling System
+1. **Tauri Events**: For native menu/OS integration
+2. **Custom DOM Events**: For component communication
+3. **CodeMirror Transactions**: For editor state changes
+4. **Zustand Subscriptions**: For store changes
 
-#### 1. Custom Markdown Tags
-```javascript
-const markdownTags = {
-  // Headings
-  heading1: Tag.define(), heading2: Tag.define(), // ... heading6
-  headingMark: Tag.define(), // The # symbols
-  
-  // Text formatting
-  emphasis: Tag.define(), emphasisMark: Tag.define(), // *italic*
-  strong: Tag.define(), strongMark: Tag.define(), // **bold**
-  strikethrough: Tag.define(), strikethroughMark: Tag.define(), // ~~text~~
-  
-  // Code
-  inlineCode: Tag.define(), inlineCodeMark: Tag.define(), // `code`
-  codeBlock: Tag.define(), codeBlockMark: Tag.define(), // ```blocks```
-  
-  // Links, lists, blockquotes, tables, etc.
+Example:
+```typescript
+// Custom event for focus tracking
+window.dispatchEvent(new CustomEvent('editor-focus-changed'))
+
+// Tauri event for menu actions
+listen('menu-format-bold', () => {
+  globalCommandRegistry.execute('toggleBold')
+})
+```
+
+### Plugin Architecture (CodeMirror)
+
+Editor functionality is composed through plugins:
+
+```typescript
+const extensions = [
+  markdown({ extensions: [markdownStyleExtension] }),
+  syntaxHighlighting(comprehensiveHighlightStyle),
+  urlPlugin(),
+  dropTargetPlugin(handleDrop),
+  keymap.of(customKeymap)
+]
+```
+
+This allows:
+- Feature isolation
+- Easy enable/disable of features
+- Performance optimization
+- Third-party plugin integration
+
+## Editor System Architecture
+
+### Custom Syntax Highlighting System
+
+The editor uses a **comprehensive custom highlighting system** that replaces CodeMirror's default highlighting entirely.
+
+**Location:** `src/lib/editor/syntax/`
+
+#### Two-Part Styling System
+
+1. **Custom Markdown Tags** (`markdownTags.ts`):
+```typescript
+export const markdownTags = {
+  heading1: Tag.define(),
+  heading2: Tag.define(),
+  emphasis: Tag.define(),
+  strong: Tag.define(),
+  inlineCode: Tag.define(),
+  // ... more tags
 }
 ```
 
-#### 2. Standard Language Tags
-Uses `tags` from `@lezer/highlight` for HTML, CSS, JavaScript syntax:
+2. **Standard Language Tags** from `@lezer/highlight`:
 - `tags.tagName`, `tags.attributeName` - HTML elements
 - `tags.keyword`, `tags.string`, `tags.comment` - Programming constructs
-- `tags.operator`, `tags.bracket` - Punctuation
 
-### Parser Integration
-
-**Style Extension Mapping:**
-```javascript
-const markdownStyleExtension = {
-  props: [
-    styleTags({
-      'ATXHeading1': markdownTags.heading1,
-      'ATXHeading1/HeaderMark': markdownTags.headingMark,
-      'Emphasis': markdownTags.emphasis,
-      'StrongEmphasis': markdownTags.strong,
-      // ... maps Lezer parser nodes to custom tags
-    })
-  ]
-}
-```
-
-**Integration:**
-```javascript
-markdown({
-  extensions: [markdownStyleExtension]
-}),
-syntaxHighlighting(comprehensiveHighlightStyle)
-```
-
-### Comprehensive Highlight Style
+#### Comprehensive Highlight Style
 
 **Single source of truth** for all syntax highlighting:
-```javascript
+```typescript
 const comprehensiveHighlightStyle = HighlightStyle.define([
-  // Markdown-specific styling
   { tag: markdownTags.heading1, fontSize: '1.8em', fontWeight: 'bold', color: '#8B5CF6' },
-  
-  // Standard language styling  
-  { tag: tags.tagName, color: '#E11D48', fontWeight: 'bold' }, // HTML tags
-  { tag: tags.keyword, color: '#2563EB', fontWeight: 'bold' }, // JS keywords
+  { tag: tags.tagName, color: '#E11D48', fontWeight: 'bold' },
   // ... 50+ comprehensive style rules
 ])
 ```
 
-### Color Families
-
-**Organized by element type:**
+**Color Families:**
 - **Purple family:** Headings (H1-H6)
 - **Orange/Red family:** Emphasis, strong text
 - **Green family:** Code elements
@@ -269,34 +404,68 @@ const comprehensiveHighlightStyle = HighlightStyle.define([
 - **Red/Pink family:** HTML tags
 - **Gray family:** Comments, utility elements
 
-### Key Features
-
-1. **Complete Control:** Every syntax element can be styled independently
-2. **Language Agnostic:** Works for markdown, HTML, CSS, JavaScript, etc.
-3. **Modular:** Add new elements by defining tags and adding style rules
-4. **Performance:** Uses CodeMirror's optimized Lezer parser highlighting
-5. **Type Safe:** All tags are explicitly defined
-
-### Adding New Styled Elements
-
-1. **Define tag:** `newElement: Tag.define()`
-2. **Map parser node:** `'ParserNodeName': markdownTags.newElement`
-3. **Add styling:** `{ tag: markdownTags.newElement, color: '#color' }`
-
-### Working Elements
+### Editor Features
 
 - ✅ **Markdown:** Headings, bold, italic, ~~strikethrough~~, links, lists, blockquotes, tables
 - ✅ **Code:** Inline `code`, ```code blocks```, syntax highlighting
 - ✅ **HTML:** `<tags>`, attributes, mixed content
 - ✅ **Programming:** Keywords, strings, comments, operators
+- ✅ **URL Handling:** Alt+click to open URLs
+- ✅ **Drag & Drop:** Files with auto-copy to assets
+- ✅ **Paste Enhancement:** URL detection and link creation
+- ✅ **Command System:** Keyboard shortcuts and menu integration
 
-### Future Styling
+## Performance Patterns
 
-For non-standard markdown (like `==highlighting==`), use HTML: `<mark>text</mark>`
+### Memoization Strategy
+```typescript
+// Memoize expensive computations
+const sortedFiles = useMemo(() => 
+  files.sort((a, b) => compareDates(a, b)),
+  [files]
+)
 
-**CRITICAL:** This system completely replaces default CodeMirror highlighting. All color changes must be made in `comprehensiveHighlightStyle`.
+// Stable callbacks for child components
+const handleChange = useCallback((value: string) => {
+  setEditorContent(value)
+}, [setEditorContent])
+```
 
-## Code Quality
+### Debouncing
+```typescript
+// Auto-save debouncing
+scheduleAutoSave: () => {
+  clearTimeout(timeoutId)
+  timeoutId = setTimeout(() => saveFile(), 2000)
+}
+```
+
+### Lazy Loading
+- Dynamic imports for large dependencies
+- Defer heavy operations until needed
+- Virtualize long lists (future consideration)
+
+## Testing Strategy
+
+### Frontend (Vitest + React Testing Library)
+- **Unit Tests**: Extracted modules in `lib/editor/`
+- **Integration Tests**: Custom hooks
+- **Component Tests**: UI interactions
+- **Store Tests**: Zustand actions and state
+- Mock Tauri with `globalThis.mockTauri`
+
+### Backend (Cargo)
+- File operations with temp files
+- Data structure validation
+- Complete workflow integration
+- Error scenarios (permissions, missing files)
+
+### Test Data
+- `test/dummy-astro-project/` contains sample Astro project
+- Use `npm run reset:testdata` for clean test environment
+- Covers various frontmatter configurations and content types
+
+## Code Quality Standards
 
 ### TypeScript Requirements
 - Strict mode enabled
@@ -311,31 +480,35 @@ For non-standard markdown (like `==highlighting==`), use HTML: `<mark>text</mark
 - Create reusable interfaces in `src/types/common.ts`
 - Use `EditorAreaWithFrontmatter` pattern for layout helpers
 
-### Styling
+### Module Guidelines
+- Feature-based organization
+- Clear public APIs via index.ts
+- Separate types.ts for interfaces
+- Comprehensive JSDoc comments
+- Unit tests for all public functions
+
+### Styling Standards
 - Tailwind v4 utilities over custom CSS
 - Standard spacing: `p-4` panels, `gap-2` small, `gap-4` large
 - Icons: `h-4 w-4` standard, `h-8` toolbar
 - CSS variables: `bg-background`, `text-foreground`
 - ResizablePanel system for layout management
 
-## Testing Strategy
+## File Operations
 
-### Frontend (Vitest + React Testing Library)
-- Store operations and async actions
-- Component rendering and interactions
-- Error handling and edge cases
-- Mock Tauri with `globalThis.mockTauri`
+### File Management
+- All I/O through Tauri commands
+- File watching with change detection
+- Frontmatter parsing and validation
+- MDX import handling
+- Context menu operations (create, rename, duplicate, delete)
 
-### Backend (Cargo)
-- File operations with temp files
-- Data structure validation
-- Complete workflow integration
-- Error scenarios (permissions, missing files)
-
-### Test Data
-- `test/dummy-astro-project/` contains sample Astro project
-- Use `npm run reset:testdata` for clean test environment
-- Covers various frontmatter configurations and content types
+### Frontmatter Generation
+- Parse Zod schemas from `src/content/config.ts` into JSON
+- Generate dynamic forms for frontmatter editing
+- Field types: string, number, boolean, date, enum, array
+- Auto-focus title field on new file creation
+- Schema field ordering preserved in saved frontmatter
 
 ## WebKit/Tauri Considerations
 - `field-sizing: content` CSS not supported → use `AutoExpandingTextarea`
@@ -349,32 +522,55 @@ For non-standard markdown (like `==highlighting==`), use HTML: `<mark>text</mark
 1. Run `npm run check:all` - all tests/linting must pass
 2. Update `docs/tasks.md` with completed work
 3. Manual testing for UI changes
+4. Check for console errors in development
 
 ### Component Development
-- **NEVER** use React Hook Form (causes infinite loops)
+- **NEVER** use React Hook Form (causes infinite loops with Zustand)
 - **ALWAYS** use Direct Store Pattern: `updateFrontmatterField(key, value)`
 - **AVOID** callback props with changing dependencies
 - **EXTRACT** helper components for duplicate patterns (see `EditorAreaWithFrontmatter`)
 - **TYPE** store destructuring explicitly for IDE support
 
+### Module Development
+- **EXTRACT** complex logic into `lib/` modules
+- **CREATE** hooks for stateful component logic
+- **DEFINE** clear interfaces and types
+- **WRITE** comprehensive tests
+- **DOCUMENT** public APIs
+
+### Performance Best Practices
+- **MEMOIZE** expensive computations
+- **DEBOUNCE** frequent operations (auto-save, search)
+- **LAZY LOAD** heavy dependencies
+- **VIRTUALIZE** long lists (future)
+
 ### Error Handling
 - Graceful degradation for missing files/permissions
+- Development-only console logging
 - User-friendly error messages
 - Validation before file operations
 - Recovery from file system errors
 
 ## Key Files Reference
 
-### Essential
-- `src/store/index.ts` - State management with `updateFrontmatterField`
+### Essential Files
+- `src/store/index.ts` - Zustand state management
+- `src/lib/editor/` - Extracted editor modules
+- `src/hooks/editor/` - Editor-specific hooks
+- `src/components/Layout/Layout.tsx` - Main UI orchestrator
+- `src/components/Layout/EditorView.tsx` - Refactored editor component
 - `src/lib/schema.ts` - Zod schema parsing and validation
 - `src/types/common.ts` - Shared TypeScript interfaces
-- `src/components/Layout/FrontmatterPanel.tsx` - Direct Store Pattern example
 
-### Configuration
+### Configuration Files
 - `components.json` - shadcn/ui setup
 - `vitest.config.ts` - Testing configuration
 - `src-tauri/tauri.conf.json` - App configuration
+
+### Documentation
+- `docs/architecture-guide.md` - Comprehensive architecture patterns
+- `docs/tasks.md` - Current roadmap and status
+- `docs/ia-writer-ui.md` - UI design specifications
 
 ## Troubleshooting
 
@@ -384,27 +580,42 @@ For non-standard markdown (like `==highlighting==`), use HTML: `<mark>text</mark
 - **File watching issues:** Verify file permissions and project paths
 - **Schema parsing errors:** Check `src/content/config.ts` syntax
 - **Version conflicts:** Use Tauri v2, shadcn/ui v4, Tailwind v4 docs only
+- **Editor commands not working:** Verify command registry setup
 
-### Performance
-- Target <2s app launch, <100ms file operations
-- Use virtualization for large collections
-- Debounce file watching updates
-- Optimize re-renders with proper memoization
+### Performance Issues
+- **Slow editor:** Check for unnecessary re-renders
+- **Memory leaks:** Ensure proper cleanup in useEffect
+- **File operations slow:** Verify Tauri command efficiency
+
+### Debug Strategies
+- Use React DevTools for component inspection
+- Check browser console for errors
+- Use Tauri dev tools for backend debugging
+- Run tests to isolate issues
 
 ## Architecture Notes
 
-### Limitations
+### Current Limitations
 - macOS only (initial version)
 - Standard Astro project structures only
 - Basic Zod schema types supported
 - Regex-based TypeScript parsing
 
-### Future Improvements
-- Cross-platform support
-- Enhanced schema parsing
-- Advanced editor features
-- Performance optimizations
+### Future Extensibility
+The architecture supports:
+- **Plugin System**: Command registry and extension points
+- **Theme System**: Custom editor themes
+- **Language Support**: Beyond markdown
+- **AI Integration**: Via command registry
+- **Export Formats**: Via new modules
+- **Cloud Sync**: Via store middleware
+
+### Migration Notes
+- Major refactor completed: EditorView.tsx → modular lib/editor system
+- Command pattern implemented for editor operations
+- Custom syntax highlighting system established
+- Testing infrastructure comprehensive
 
 ---
 
-*Keep this updated as the project evolves. Verify implementation matches guidance.*
+*This document reflects the current architecture as of Phase 3.1. Update as the project evolves and new patterns emerge.*
