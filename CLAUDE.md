@@ -24,21 +24,25 @@
 - Review `docs/architecture-guide.md` for architectural patterns
 - Check git status and project structure for recent changes
 
-### Progress Tracking
-- **CRITICAL:** Update `docs/tasks.md` after completing major work - mark completed items with `[x]`
-- Update planning documents when moving between phases
+### Development Practices
 
-### Documentation Lookup
-- **Always use Context7 first** for major frameworks/libraries documentation
-- Use `mcp__context7__resolve-library-id` then `mcp__context7__get-library-docs`
-- Only use WebSearch if Context7 lacks the needed information
-- **CRITICAL VERSION REQUIREMENTS:**
-  - Tauri v2.x (NOT v1 - different API)
-  - shadcn/ui v4.x with Tailwind v4.x (NOT v3)
-  - React 19.x
-  - Zustand v5.x
-  - CodeMirror v6.x
-  - Vitest v3.x
+**CRITICAL:** Follow these practices strictly:
+
+1. **Read Before Editing**: Always read files before modifying them to understand context and existing patterns
+2. **Follow Established Patterns**: Use design patterns from this file and `docs/architecture-guide.md`. Only introduce new patterns when necessary and document immediately
+3. **Senior Architect Mindset**: Apply expert-level thinking considering performance, maintainability, testability, and scalability
+4. **Batch Operations**: Use multiple tool calls in single responses for efficiency when possible
+5. **Match Code Style**: Follow the existing formatting and patterns in the specific file being edited
+6. **Test Coverage**: Write comprehensive tests for business logic, edge cases, and integration points
+7. **Quality Gates**: Run `npm run check:all` after significant changes to ensure all tests pass
+8. **No Dev Server**: Ask user to run dev server and report back instead of executing it yourself
+9. **No Unsolicited Commits**: Only create commits when explicitly requested
+10. **Documentation**: Update `docs/architecture-guide.md` and this file when introducing new patterns
+
+### Documentation & Versions
+- **Context7 First**: Always use Context7 for framework docs before WebSearch
+- **Version Requirements**: Tauri v2.x, shadcn/ui v4.x, Tailwind v4.x, React 19.x, Zustand v5.x, CodeMirror v6.x, Vitest v3.x
+- **Progress Tracking**: Update `docs/tasks.md` after completing major work
 
 ## Current Status
 
