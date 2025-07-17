@@ -1,19 +1,11 @@
 /* iA Writer Editor Theme Variables */
 
-/* Fenced Code Block Styling */
-/* Since CodeMirror doesn't add classes to fenced code content lines,
-   we need to use JavaScript to detect and style them */
-
-.cm-fenced-code-block {
+/* Inline Code Styling - this works reliably */
+.cm-editor .cm-line [class*="inlineCode"] {
   background-color: var(--editor-color-codeblock-background);
   font-family: 'iA Writer Mono Variable', 'iA Writer Mono', monospace;
-  padding: 2px 0;
-}
-
-/* Style the fence markers themselves */
-.cm-line:has([class*="ͼb"]) {
-  background-color: var(--editor-color-codeblock-background);
-  font-family: 'iA Writer Mono Variable', 'iA Writer Mono', monospace;
+  padding: 1px 3px;
+  border-radius: 2px;
 }
 
 /* Common Colors */
@@ -77,7 +69,6 @@
   --editor-font-size: 11px;
   --editor-line-height: 17.7px;
   --editor-font-variation-settings: 'spcg' 1;
-  --editor-content-margin: 24px;
   --editor-content-max-width: none;
 }
 
@@ -90,7 +81,6 @@
     --editor-font-size: 12px;
     --editor-line-height: 20.9px;
     --editor-font-variation-settings: 'spcg' 14;
-    --editor-content-margin: 74px;
   }
 }
 
@@ -100,7 +90,6 @@
     --editor-font-size: 12px;
     --editor-line-height: 20.9px;
     --editor-font-variation-settings: 'spcg' 14;
-    --editor-content-margin: auto;
     --editor-content-max-width: 705px;
   }
 }
@@ -111,7 +100,6 @@
     --editor-font-size: 14px;
     --editor-line-height: 24.1px;
     --editor-font-variation-settings: 'spcg' 3;
-    --editor-content-margin: auto;
     --editor-content-max-width: 800px;
   }
 }
@@ -122,7 +110,6 @@
     --editor-font-size: 16px;
     --editor-line-height: 28.6px;
     --editor-font-variation-settings: 'spcg' 19;
-    --editor-content-margin: auto;
     --editor-content-max-width: 980px;
   }
 }

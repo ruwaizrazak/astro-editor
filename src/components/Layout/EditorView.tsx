@@ -1,7 +1,6 @@
 import React, { useCallback, useRef, useEffect } from 'react'
 import CodeMirror from '@uiw/react-codemirror'
 import { markdown } from '@codemirror/lang-markdown'
-import { ViewPlugin, ViewUpdate } from '@codemirror/view'
 import { EditorView } from '@codemirror/view'
 import { keymap } from '@codemirror/view'
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
@@ -80,52 +79,6 @@ const markdownTags = {
   escape: Tag.define(), // \* \` etc
 }
 
-// Plugin to detect and style fenced code blocks
-const fencedCodePlugin = ViewPlugin.fromClass(
-  class {
-    constructor(public view: EditorView) {
-      this.updateFencedCodeBlocks()
-    }
-    
-    update(update: ViewUpdate) {
-      if (update.docChanged || update.viewportChanged) {
-        this.updateFencedCodeBlocks()
-      }
-    }
-    
-    updateFencedCodeBlocks() {
-      const { view } = this
-      const doc = view.state.doc
-      const text = doc.toString()
-      
-      // Remove existing fenced code classes
-      const lines = view.dom.querySelectorAll('.cm-line')
-      lines.forEach(line => line.classList.remove('cm-fenced-code-block'))
-      
-      // Find all fenced code blocks
-      const fenceRegex = /```[\s\S]*?```/g
-      let match
-      
-      while ((match = fenceRegex.exec(text)) !== null) {
-        const start = match.index
-        const end = match.index + match[0].length
-        
-        // Get line numbers for this range
-        const startLine = doc.lineAt(start).number
-        const endLine = doc.lineAt(end).number
-        
-        // Add class to all lines in the fenced block
-        for (let lineNum = startLine; lineNum <= endLine; lineNum++) {
-          const lineElement = view.dom.querySelector(`[data-line="${lineNum}"]`) ||
-                             view.dom.querySelectorAll('.cm-line')[lineNum - 1]
-          if (lineElement) {
-            lineElement.classList.add('cm-fenced-code-block')
-          }
-        }
-      }
-    }
-  }
-)
 
 
 // Create style extension that maps parser tags to our custom tags
@@ -261,11 +214,12 @@ const comprehensiveHighlightStyle = HighlightStyle.define([
     tag: markdownTags.inlineCode,
     backgroundColor: 'var(--editor-color-codeblock-background)',
     fontFamily: 'iA Writer Mono Variable, iA Writer Mono, monospace',
+    padding: '1px 3px',
+    borderRadius: '2px',
   },
   { tag: markdownTags.inlineCodeMark, color: 'var(--editor-color-mdtag)' },
   {
     tag: markdownTags.codeBlock,
-    backgroundColor: 'var(--editor-color-codeblock-background)',
     fontFamily: 'iA Writer Mono Variable, iA Writer Mono, monospace',
   },
   { tag: markdownTags.codeBlockMark, color: 'var(--editor-color-mdtag)' },
@@ -704,8 +658,10 @@ export const EditorViewComponent: React.FC = () => {
         createLink: () => createMarkdownLink(view),
         formatHeading: level => transformLineToHeading(view, level),
       }
+      
     }
   }, [])
+
 
   // Expose editor functions globally for menu integration
   useEffect(() => {
@@ -721,7 +677,6 @@ export const EditorViewComponent: React.FC = () => {
       extensions: [markdownStyleExtension],
     }),
     syntaxHighlighting(comprehensiveHighlightStyle),
-    fencedCodePlugin,
     history(),
     // High-precedence custom markdown shortcuts
     Prec.high(
@@ -800,8 +755,8 @@ export const EditorViewComponent: React.FC = () => {
         lineHeight: 'var(--editor-line-height)',
         minHeight: '100vh',
         maxWidth: 'var(--editor-content-max-width)',
-        margin: 'var(--editor-content-margin)',
-        padding: '40px 0',
+        margin: '0 auto',
+        padding: '40px 24px',
       },
       '.cm-focused': {
         outline: 'none',
