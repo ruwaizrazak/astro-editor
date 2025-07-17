@@ -1,4 +1,5 @@
 import { EditorView } from '@codemirror/view'
+import { EditorSelection } from '@codemirror/state'
 import { isValidUrl } from '../urls/detection'
 
 /**
@@ -22,9 +23,14 @@ export const handlePaste = (
 
   if (selectedText.trim()) {
     // Create markdown link with selected text and pasted URL
-    const linkText = `[${selectedText}](${clipboardText.trim()})`
+    const trimmedUrl = clipboardText.trim()
+    const linkText = `[${selectedText}](${trimmedUrl})`
+    const urlStart = from + selectedText.length + 3 // Position after "[selectedText]("
+    const urlEnd = urlStart + trimmedUrl.length // End of URL
+    
     view.dispatch({
       changes: { from, to, insert: linkText },
+      selection: EditorSelection.range(urlStart, urlEnd), // Select just the URL part
     })
     return true // Prevent default paste
   }
