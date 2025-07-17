@@ -289,10 +289,12 @@ th:not(.cm-editor *) {
   outline: none !important;
 }
 
-/* Buttons and interactive elements should have pointer cursor */
-button,
-a,
-[role='button'],
+/* Only links should have pointer cursor in native app */
+a {
+  cursor: pointer !important;
+}
+
+/* Utility class for when pointer cursor is explicitly needed */
 .cursor-pointer {
   cursor: pointer !important;
 }

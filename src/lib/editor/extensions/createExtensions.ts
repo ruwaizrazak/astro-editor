@@ -15,7 +15,6 @@ export interface ExtensionConfig {
   onSave: () => void
   onFocus: () => void
   onBlur: () => void
-  isAltPressed: boolean
 }
 
 /**

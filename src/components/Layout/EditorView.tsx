@@ -1,13 +1,13 @@
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useEffect, useState } from 'react'
 import CodeMirror from '@uiw/react-codemirror'
 import { EditorView } from '@codemirror/view'
 import { useAppStore } from '../../store'
 import {
   useEditorSetup,
   useEditorHandlers,
-  useAltKeyTracking,
   useTauriListeners,
 } from '../../hooks/editor'
+import { altKeyEffect } from '../../lib/editor/urls'
 import './EditorView.css'
 import './EditorTheme.css'
 
@@ -35,32 +35,68 @@ declare global {
 export const EditorViewComponent: React.FC = () => {
   const { editorContent } = useAppStore()
   const editorRef = useRef<{ view?: EditorView }>(null)
+  const [isAltPressed, setIsAltPressed] = useState(false)
 
   // Initialize global focus flag
   useEffect(() => {
     window.isEditorFocused = false
   }, [])
 
+  // Track Alt key state for URL highlighting - moved back to component for timing
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.altKey && !isAltPressed) {
+        setIsAltPressed(true)
+        // Update CodeMirror state
+        if (editorRef.current?.view) {
+          editorRef.current.view.dispatch({
+            effects: altKeyEffect.of(true),
+          })
+        }
+      }
+    }
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (!e.altKey && isAltPressed) {
+        setIsAltPressed(false)
+        // Update CodeMirror state
+        if (editorRef.current?.view) {
+          editorRef.current.view.dispatch({
+            effects: altKeyEffect.of(false),
+          })
+        }
+      }
+    }
+
+    // Handle window blur to reset Alt state
+    const handleBlur = () => {
+      setIsAltPressed(false)
+      // Update CodeMirror state
+      if (editorRef.current?.view) {
+        editorRef.current.view.dispatch({
+          effects: altKeyEffect.of(false),
+        })
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    document.addEventListener('keyup', handleKeyUp)
+    window.addEventListener('blur', handleBlur)
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      document.removeEventListener('keyup', handleKeyUp)
+      window.removeEventListener('blur', handleBlur)
+    }
+  }, [isAltPressed])
+
   // Set up event handlers
   const { handleChange, handleFocus, handleBlur, handleSave } =
     useEditorHandlers()
 
   // Set up editor extensions and commands
-  const {
-    extensions,
-    basicSetup,
-    isAltPressed,
-    handleAltKeyChange,
-    setupCommands,
-    cleanupCommands,
-  } = useEditorSetup(handleSave, handleFocus, handleBlur)
-
-  // Track Alt key state
-  useAltKeyTracking(
-    isAltPressed,
-    handleAltKeyChange,
-    editorRef.current?.view || null
-  )
+  const { extensions, basicSetup, setupCommands, cleanupCommands } =
+    useEditorSetup(handleSave, handleFocus, handleBlur)
 
   // Set up Tauri listeners
   useTauriListeners(editorRef.current?.view || null)

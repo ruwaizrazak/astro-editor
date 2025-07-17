@@ -62,6 +62,9 @@ export const urlHoverPlugin = ViewPlugin.fromClass(
         widgets.push(...urls)
       }
 
+      // Sort widgets by position before creating decorations - CodeMirror requires sorted ranges
+      widgets.sort((a, b) => a.from - b.from)
+      
       return Decoration.set(
         widgets.map(({ from, to }) =>
           Decoration.mark({
