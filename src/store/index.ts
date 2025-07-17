@@ -6,6 +6,7 @@ import {
   validateFieldValue,
   getDefaultValueForField,
 } from '../lib/schema'
+import { saveRecoveryData, saveCrashReport } from '../lib/recovery'
 
 export interface FileEntry {
   id: string
@@ -153,6 +154,13 @@ export const useAppStore = create<AppState>((set, get) => ({
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Failed to open file:', error)
+
+      // Save crash report for critical file parsing failures
+      await saveCrashReport(error as Error, {
+        currentFile: file.path,
+        projectPath: get().projectPath || undefined,
+        action: 'open_file',
+      })
     }
   },
 
@@ -238,8 +246,28 @@ export const useAppStore = create<AppState>((set, get) => ({
       }, 1000)
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.error('Failed to save file:', error)
-      set({ recentlySavedFile: null })
+      console.error('Save failed:', error)
+      // eslint-disable-next-line no-console
+      console.log('Attempting to save recovery data...')
+
+      // Save recovery data
+      const state = get()
+      await saveRecoveryData({
+        currentFile: state.currentFile,
+        projectPath: state.projectPath,
+        editorContent: state.editorContent,
+        frontmatter: state.frontmatter,
+      })
+
+      // Save crash report
+      await saveCrashReport(error as Error, {
+        currentFile: state.currentFile?.path,
+        projectPath: state.projectPath || undefined,
+        action: 'save',
+      })
+
+      // Keep the file marked as dirty since save failed
+      set({ isDirty: true, recentlySavedFile: null })
     }
   },
 

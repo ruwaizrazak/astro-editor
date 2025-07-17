@@ -70,6 +70,8 @@
 
 **CRITICAL:** Use Tauri v2 documentation only. v1 approaches don't work.
 
+**CRITICAL:** Always use modern Rust string formatting syntax: `format!("{variable}")` not `format!("{}", variable)`. This is required by Clippy and prevents compilation errors.
+
 ## Architecture Overview
 
 **See `docs/architecture-guide.md` for comprehensive architectural patterns.**

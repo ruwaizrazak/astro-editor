@@ -2,6 +2,7 @@ use chrono::Local;
 use serde_json::Value;
 use std::collections::HashMap;
 use std::path::PathBuf;
+use tauri::{path::BaseDirectory, Manager};
 
 #[tauri::command]
 pub async fn read_file(file_path: String) -> Result<String, String> {
@@ -549,6 +550,71 @@ fn rebuild_markdown_with_frontmatter_and_imports_ordered(
     }
 
     Ok(result)
+}
+
+#[tauri::command]
+pub async fn save_recovery_data(app: tauri::AppHandle, data: Value) -> Result<(), String> {
+    let timestamp = Local::now().format("%Y%m%d-%H%M%S").to_string();
+    let filename = data
+        .get("fileName")
+        .and_then(|v| v.as_str())
+        .unwrap_or("untitled");
+
+    // Create recovery directory
+    let recovery_dir = app
+        .path()
+        .resolve("recovery", BaseDirectory::AppLocalData)
+        .map_err(|e| format!("Failed to resolve recovery directory: {e}"))?;
+
+    std::fs::create_dir_all(&recovery_dir)
+        .map_err(|e| format!("Failed to create recovery directory: {e}"))?;
+
+    // Save JSON file with complete state
+    let json_filename = format!("{timestamp}-{filename}.recovery.json");
+    let json_path = recovery_dir.join(&json_filename);
+    let json_content = serde_json::to_string_pretty(&data)
+        .map_err(|e| format!("Failed to serialize recovery data: {e}"))?;
+
+    std::fs::write(&json_path, json_content)
+        .map_err(|e| format!("Failed to write recovery JSON: {e}"))?;
+
+    // Save Markdown file with just the content
+    let md_filename = format!("{timestamp}-{filename}.recovery.md");
+    let md_path = recovery_dir.join(&md_filename);
+    let md_content = data
+        .get("editorContent")
+        .and_then(|v| v.as_str())
+        .unwrap_or("");
+
+    std::fs::write(&md_path, md_content)
+        .map_err(|e| format!("Failed to write recovery Markdown: {e}"))?;
+
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn save_crash_report(app: tauri::AppHandle, report: Value) -> Result<(), String> {
+    let timestamp = Local::now().format("%Y%m%d-%H%M%S").to_string();
+
+    // Create crash-reports directory
+    let crash_dir = app
+        .path()
+        .resolve("crash-reports", BaseDirectory::AppLocalData)
+        .map_err(|e| format!("Failed to resolve crash reports directory: {e}"))?;
+
+    std::fs::create_dir_all(&crash_dir)
+        .map_err(|e| format!("Failed to create crash reports directory: {e}"))?;
+
+    // Save crash report
+    let filename = format!("{timestamp}-crash.json");
+    let file_path = crash_dir.join(&filename);
+    let content = serde_json::to_string_pretty(&report)
+        .map_err(|e| format!("Failed to serialize crash report: {e}"))?;
+
+    std::fs::write(&file_path, content)
+        .map_err(|e| format!("Failed to write crash report: {e}"))?;
+
+    Ok(())
 }
 
 #[cfg(test)]
