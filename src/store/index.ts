@@ -514,6 +514,16 @@ export const useAppStore = create<AppState>((set, get) => ({
       await projectRegistryManager.initialize()
       const globalSettings = projectRegistryManager.getGlobalSettings()
       set({ globalSettings })
+
+      // Log the app data directory for debugging
+      try {
+        const appDataDir = await invoke<string>('get_app_data_dir')
+        // eslint-disable-next-line no-console
+        console.log('App data directory:', appDataDir)
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.warn('Failed to get app data directory:', error)
+      }
     } catch (error) {
       toast.error('Failed to initialize project registry', {
         description:
