@@ -739,7 +739,7 @@ const handlePaste = (view: EditorView, event: ClipboardEvent): boolean => {
 }
 
 // Handle Tauri file drop events
-const handleTauriFileDrop = (payload: unknown, editorView: EditorView | null) => {
+const handleTauriFileDrop = async (payload: unknown, editorView: EditorView | null) => {
   if (!editorView) return
 
   console.log('Files dropped via Tauri - payload type:', typeof payload, 'payload:', payload)
@@ -761,12 +761,19 @@ const handleTauriFileDrop = (payload: unknown, editorView: EditorView | null) =>
 
   if (filePaths.length === 0) return
   
+  // Get current project path and collection
+  const { projectPath, currentCollection } = useAppStore.getState()
+  if (!projectPath || !currentCollection) {
+    console.error('No project path or collection selected')
+    return
+  }
+  
   // Insert file paths at current cursor position
   const { state } = editorView
   const { from } = state.selection.main
   
-  // Format each file path as markdown link or image
-  const formattedPaths = filePaths.map(filePath => {
+  // Process each file path
+  const formattedPaths = await Promise.all(filePaths.map(async (filePath) => {
     // Get filename from path
     const filename = filePath.split('/').pop() || filePath.split('\\').pop() || filePath
     
@@ -775,13 +782,30 @@ const handleTauriFileDrop = (payload: unknown, editorView: EditorView | null) =>
     const extension = filename.toLowerCase().substring(filename.lastIndexOf('.'))
     const isImage = imageExtensions.includes(extension)
     
-    // Return markdown formatted string
-    if (isImage) {
-      return `![${filename}](${filePath})`
-    } else {
-      return `[${filename}](${filePath})`
+    try {
+      // Copy file to assets folder and get new path
+      const newPath = await invoke<string>('copy_file_to_assets', {
+        sourcePath: filePath,
+        projectPath: projectPath,
+        collection: currentCollection
+      })
+      
+      // Return markdown formatted string with new path
+      if (isImage) {
+        return `![${filename}](/${newPath})`
+      } else {
+        return `[${filename}](/${newPath})`
+      }
+    } catch (error) {
+      console.error('Failed to copy file to assets:', error)
+      // Fallback to original path if copy fails
+      if (isImage) {
+        return `![${filename}](${filePath})`
+      } else {
+        return `[${filename}](${filePath})`
+      }
     }
-  })
+  }))
   
   const insertText = formattedPaths.join('\n')
   editorView.dispatch({

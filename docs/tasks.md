@@ -245,6 +245,9 @@ _Goal: Production-ready reliability and performance_
 
 **Phase 4.1 - Polish, Resiliance & Usability**
 
+- [ ] Bugs
+  - [ ] Codemirror is showing an autocomplete menu for HTML tags when I type `<` - turn it off.
+  - [ ] Syntax highlighting for markdown (bold, italic etc) does not work inside HTML tags. Can we make it easily or not?
 - [ ] Review EditorView.tsx. It is now a HUGE file and me must be able to extract a lot of the functioonality into helpers, utils, other React components etc? Think like an expert front-end architect and plan a detailed refactor to separate things. Be careful not to break or alter the functionality while doing this.
 - [ ] Implement simple `Cmd + P` command pallete to execute common commands etc (use https://ui.shadcn.com/docs/components/command): New [Article, Note etc - based on collections in schema], Open Collection, Open Project etc. Must be easily extensible in the future and know the currently selected collection and content item (if any), and perhaps the currently selected text if in the editor pane?. This may be an opportunity to think about how we handle various Internal messaging, commands, etc.
 - [ ] Consider Optimization for potential large content collections (virtualized lists, lazy loading etc?)

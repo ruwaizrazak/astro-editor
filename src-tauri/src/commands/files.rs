@@ -1,6 +1,7 @@
 use serde_json::Value;
 use std::collections::HashMap;
 use std::path::PathBuf;
+use chrono::Local;
 
 #[tauri::command]
 pub async fn read_file(file_path: String) -> Result<String, String> {
@@ -37,6 +38,111 @@ pub async fn delete_file(file_path: String) -> Result<(), String> {
 #[tauri::command]
 pub async fn rename_file(old_path: String, new_path: String) -> Result<(), String> {
     std::fs::rename(&old_path, &new_path).map_err(|e| format!("Failed to rename file: {e}"))
+}
+
+/// Convert a string to kebab case
+fn to_kebab_case(s: &str) -> String {
+    s.to_lowercase()
+        .replace(' ', "-")
+        .replace('_', "-")
+        .chars()
+        .filter(|c| c.is_alphanumeric() || *c == '-' || *c == '.')
+        .collect::<String>()
+        .split('.')
+        .enumerate()
+        .map(|(i, part)| {
+            if i == 0 {
+                // Process filename part
+                part.chars()
+                    .fold(String::new(), |mut acc, c| {
+                        if acc.is_empty() || acc.ends_with('-') {
+                            acc.push(c);
+                        } else if acc.chars().last().unwrap().is_ascii_lowercase() && c.is_ascii_uppercase() {
+                            acc.push('-');
+                            acc.push(c.to_ascii_lowercase());
+                        } else {
+                            acc.push(c);
+                        }
+                        acc
+                    })
+            } else {
+                // Keep extension as is
+                part.to_string()
+            }
+        })
+        .collect::<Vec<_>>()
+        .join(".")
+}
+
+#[tauri::command]
+pub async fn copy_file_to_assets(
+    source_path: String,
+    project_path: String,
+    collection: String,
+) -> Result<String, String> {
+    use std::fs;
+    
+    // Create the assets directory structure
+    let assets_dir = PathBuf::from(&project_path)
+        .join("src")
+        .join("assets")
+        .join(&collection);
+    
+    fs::create_dir_all(&assets_dir)
+        .map_err(|e| format!("Failed to create assets directory: {e}"))?;
+    
+    // Get the source file info
+    let source = PathBuf::from(&source_path);
+    let file_name = source
+        .file_name()
+        .ok_or("Invalid source file path")?
+        .to_string_lossy();
+    
+    // Extract extension
+    let extension = source
+        .extension()
+        .and_then(|ext| ext.to_str())
+        .unwrap_or("");
+    
+    // Create the base filename with date prefix
+    let date_prefix = Local::now().format("%Y-%m-%d").to_string();
+    let name_without_ext = file_name.trim_end_matches(&format!(".{}", extension));
+    let kebab_name = to_kebab_case(name_without_ext);
+    
+    // Build the new filename
+    let mut base_name = format!("{}-{}", date_prefix, kebab_name);
+    if !extension.is_empty() {
+        base_name.push('.');
+        base_name.push_str(extension);
+    }
+    
+    // Handle conflicts by appending -1, -2, etc.
+    let mut final_path = assets_dir.join(&base_name);
+    let mut counter = 1;
+    
+    while final_path.exists() {
+        let name_with_counter = if extension.is_empty() {
+            format!("{}-{}-{}", date_prefix, kebab_name, counter)
+        } else {
+            format!("{}-{}-{}.{}", date_prefix, kebab_name, counter, extension)
+        };
+        final_path = assets_dir.join(name_with_counter);
+        counter += 1;
+    }
+    
+    // Copy the file
+    fs::copy(&source_path, &final_path)
+        .map_err(|e| format!("Failed to copy file: {e}"))?;
+    
+    // Return the relative path from the project root (for markdown)
+    let relative_path = final_path
+        .strip_prefix(&project_path)
+        .map_err(|_| "Failed to create relative path")?
+        .to_string_lossy()
+        .to_string();
+    
+    // Convert to forward slashes for markdown compatibility
+    Ok(relative_path.replace('\\', "/"))
 }
 
 #[derive(serde::Serialize, serde::Deserialize)]

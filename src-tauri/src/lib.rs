@@ -296,7 +296,8 @@ pub fn run() {
             start_watching_project,
             stop_watching_project,
             copy_text_to_clipboard,
-            update_format_menu_state
+            update_format_menu_state,
+            copy_file_to_assets
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
