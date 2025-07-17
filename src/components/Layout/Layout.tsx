@@ -6,7 +6,7 @@ import { UnifiedTitleBar } from './UnifiedTitleBar'
 import { Sidebar } from './Sidebar'
 import { MainEditor } from './MainEditor'
 import { FrontmatterPanel } from './FrontmatterPanel'
-import { getEditorCommands } from './EditorView'
+import { globalCommandRegistry } from '../../lib/editor/commands'
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -190,51 +190,43 @@ export const Layout: React.FC = () => {
 
     // Text formatting menu listeners
     const unlistenFormatBold = listen('menu-format-bold', () => {
-      const editorCommands = getEditorCommands()
-      if (editorCommands && currentFile) {
-        editorCommands.toggleBold()
+      if (currentFile) {
+        globalCommandRegistry.execute('toggleBold')
       }
     })
     const unlistenFormatItalic = listen('menu-format-italic', () => {
-      const editorCommands = getEditorCommands()
-      if (editorCommands && currentFile) {
-        editorCommands.toggleItalic()
+      if (currentFile) {
+        globalCommandRegistry.execute('toggleItalic')
       }
     })
     const unlistenFormatLink = listen('menu-format-link', () => {
-      const editorCommands = getEditorCommands()
-      if (editorCommands && currentFile) {
-        editorCommands.createLink()
+      if (currentFile) {
+        globalCommandRegistry.execute('createLink')
       }
     })
     const unlistenFormatH1 = listen('menu-format-h1', () => {
-      const editorCommands = getEditorCommands()
-      if (editorCommands && currentFile) {
-        editorCommands.formatHeading(1)
+      if (currentFile) {
+        globalCommandRegistry.execute('formatHeading', 1)
       }
     })
     const unlistenFormatH2 = listen('menu-format-h2', () => {
-      const editorCommands = getEditorCommands()
-      if (editorCommands && currentFile) {
-        editorCommands.formatHeading(2)
+      if (currentFile) {
+        globalCommandRegistry.execute('formatHeading', 2)
       }
     })
     const unlistenFormatH3 = listen('menu-format-h3', () => {
-      const editorCommands = getEditorCommands()
-      if (editorCommands && currentFile) {
-        editorCommands.formatHeading(3)
+      if (currentFile) {
+        globalCommandRegistry.execute('formatHeading', 3)
       }
     })
     const unlistenFormatH4 = listen('menu-format-h4', () => {
-      const editorCommands = getEditorCommands()
-      if (editorCommands && currentFile) {
-        editorCommands.formatHeading(4)
+      if (currentFile) {
+        globalCommandRegistry.execute('formatHeading', 4)
       }
     })
     const unlistenFormatParagraph = listen('menu-format-paragraph', () => {
-      const editorCommands = getEditorCommands()
-      if (editorCommands && currentFile) {
-        editorCommands.formatHeading(0)
+      if (currentFile) {
+        globalCommandRegistry.execute('formatHeading', 0)
       }
     })
 

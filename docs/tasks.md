@@ -245,10 +245,11 @@ _Goal: Production-ready reliability and performance_
 
 **Phase 4.1 - Polish, Resiliance & Usability**
 
-- [ ] Bugs
-  - [ ] Codemirror is showing an autocomplete menu for HTML tags when I type `<` - turn it off.
-  - [ ] Syntax highlighting for markdown (bold, italic etc) does not work inside HTML tags. Can we make it easily or not?
+- [x] Bugs
+  - [x] Codemirror is showing an autocomplete menu for HTML tags when I type `<` - turn it off.
+  - [x] Syntax highlighting for markdown (bold, italic etc) does not work inside HTML tags. Can we make it easily or not? - Research
 - [ ] Review EditorView.tsx. It is now a HUGE file and me must be able to extract a lot of the functioonality into helpers, utils, other React components etc? Think like an expert front-end architect and plan a detailed refactor to separate things. Be careful not to break or alter the functionality while doing this.
+- [ ] Update `ia-writer-ui.md` to include current size values etc from codebase. Only the line-heights and font sizes need to change, I think? Maybe also add character spacing in place of font variation settings.
 - [ ] Implement simple `Cmd + P` command pallete to execute common commands etc (use https://ui.shadcn.com/docs/components/command): New [Article, Note etc - based on collections in schema], Open Collection, Open Project etc. Must be easily extensible in the future and know the currently selected collection and content item (if any), and perhaps the currently selected text if in the editor pane?. This may be an opportunity to think about how we handle various Internal messaging, commands, etc.
 - [ ] Consider Optimization for potential large content collections (virtualized lists, lazy loading etc?)
 - [ ] Handle crash recovery and unsaved changes detection somehow? Probably just needs some temporary storage if the auto-save fails so users don't loose loads of work if they don't notice?
@@ -325,3 +326,62 @@ _Goal: Advanced features that differentiate from basic editors_
 - [ ] AI Editing assistant
 - [ ] "hang" header hashes in the left margin as per iA Writer
 - [ ] Add very simple search functionality (by filename and title [if present] only)
+
+### MDX Support with Nested Markdown Highlighting
+
+**Problem**: Currently, markdown syntax (bold, italic, links, etc.) inside HTML/JSX components appears as plain text instead of being properly highlighted. For example, `**markdown**` inside `<Callout>` tags doesn't get styled.
+
+**Current State**:
+
+- CodeMirror 6 has no built-in MDX support
+- Our current `@codemirror/lang-markdown` treats content inside HTML tags as plain text
+- The MDX ecosystem uses micromark extensions but these aren't integrated with CodeMirror 6
+- No existing community solutions for CodeMirror 6 MDX support
+
+**Technical Approaches Identified**:
+
+1. **Custom MDX Parser (Recommended)**:
+   - Fork `@codemirror/lang-markdown` to create a custom MDX parser
+   - Use CodeMirror's `parseMixed` functionality to handle nested parsing
+   - Integrate with micromark MDX extensions for robust MDX parsing
+   - Handle JSX components, expressions, and markdown content properly
+
+2. **HTML-First with Nested Markdown**:
+   - Switch to `@codemirror/lang-html` as base parser
+   - Configure nested markdown parsers for specific component tags
+   - Would require restructuring current highlighting system
+
+3. **Decoration Overlays**:
+   - Create decorations that detect markdown patterns inside HTML tags
+   - Apply styling through mark decorations
+   - Less robust but simpler implementation
+
+**Implementation Complexity**:
+
+- **High**: Requires deep CodeMirror parsing knowledge
+- **Significant refactoring**: Current comprehensive highlighting system would need updates
+- **Ongoing maintenance**: Custom parser would need updates as CodeMirror evolves
+
+**Benefits of Custom MDX Parser**:
+
+- Complete control over MDX syntax handling
+- Could solve other syntax highlighting edge cases we've encountered
+- Potential open-source contribution to CodeMirror ecosystem
+- Would properly handle MDX expressions, JSX components, and nested markdown
+- Future-proof solution for advanced MDX features
+
+**Challenges**:
+
+- MDX has known issues with markdown in nested HTML structures
+- Complex interaction between markdown and JSX parsing
+- Need to handle edge cases like tables with markdown content
+- Risk of destabilizing current robust highlighting system
+
+**Alternative Approaches**:
+
+- Use standard markdown syntax outside HTML components
+- Create helper components that accept markdown props
+- Wait for community MDX support development
+
+**Recommendation**:
+Defer until after core editor features are complete. When implemented, should be done as a comprehensive custom MDX parser that could benefit the broader CodeMirror community. The current markdown highlighting system already handles the vast majority of use cases effectively.
