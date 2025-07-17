@@ -7,6 +7,7 @@ import { Sidebar } from './Sidebar'
 import { MainEditor } from './MainEditor'
 import { FrontmatterPanel } from './FrontmatterPanel'
 import { globalCommandRegistry } from '../../lib/editor/commands'
+import { CommandPalette } from '../CommandPalette'
 import { Toaster } from '../ui/sonner'
 import { toast } from '../../lib/toast'
 import { initializeRustToastBridge } from '../../lib/rust-toast-bridge'
@@ -329,6 +330,9 @@ export const Layout: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Command Palette */}
+      <CommandPalette />
 
       {/* Toast notifications */}
       <Toaster />
