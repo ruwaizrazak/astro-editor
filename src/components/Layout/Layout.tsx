@@ -27,7 +27,7 @@ const useResponsiveFrontmatterSize = () => {
 
   // Return smaller default size on wider screens
   if (windowWidth >= 1400) return 20 // Very wide screens
-  if (windowWidth >= 1024) return 25 // Large screens  
+  if (windowWidth >= 1024) return 25 // Large screens
   return 30 // Default for smaller screens
 }
 

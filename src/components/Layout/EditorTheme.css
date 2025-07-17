@@ -15,7 +15,11 @@
 
 /* Simple URL hover styling when Alt is pressed - just background and cursor */
 .url-alt-hover:hover {
-  background-color: color-mix(in srgb, var(--editor-color-carat) 15%, transparent) !important;
+  background-color: color-mix(
+    in srgb,
+    var(--editor-color-carat) 15%,
+    transparent
+  ) !important;
   cursor: pointer !important;
   border-radius: 3px;
 }
@@ -96,7 +100,6 @@
   /* --editor-font-variation-settings: 'spcg' 1; */
   --editor-content-max-width: none;
 }
-
 
 /* Responsive Typography Breakpoints using regular media queries for now */
 /* Since container queries may not be fully supported in current WebKit */

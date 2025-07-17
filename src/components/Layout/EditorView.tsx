@@ -1,11 +1,22 @@
 import React, { useCallback, useRef, useEffect, useState } from 'react'
 import CodeMirror from '@uiw/react-codemirror'
 import { markdown } from '@codemirror/lang-markdown'
-import { EditorView, ViewPlugin, ViewUpdate, Decoration, DecorationSet } from '@codemirror/view'
+import {
+  EditorView,
+  ViewPlugin,
+  ViewUpdate,
+  Decoration,
+  DecorationSet,
+} from '@codemirror/view'
 import { keymap } from '@codemirror/view'
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
 import { searchKeymap } from '@codemirror/search'
-import { EditorSelection, Prec, StateField, StateEffect } from '@codemirror/state'
+import {
+  EditorSelection,
+  Prec,
+  StateField,
+  StateEffect,
+} from '@codemirror/state'
 import { HighlightStyle, syntaxHighlighting } from '@codemirror/language'
 import { Tag, styleTags, tags } from '@lezer/highlight'
 import { useAppStore } from '../../store'
@@ -572,35 +583,44 @@ const transformLineToHeading = (
 const urlRegex = /^https?:\/\/[^\s]+$/
 
 // Enhanced URL detection for both plain URLs and markdown links
-const findUrlsInText = (text: string, offset: number = 0): Array<{url: string, from: number, to: number}> => {
-  const urls: Array<{url: string, from: number, to: number}> = []
-  
+const findUrlsInText = (
+  text: string,
+  offset: number = 0
+): Array<{ url: string; from: number; to: number }> => {
+  const urls: Array<{ url: string; from: number; to: number }> = []
+
   // Find plain URLs
-  const plainUrlRegex = /https?:\/\/[^\s\)]+/g
+  const plainUrlRegex = /https?:\/\/[^\s)]+/g
   let match
   while ((match = plainUrlRegex.exec(text)) !== null) {
     urls.push({
       url: match[0],
       from: offset + match.index,
-      to: offset + match.index + match[0].length
+      to: offset + match.index + match[0].length,
     })
   }
-  
+
   // Find markdown link URLs [text](url)
   const markdownLinkRegex = /\[([^\]]*)\]\(([^)]+)\)/g
   while ((match = markdownLinkRegex.exec(text)) !== null) {
     const linkUrl = match[2]
-    if (linkUrl.startsWith('http')) {
+    const linkText = match[1]
+    if (
+      linkUrl &&
+      linkText &&
+      linkUrl.startsWith('http') &&
+      match.index !== undefined
+    ) {
       // Position of the URL part within the markdown link
-      const urlStart = match.index + match[1].length + 3 // after "]("
+      const urlStart = match.index + linkText.length + 3 // after "]("
       urls.push({
         url: linkUrl,
         from: offset + urlStart,
-        to: offset + urlStart + linkUrl.length
+        to: offset + urlStart + linkUrl.length,
       })
     }
   }
-  
+
   return urls
 }
 
@@ -611,74 +631,84 @@ const altKeyEffect = StateEffect.define<boolean>()
 const altKeyState = StateField.define<boolean>({
   create: () => false,
   update: (value, tr) => {
-    for (let effect of tr.effects) {
+    for (const effect of tr.effects) {
       if (effect.is(altKeyEffect)) {
         return effect.value
       }
     }
     return value
-  }
+  },
 })
 
 // Simple approach: just add the decoration class, let CSS handle the rest
-const urlHoverPlugin = ViewPlugin.fromClass(class {
-  decorations: DecorationSet
+const urlHoverPlugin = ViewPlugin.fromClass(
+  class {
+    decorations: DecorationSet
 
-  constructor(view: EditorView) {
-    this.decorations = this.buildDecorations(view)
-  }
-
-  update(update: ViewUpdate) {
-    if (update.docChanged || update.viewportChanged || 
-        update.state.field(altKeyState) !== update.startState.field(altKeyState)) {
-      this.decorations = this.buildDecorations(update.view)
-    }
-  }
-
-  buildDecorations(view: EditorView): DecorationSet {
-    const isAltPressed = view.state.field(altKeyState)
-    if (!isAltPressed) return Decoration.none
-
-    const widgets: Array<{from: number, to: number}> = []
-    
-    // Scan through visible lines for URLs
-    for (let { from, to } of view.visibleRanges) {
-      const text = view.state.doc.sliceString(from, to)
-      const urls = findUrlsInText(text, from)
-      widgets.push(...urls)
+    constructor(view: EditorView) {
+      this.decorations = this.buildDecorations(view)
     }
 
-    return Decoration.set(
-      widgets.map(({ from, to }) =>
-        Decoration.mark({
-          class: 'url-alt-hover'
-        }).range(from, to)
+    update(update: ViewUpdate) {
+      if (
+        update.docChanged ||
+        update.viewportChanged ||
+        update.state.field(altKeyState) !== update.startState.field(altKeyState)
+      ) {
+        this.decorations = this.buildDecorations(update.view)
+      }
+    }
+
+    buildDecorations(view: EditorView): DecorationSet {
+      const isAltPressed = view.state.field(altKeyState)
+      if (!isAltPressed) return Decoration.none
+
+      const widgets: Array<{ from: number; to: number }> = []
+
+      // Scan through visible lines for URLs
+      for (const { from, to } of view.visibleRanges) {
+        const text = view.state.doc.sliceString(from, to)
+        const urls = findUrlsInText(text, from)
+        widgets.push(...urls)
+      }
+
+      return Decoration.set(
+        widgets.map(({ from, to }) =>
+          Decoration.mark({
+            class: 'url-alt-hover',
+          }).range(from, to)
+        )
       )
-    )
+    }
+  },
+  {
+    decorations: v => v.decorations,
   }
-}, {
-  decorations: v => v.decorations
-})
+)
 
 // Handle Alt+Click on URLs to open them in browser
-const handleUrlClick = async (view: EditorView, event: MouseEvent): Promise<boolean> => {
+const handleUrlClick = async (
+  view: EditorView,
+  event: MouseEvent
+): Promise<boolean> => {
   if (!event.altKey) return false
-  
+
   const pos = view.posAtCoords({ x: event.clientX, y: event.clientY })
   if (pos === null) return false
-  
+
   const doc = view.state.doc
   const line = doc.lineAt(pos)
   const urls = findUrlsInText(line.text, line.from)
-  
+
   // Check if click position is within any URL
   const clickedUrl = urls.find(url => pos >= url.from && pos <= url.to)
   if (!clickedUrl) return false
-  
+
   try {
     await openPath(clickedUrl.url)
     return true // Prevent default click behavior
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Failed to open URL:', error)
     return false
   }
@@ -741,7 +771,7 @@ export const EditorViewComponent: React.FC = () => {
         // Update CodeMirror state
         if (editorRef.current?.view) {
           editorRef.current.view.dispatch({
-            effects: altKeyEffect.of(true)
+            effects: altKeyEffect.of(true),
           })
         }
       }
@@ -753,7 +783,7 @@ export const EditorViewComponent: React.FC = () => {
         // Update CodeMirror state
         if (editorRef.current?.view) {
           editorRef.current.view.dispatch({
-            effects: altKeyEffect.of(false)
+            effects: altKeyEffect.of(false),
           })
         }
       }
@@ -765,7 +795,7 @@ export const EditorViewComponent: React.FC = () => {
       // Update CodeMirror state
       if (editorRef.current?.view) {
         editorRef.current.view.dispatch({
-          effects: altKeyEffect.of(false)
+          effects: altKeyEffect.of(false),
         })
       }
     }
@@ -958,10 +988,12 @@ export const EditorViewComponent: React.FC = () => {
       },
       // Selection styling - only fix the artifacts without breaking functionality
       '.cm-selectionBackground': {
-        backgroundColor: 'var(--editor-color-selectedtext-background) !important',
+        backgroundColor:
+          'var(--editor-color-selectedtext-background) !important',
       },
       '.cm-focused .cm-selectionBackground': {
-        backgroundColor: 'var(--editor-color-selectedtext-background) !important',
+        backgroundColor:
+          'var(--editor-color-selectedtext-background) !important',
       },
       // URL Alt+Click hover styling - keep it simple
       '&.alt-pressed .cm-content': {
