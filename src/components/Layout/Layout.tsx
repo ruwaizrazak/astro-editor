@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useAppStore } from '../../store'
 import { listen } from '@tauri-apps/api/event'
 import { invoke } from '@tauri-apps/api/core'
@@ -13,10 +13,29 @@ import {
   ResizableHandle,
 } from '../ui/resizable'
 
+// Hook to get responsive default size for frontmatter panel
+const useResponsiveFrontmatterSize = () => {
+  const [windowWidth, setWindowWidth] = useState(
+    typeof window !== 'undefined' ? window.innerWidth : 1200
+  )
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  // Return smaller default size on wider screens
+  if (windowWidth >= 1400) return 20 // Very wide screens
+  if (windowWidth >= 1024) return 25 // Large screens  
+  return 30 // Default for smaller screens
+}
+
 // Helper component to reduce duplication in Layout
 const EditorAreaWithFrontmatter: React.FC<{
   frontmatterPanelVisible: boolean
 }> = ({ frontmatterPanelVisible }) => {
+  const responsiveDefaultSize = useResponsiveFrontmatterSize()
   if (frontmatterPanelVisible) {
     return (
       <ResizablePanelGroup direction="horizontal" className="h-full">
@@ -30,7 +49,7 @@ const EditorAreaWithFrontmatter: React.FC<{
         </ResizablePanel>
         <ResizableHandle className="!cursor-col-resize" />
         <ResizablePanel
-          defaultSize={30}
+          defaultSize={responsiveDefaultSize}
           minSize={20}
           maxSize={60}
           className="bg-muted/10 border-l border-border overflow-hidden"
@@ -258,7 +277,7 @@ export const Layout: React.FC = () => {
               defaultSize={20}
               minSize={15}
               maxSize={35}
-              className="min-w-[200px] max-w-[400px]"
+              className="min-w-[200px]"
             >
               <Sidebar />
             </ResizablePanel>
