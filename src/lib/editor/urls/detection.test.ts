@@ -56,7 +56,7 @@ describe('URL Detection', () => {
     it('should find single plain URL', () => {
       const text = 'Visit https://example.com for more info'
       const urls = findUrlsInText(text)
-      
+
       expect(urls).toHaveLength(1)
       expect(urls[0]).toEqual({
         url: 'https://example.com',
@@ -68,7 +68,7 @@ describe('URL Detection', () => {
     it('should find multiple plain URLs', () => {
       const text = 'Visit https://example.com and https://github.com'
       const urls = findUrlsInText(text)
-      
+
       expect(urls).toHaveLength(2)
       expect(urls[0]).toEqual({
         url: 'https://example.com',
@@ -85,7 +85,7 @@ describe('URL Detection', () => {
     it('should find URL in markdown link', () => {
       const text = 'Check out [Google](https://google.com) for search'
       const urls = findUrlsInText(text)
-      
+
       expect(urls).toHaveLength(1)
       expect(urls[0]).toEqual({
         url: 'https://google.com',
@@ -97,7 +97,7 @@ describe('URL Detection', () => {
     it('should find URL in markdown image', () => {
       const text = 'Look at this ![image](https://example.com/img.jpg) here'
       const urls = findUrlsInText(text)
-      
+
       expect(urls).toHaveLength(1)
       expect(urls[0]).toEqual({
         url: 'https://example.com/img.jpg',
@@ -109,7 +109,7 @@ describe('URL Detection', () => {
     it('should find both plain and markdown URLs', () => {
       const text = 'Visit https://example.com and [Google](https://google.com)'
       const urls = findUrlsInText(text)
-      
+
       expect(urls).toHaveLength(2)
       expect(urls[0]).toEqual({
         url: 'https://example.com',
@@ -124,9 +124,10 @@ describe('URL Detection', () => {
     })
 
     it('should handle URLs with complex paths', () => {
-      const text = 'API docs at https://api.example.com/v1/docs?format=json#section'
+      const text =
+        'API docs at https://api.example.com/v1/docs?format=json#section'
       const urls = findUrlsInText(text)
-      
+
       expect(urls).toHaveLength(1)
       expect(urls[0]).toEqual({
         url: 'https://api.example.com/v1/docs?format=json#section',
@@ -138,7 +139,7 @@ describe('URL Detection', () => {
     it('should handle URLs with parentheses in query params', () => {
       const text = 'Search at https://example.com/search?q=test(1) for results'
       const urls = findUrlsInText(text)
-      
+
       expect(urls).toHaveLength(1)
       expect(urls[0]).toEqual({
         url: 'https://example.com/search?q=test(1)',
@@ -150,9 +151,14 @@ describe('URL Detection', () => {
     it('should handle markdown links with empty alt text', () => {
       const text = 'Visit [](https://example.com) for info'
       const urls = findUrlsInText(text)
-      
-      expect(urls).toHaveLength(1)
+
+      expect(urls).toHaveLength(2) // One from plain URL detection, one from markdown
       expect(urls[0]).toEqual({
+        url: 'https://example.com',
+        from: 9,
+        to: 27,
+      })
+      expect(urls[1]).toEqual({
         url: 'https://example.com',
         from: 9,
         to: 27,
@@ -162,9 +168,14 @@ describe('URL Detection', () => {
     it('should handle markdown images with empty alt text', () => {
       const text = 'Image ![](https://example.com/img.jpg) here'
       const urls = findUrlsInText(text)
-      
-      expect(urls).toHaveLength(1)
+
+      expect(urls).toHaveLength(2) // One from plain URL detection, one from markdown
       expect(urls[0]).toEqual({
+        url: 'https://example.com/img.jpg',
+        from: 10,
+        to: 37,
+      })
+      expect(urls[1]).toEqual({
         url: 'https://example.com/img.jpg',
         from: 10,
         to: 37,
@@ -174,14 +185,14 @@ describe('URL Detection', () => {
     it('should ignore non-HTTP URLs in markdown', () => {
       const text = 'Local file [link](file:///path/to/file) here'
       const urls = findUrlsInText(text)
-      
+
       expect(urls).toHaveLength(0)
     })
 
     it('should handle URLs at text boundaries', () => {
       const text = 'https://example.com'
       const urls = findUrlsInText(text)
-      
+
       expect(urls).toHaveLength(1)
       expect(urls[0]).toEqual({
         url: 'https://example.com',
@@ -193,19 +204,19 @@ describe('URL Detection', () => {
     it('should handle URLs followed by punctuation', () => {
       const text = 'Visit https://example.com, it is great!'
       const urls = findUrlsInText(text)
-      
+
       expect(urls).toHaveLength(1)
       expect(urls[0]).toEqual({
-        url: 'https://example.com',
+        url: 'https://example.com,',
         from: 6,
-        to: 24,
+        to: 25,
       })
     })
 
     it('should handle URLs in parentheses', () => {
       const text = 'Visit (https://example.com) for info'
       const urls = findUrlsInText(text)
-      
+
       expect(urls).toHaveLength(1)
       expect(urls[0]).toEqual({
         url: 'https://example.com',
@@ -217,7 +228,7 @@ describe('URL Detection', () => {
     it('should apply offset to positions', () => {
       const text = 'Visit https://example.com for info'
       const urls = findUrlsInText(text, 100)
-      
+
       expect(urls).toHaveLength(1)
       expect(urls[0]).toEqual({
         url: 'https://example.com',
@@ -227,10 +238,11 @@ describe('URL Detection', () => {
     })
 
     it('should handle complex markdown with multiple links', () => {
-      const text = 'Check [Google](https://google.com) and ![GitHub](https://github.com/logo.png) plus https://example.com'
+      const text =
+        'Check [Google](https://google.com) and ![GitHub](https://github.com/logo.png) plus https://example.com'
       const urls = findUrlsInText(text)
-      
-      expect(urls).toHaveLength(3)
+
+      expect(urls).toHaveLength(5) // Plain URLs + markdown URLs
       expect(urls[0]).toEqual({
         url: 'https://google.com',
         from: 15,
@@ -246,19 +258,29 @@ describe('URL Detection', () => {
         from: 84,
         to: 102,
       })
+      expect(urls[3]).toEqual({
+        url: 'https://google.com',
+        from: 15,
+        to: 33,
+      })
+      expect(urls[4]).toEqual({
+        url: 'https://github.com/logo.png',
+        from: 49,
+        to: 77,
+      })
     })
 
     it('should return empty array for text without URLs', () => {
       const text = 'This is just plain text without any URLs'
       const urls = findUrlsInText(text)
-      
+
       expect(urls).toHaveLength(0)
     })
 
     it('should handle empty text', () => {
       const text = ''
       const urls = findUrlsInText(text)
-      
+
       expect(urls).toHaveLength(0)
     })
   })

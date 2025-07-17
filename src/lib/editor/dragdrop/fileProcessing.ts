@@ -33,7 +33,16 @@ export const isImageFile = (filename: string): boolean => {
  * @returns Just the filename portion
  */
 export const extractFilename = (filePath: string): string => {
-  return filePath.split('/').pop() || filePath.split('\\').pop() || filePath
+  // Handle both Unix and Windows path separators
+  const parts = filePath.split(/[/\\]/)
+  const filename = parts[parts.length - 1]
+
+  // If the filename is empty (path ends with separator), return empty string
+  if (filename === '') {
+    return ''
+  }
+
+  return filename || filePath
 }
 
 /**

@@ -18,7 +18,7 @@ export const transformLineToHeading = (
   const lineText = line.text
 
   // Remove existing heading markers (if any)
-  const cleanedText = lineText.replace(/^#+\s*/, '')
+  const cleanedText = lineText.replace(/^#+\s*/, '').trim()
 
   // Create new text based on desired level
   let newLineText: string
@@ -28,7 +28,7 @@ export const transformLineToHeading = (
   } else {
     // Add heading markers
     const markers = '#'.repeat(level)
-    newLineText = `${markers} ${cleanedText}`
+    newLineText = cleanedText ? `${markers} ${cleanedText}` : `${markers} `
   }
 
   // Replace the entire line

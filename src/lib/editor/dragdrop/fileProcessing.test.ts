@@ -83,7 +83,9 @@ describe('File Processing', () => {
     })
 
     it('should extract filename from Windows path', () => {
-      expect(extractFilename('C:\\Users\\User\\Documents\\file.txt')).toBe('file.txt')
+      expect(extractFilename('C:\\Users\\User\\Documents\\file.txt')).toBe(
+        'file.txt'
+      )
       expect(extractFilename('D:\\Images\\photo.jpg')).toBe('photo.jpg')
     })
 
@@ -107,8 +109,12 @@ describe('File Processing', () => {
     })
 
     it('should handle complex filenames', () => {
-      expect(extractFilename('/path/to/my-file.final.v2.txt')).toBe('my-file.final.v2.txt')
-      expect(extractFilename('C:\\Users\\User\\my file (1).png')).toBe('my file (1).png')
+      expect(extractFilename('/path/to/my-file.final.v2.txt')).toBe(
+        'my-file.final.v2.txt'
+      )
+      expect(extractFilename('C:\\Users\\User\\my file (1).png')).toBe(
+        'my file (1).png'
+      )
     })
   })
 
@@ -119,12 +125,20 @@ describe('File Processing', () => {
     })
 
     it('should format non-image as markdown link', () => {
-      const result = formatAsMarkdown('document.pdf', '/assets/document.pdf', false)
+      const result = formatAsMarkdown(
+        'document.pdf',
+        '/assets/document.pdf',
+        false
+      )
       expect(result).toBe('[document.pdf](/assets/document.pdf)')
     })
 
     it('should handle special characters in filename', () => {
-      const result = formatAsMarkdown('my file (1).png', '/assets/my file (1).png', true)
+      const result = formatAsMarkdown(
+        'my file (1).png',
+        '/assets/my file (1).png',
+        true
+      )
       expect(result).toBe('![my file (1).png](/assets/my file (1).png)')
     })
 
@@ -134,7 +148,11 @@ describe('File Processing', () => {
     })
 
     it('should handle complex paths', () => {
-      const result = formatAsMarkdown('file.txt', '/assets/docs/2023/file.txt', false)
+      const result = formatAsMarkdown(
+        'file.txt',
+        '/assets/docs/2023/file.txt',
+        false
+      )
       expect(result).toBe('[file.txt](/assets/docs/2023/file.txt)')
     })
   })
@@ -231,7 +249,8 @@ describe('File Processing', () => {
         originalPath: '/path/to/my-file.final.v2.png',
         filename: 'my-file.final.v2.png',
         isImage: true,
-        markdownText: '![my-file.final.v2.png](/assets/collection/my-file.final.v2.png)',
+        markdownText:
+          '![my-file.final.v2.png](/assets/collection/my-file.final.v2.png)',
       })
     })
   })
@@ -264,7 +283,11 @@ describe('File Processing', () => {
     })
 
     it('should handle empty array', async () => {
-      const result = await processDroppedFiles([], '/project/path', 'collection')
+      const result = await processDroppedFiles(
+        [],
+        '/project/path',
+        'collection'
+      )
       expect(result).toHaveLength(0)
     })
 
@@ -295,18 +318,25 @@ describe('File Processing', () => {
     })
 
     it('should process many files concurrently', async () => {
-      const filePaths = Array.from({ length: 10 }, (_, i) => `/path/to/file${i}.txt`)
+      const filePaths = Array.from(
+        { length: 10 },
+        (_, i) => `/path/to/file${i}.txt`
+      )
       mockInvoke.mockImplementation((_, args) => {
         const { sourcePath } = args as { sourcePath: string }
         const filename = sourcePath.split('/').pop()
         return Promise.resolve(`assets/collection/${filename}`)
       })
 
-      const result = await processDroppedFiles(filePaths, '/project/path', 'collection')
+      const result = await processDroppedFiles(
+        filePaths,
+        '/project/path',
+        'collection'
+      )
 
       expect(result).toHaveLength(10)
       expect(mockInvoke).toHaveBeenCalledTimes(10)
-      
+
       // Verify all files were processed
       filePaths.forEach((path, index) => {
         expect(result[index]?.originalPath).toBe(path)

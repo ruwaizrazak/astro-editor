@@ -6,17 +6,21 @@ import {
   createMarkdownLink,
   parseMarkdownLinks,
 } from './formatting'
-import { MarkdownLinkMatch } from './types'
 
 // Mock dispatch function
 const mockDispatch = vi.fn()
 
-const createMockView = (content: string, selection?: { from: number; to: number }) => {
+const createMockView = (
+  content: string,
+  selection?: { from: number; to: number }
+) => {
   const state = EditorState.create({
     doc: content,
-    selection: selection ? EditorSelection.range(selection.from, selection.to) : undefined,
+    selection: selection
+      ? EditorSelection.range(selection.from, selection.to)
+      : undefined,
   })
-  
+
   return {
     state,
     dispatch: mockDispatch,
@@ -31,9 +35,9 @@ describe('Markdown Formatting', () => {
   describe('toggleMarkdown', () => {
     it('should add bold markers to selected text', () => {
       const view = createMockView('Hello world', { from: 0, to: 5 })
-      
+
       const result = toggleMarkdown(view, '**')
-      
+
       expect(result).toBe(true)
       expect(mockDispatch).toHaveBeenCalledWith({
         changes: { from: 0, to: 5, insert: '**Hello**' },
@@ -43,9 +47,9 @@ describe('Markdown Formatting', () => {
 
     it('should add italic markers to selected text', () => {
       const view = createMockView('Hello world', { from: 6, to: 11 })
-      
+
       const result = toggleMarkdown(view, '*')
-      
+
       expect(result).toBe(true)
       expect(mockDispatch).toHaveBeenCalledWith({
         changes: { from: 6, to: 11, insert: '*world*' },
@@ -55,9 +59,9 @@ describe('Markdown Formatting', () => {
 
     it('should remove existing bold markers', () => {
       const view = createMockView('Hello **world** test', { from: 8, to: 13 })
-      
+
       const result = toggleMarkdown(view, '**')
-      
+
       expect(result).toBe(true)
       expect(mockDispatch).toHaveBeenCalledWith({
         changes: [
@@ -70,9 +74,9 @@ describe('Markdown Formatting', () => {
 
     it('should remove existing italic markers', () => {
       const view = createMockView('Hello *world* test', { from: 7, to: 12 })
-      
+
       const result = toggleMarkdown(view, '*')
-      
+
       expect(result).toBe(true)
       expect(mockDispatch).toHaveBeenCalledWith({
         changes: [
@@ -85,9 +89,9 @@ describe('Markdown Formatting', () => {
 
     it('should handle empty selection', () => {
       const view = createMockView('Hello world', { from: 5, to: 5 })
-      
+
       const result = toggleMarkdown(view, '**')
-      
+
       expect(result).toBe(true)
       expect(mockDispatch).toHaveBeenCalledWith({
         changes: { from: 5, to: 5, insert: '****' },
@@ -97,9 +101,9 @@ describe('Markdown Formatting', () => {
 
     it('should handle code markers', () => {
       const view = createMockView('Hello world', { from: 0, to: 5 })
-      
+
       const result = toggleMarkdown(view, '`')
-      
+
       expect(result).toBe(true)
       expect(mockDispatch).toHaveBeenCalledWith({
         changes: { from: 0, to: 5, insert: '`Hello`' },
@@ -109,9 +113,9 @@ describe('Markdown Formatting', () => {
 
     it('should handle markers at document boundaries', () => {
       const view = createMockView('**Hello**', { from: 2, to: 7 })
-      
+
       const result = toggleMarkdown(view, '**')
-      
+
       expect(result).toBe(true)
       expect(mockDispatch).toHaveBeenCalledWith({
         changes: [
@@ -127,7 +131,7 @@ describe('Markdown Formatting', () => {
     it('should parse a single markdown link', () => {
       const lineText = 'Check out [Google](https://google.com) for search'
       const matches = parseMarkdownLinks(lineText)
-      
+
       expect(matches).toHaveLength(1)
       expect(matches[0]).toEqual({
         linkText: 'Google',
@@ -140,9 +144,10 @@ describe('Markdown Formatting', () => {
     })
 
     it('should parse multiple markdown links', () => {
-      const lineText = 'Visit [Google](https://google.com) and [GitHub](https://github.com)'
+      const lineText =
+        'Visit [Google](https://google.com) and [GitHub](https://github.com)'
       const matches = parseMarkdownLinks(lineText)
-      
+
       expect(matches).toHaveLength(2)
       expect(matches[0]).toEqual({
         linkText: 'Google',
@@ -165,7 +170,7 @@ describe('Markdown Formatting', () => {
     it('should handle empty link text', () => {
       const lineText = 'Visit [](https://google.com)'
       const matches = parseMarkdownLinks(lineText)
-      
+
       expect(matches).toHaveLength(1)
       expect(matches[0]).toEqual({
         linkText: '',
@@ -180,7 +185,7 @@ describe('Markdown Formatting', () => {
     it('should handle empty link URL', () => {
       const lineText = 'Visit [Google]()'
       const matches = parseMarkdownLinks(lineText)
-      
+
       expect(matches).toHaveLength(1)
       expect(matches[0]).toEqual({
         linkText: 'Google',
@@ -195,14 +200,14 @@ describe('Markdown Formatting', () => {
     it('should return empty array for no links', () => {
       const lineText = 'Just some regular text without links'
       const matches = parseMarkdownLinks(lineText)
-      
+
       expect(matches).toHaveLength(0)
     })
 
     it('should handle malformed markdown syntax', () => {
       const lineText = 'Incomplete [link or (url) syntax'
       const matches = parseMarkdownLinks(lineText)
-      
+
       expect(matches).toHaveLength(0)
     })
   })
@@ -210,9 +215,9 @@ describe('Markdown Formatting', () => {
   describe('createMarkdownLink', () => {
     it('should create link with selected text', () => {
       const view = createMockView('Hello world', { from: 0, to: 5 })
-      
+
       const result = createMarkdownLink(view)
-      
+
       expect(result).toBe(true)
       expect(mockDispatch).toHaveBeenCalledWith({
         changes: { from: 0, to: 5, insert: '[Hello]()' },
@@ -222,9 +227,9 @@ describe('Markdown Formatting', () => {
 
     it('should create link template with no selection', () => {
       const view = createMockView('Hello world', { from: 5, to: 5 })
-      
+
       const result = createMarkdownLink(view)
-      
+
       expect(result).toBe(true)
       expect(mockDispatch).toHaveBeenCalledWith({
         changes: { from: 5, to: 5, insert: '[text]()' },
@@ -235,9 +240,9 @@ describe('Markdown Formatting', () => {
     it('should select URL in existing link when cursor is inside', () => {
       const lineText = 'Visit [Google](https://google.com) today'
       const view = createMockView(lineText, { from: 20, to: 20 }) // cursor inside URL
-      
+
       const result = createMarkdownLink(view)
-      
+
       expect(result).toBe(true)
       expect(mockDispatch).toHaveBeenCalledWith({
         selection: EditorSelection.range(15, 33),
@@ -247,9 +252,9 @@ describe('Markdown Formatting', () => {
     it('should select URL in existing link when cursor is on link text', () => {
       const lineText = 'Visit [Google](https://google.com) today'
       const view = createMockView(lineText, { from: 8, to: 8 }) // cursor on 'o' in Google
-      
+
       const result = createMarkdownLink(view)
-      
+
       expect(result).toBe(true)
       expect(mockDispatch).toHaveBeenCalledWith({
         selection: EditorSelection.range(15, 33),
@@ -259,9 +264,9 @@ describe('Markdown Formatting', () => {
     it('should handle cursor at start of link', () => {
       const lineText = 'Visit [Google](https://google.com) today'
       const view = createMockView(lineText, { from: 6, to: 6 }) // cursor at '['
-      
+
       const result = createMarkdownLink(view)
-      
+
       expect(result).toBe(true)
       expect(mockDispatch).toHaveBeenCalledWith({
         selection: EditorSelection.range(15, 33),
@@ -271,9 +276,9 @@ describe('Markdown Formatting', () => {
     it('should handle cursor at end of link', () => {
       const lineText = 'Visit [Google](https://google.com) today'
       const view = createMockView(lineText, { from: 34, to: 34 }) // cursor at ']'
-      
+
       const result = createMarkdownLink(view)
-      
+
       expect(result).toBe(true)
       expect(mockDispatch).toHaveBeenCalledWith({
         selection: EditorSelection.range(15, 33),
@@ -281,11 +286,12 @@ describe('Markdown Formatting', () => {
     })
 
     it('should handle multiple links on same line', () => {
-      const lineText = 'Visit [Google](https://google.com) and [GitHub](https://github.com)'
+      const lineText =
+        'Visit [Google](https://google.com) and [GitHub](https://github.com)'
       const view = createMockView(lineText, { from: 50, to: 50 }) // cursor in second link
-      
+
       const result = createMarkdownLink(view)
-      
+
       expect(result).toBe(true)
       expect(mockDispatch).toHaveBeenCalledWith({
         selection: EditorSelection.range(48, 66),
@@ -294,9 +300,9 @@ describe('Markdown Formatting', () => {
 
     it('should handle whitespace in selected text', () => {
       const view = createMockView('Hello   world', { from: 0, to: 13 })
-      
+
       const result = createMarkdownLink(view)
-      
+
       expect(result).toBe(true)
       expect(mockDispatch).toHaveBeenCalledWith({
         changes: { from: 0, to: 13, insert: '[Hello   world]()' },

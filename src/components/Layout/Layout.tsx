@@ -102,7 +102,11 @@ export const Layout: React.FC = () => {
     }
 
     window.addEventListener('editor-focus-changed', handleEditorFocusChange)
-    return () => window.removeEventListener('editor-focus-changed', handleEditorFocusChange)
+    return () =>
+      window.removeEventListener(
+        'editor-focus-changed',
+        handleEditorFocusChange
+      )
   }, [currentFile])
 
   // macOS keyboard shortcuts

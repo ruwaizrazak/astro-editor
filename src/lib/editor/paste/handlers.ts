@@ -44,6 +44,6 @@ export const handlePaste = (
  * @returns true if clipboard contains a valid URL
  */
 export const isClipboardUrl = (clipboardText: string | null): boolean => {
-  if (!clipboardText) return false
-  return isValidUrl(clipboardText)
+  if (clipboardText === null || clipboardText === undefined) return false
+  return isValidUrl(clipboardText.trim())
 }
