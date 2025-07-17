@@ -17,6 +17,14 @@ pub async fn select_project_folder(_app: tauri::AppHandle) -> Result<Option<Stri
 
 #[tauri::command]
 pub async fn scan_project(project_path: String) -> Result<Vec<Collection>, String> {
+    scan_project_with_content_dir(project_path, None).await
+}
+
+#[tauri::command]
+pub async fn scan_project_with_content_dir(
+    project_path: String,
+    content_directory: Option<String>,
+) -> Result<Vec<Collection>, String> {
     let path = PathBuf::from(&project_path);
 
     // Try to parse Astro config first
@@ -24,16 +32,24 @@ pub async fn scan_project(project_path: String) -> Result<Vec<Collection>, Strin
         Ok(collections) if !collections.is_empty() => Ok(collections),
         Ok(_) | Err(_) => {
             // Fallback: scan directory structure if config parsing fails or returns empty
-            scan_content_directories(path.as_path())
+            scan_content_directories_with_override(path.as_path(), content_directory)
         }
     }
 }
 
-fn scan_content_directories(project_path: &Path) -> Result<Vec<Collection>, String> {
+fn scan_content_directories_with_override(
+    project_path: &Path,
+    content_directory_override: Option<String>,
+) -> Result<Vec<Collection>, String> {
     let mut collections = Vec::new();
 
-    // Check for common Astro content directories
-    let content_dir = project_path.join("src").join("content");
+    // Use override if provided, otherwise default to src/content
+    let content_dir = if let Some(override_path) = content_directory_override {
+        project_path.join(override_path)
+    } else {
+        project_path.join("src").join("content")
+    };
+
     if content_dir.exists() {
         // Look for common collection directories
         for entry in std::fs::read_dir(&content_dir)

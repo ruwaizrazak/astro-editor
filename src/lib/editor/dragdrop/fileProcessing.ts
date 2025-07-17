@@ -1,5 +1,6 @@
 import { invoke } from '@tauri-apps/api/core'
 import { ProcessedFile } from './types'
+import { useAppStore } from '../../../store'
 
 /**
  * Image file extensions that should be treated as images
@@ -80,12 +81,28 @@ export const processDroppedFile = async (
   const isImage = isImageFile(filename)
 
   try {
-    // Copy file to assets folder and get new path
-    const newPath = await invoke<string>('copy_file_to_assets', {
-      sourcePath: filePath,
-      projectPath: projectPath,
-      collection: collection,
-    })
+    // Get assets directory override from store
+    const { currentProjectSettings } = useAppStore.getState()
+    const assetsDirectory =
+      currentProjectSettings?.pathOverrides?.assetsDirectory
+
+    let newPath: string
+    if (assetsDirectory && assetsDirectory !== 'src/assets') {
+      // Use the override
+      newPath = await invoke<string>('copy_file_to_assets_with_override', {
+        sourcePath: filePath,
+        projectPath: projectPath,
+        collection: collection,
+        assetsDirectory: assetsDirectory,
+      })
+    } else {
+      // Use default
+      newPath = await invoke<string>('copy_file_to_assets', {
+        sourcePath: filePath,
+        projectPath: projectPath,
+        collection: collection,
+      })
+    }
 
     // Return markdown formatted string with new path
     const markdownText = formatAsMarkdown(filename, `/${newPath}`, isImage)

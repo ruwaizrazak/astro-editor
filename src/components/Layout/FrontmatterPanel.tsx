@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/select'
 import { TagInput, type Tag } from '@/components/ui/tag-input'
 import type { FieldProps } from '../../types/common'
+import { useEffectiveSettings } from '../../lib/project-registry/utils-effective'
 
 // Helper function to convert Tag objects back to string arrays
 const tagsToStringArray = (tags: Tag[]): string[] => tags.map(tag => tag.text)
@@ -303,6 +304,7 @@ const FrontmatterField: React.FC<FrontmatterFieldProps> = ({
   field,
 }) => {
   const { frontmatter } = useAppStore()
+  const { frontmatterMappings } = useEffectiveSettings()
   const inputType = field ? getInputTypeForZodField(field.type) : 'text'
   const required = field ? !field.optional : false
 
@@ -340,7 +342,8 @@ const FrontmatterField: React.FC<FrontmatterFieldProps> = ({
     return <ArrayField name={name} label={label} required={required} />
   }
 
-  if (label.toLowerCase() === 'title') {
+  // Check if this field should get special treatment based on effective settings
+  if (name === frontmatterMappings.title) {
     return (
       <TextareaField
         name={name}
@@ -353,7 +356,7 @@ const FrontmatterField: React.FC<FrontmatterFieldProps> = ({
     )
   }
 
-  if (label.toLowerCase() === 'description') {
+  if (name === frontmatterMappings.description) {
     return (
       <TextareaField
         name={name}

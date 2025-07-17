@@ -78,13 +78,26 @@ pub async fn copy_file_to_assets(
     project_path: String,
     collection: String,
 ) -> Result<String, String> {
+    copy_file_to_assets_with_override(source_path, project_path, collection, None).await
+}
+
+#[tauri::command]
+pub async fn copy_file_to_assets_with_override(
+    source_path: String,
+    project_path: String,
+    collection: String,
+    assets_directory: Option<String>,
+) -> Result<String, String> {
     use std::fs;
 
-    // Create the assets directory structure
-    let assets_dir = PathBuf::from(&project_path)
-        .join("src")
-        .join("assets")
-        .join(&collection);
+    // Create the assets directory structure (use override if provided)
+    let assets_base = if let Some(assets_override) = assets_directory {
+        PathBuf::from(&project_path).join(assets_override)
+    } else {
+        PathBuf::from(&project_path).join("src").join("assets")
+    };
+
+    let assets_dir = assets_base.join(&collection);
 
     fs::create_dir_all(&assets_dir)
         .map_err(|e| format!("Failed to create assets directory: {e}"))?;

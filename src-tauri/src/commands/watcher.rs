@@ -11,6 +11,15 @@ type WatcherMap = Arc<Mutex<HashMap<String, RecommendedWatcher>>>;
 
 #[tauri::command]
 pub async fn start_watching_project(app: AppHandle, project_path: String) -> Result<(), String> {
+    start_watching_project_with_content_dir(app, project_path, None).await
+}
+
+#[tauri::command]
+pub async fn start_watching_project_with_content_dir(
+    app: AppHandle,
+    project_path: String,
+    content_directory: Option<String>,
+) -> Result<(), String> {
     let (tx, rx) = mpsc::channel();
 
     let mut watcher = notify::recommended_watcher(move |result| match result {
@@ -23,8 +32,13 @@ pub async fn start_watching_project(app: AppHandle, project_path: String) -> Res
     })
     .map_err(|e| format!("Failed to create watcher: {e}"))?;
 
-    // Watch the content directory specifically
-    let content_path = PathBuf::from(&project_path).join("src").join("content");
+    // Watch the content directory specifically (use override if provided)
+    let content_path = if let Some(content_dir) = content_directory {
+        PathBuf::from(&project_path).join(content_dir)
+    } else {
+        PathBuf::from(&project_path).join("src").join("content")
+    };
+
     if content_path.exists() {
         watcher
             .watch(&content_path, RecursiveMode::Recursive)

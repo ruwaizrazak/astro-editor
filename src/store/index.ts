@@ -146,16 +146,32 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   loadCollections: async () => {
-    const { projectPath } = get()
+    const { projectPath, currentProjectSettings } = get()
 
     if (!projectPath) {
       return
     }
 
     try {
-      const collections = await invoke<Collection[]>('scan_project', {
-        projectPath,
-      })
+      // Use path override if configured
+      const contentDirectory =
+        currentProjectSettings?.pathOverrides?.contentDirectory
+
+      let collections: Collection[]
+      if (contentDirectory && contentDirectory !== 'src/content') {
+        collections = await invoke<Collection[]>(
+          'scan_project_with_content_dir',
+          {
+            projectPath,
+            contentDirectory,
+          }
+        )
+      } else {
+        collections = await invoke<Collection[]>('scan_project', {
+          projectPath,
+        })
+      }
+
       set({ collections })
     } catch (error) {
       toast.error('Failed to load collections', {
@@ -391,11 +407,22 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   startFileWatcher: async () => {
-    const { projectPath } = get()
+    const { projectPath, currentProjectSettings } = get()
     if (!projectPath) return
 
     try {
-      await invoke('start_watching_project', { projectPath })
+      // Use path override if configured
+      const contentDirectory =
+        currentProjectSettings?.pathOverrides?.contentDirectory
+
+      if (contentDirectory && contentDirectory !== 'src/content') {
+        await invoke('start_watching_project_with_content_dir', {
+          projectPath,
+          contentDirectory,
+        })
+      } else {
+        await invoke('start_watching_project', { projectPath })
+      }
 
       // Listen for file change events - only update file lists, never interrupt editing
       void listen('file-changed', (event: { payload: unknown }) => {

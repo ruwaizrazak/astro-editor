@@ -7,6 +7,7 @@ import { FolderOpen, ArrowLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { parseSchemaJson } from '../../lib/schema'
 import { FileContextMenu } from '../ui/context-menu'
+import { useEffectiveSettings } from '../../lib/project-registry/utils-effective'
 
 // Type-safe helper functions for file handling
 function formatDate(dateValue: unknown): string {
@@ -25,8 +26,14 @@ function formatDate(dateValue: unknown): string {
   }
 }
 
-function getPublishedDate(frontmatter: Record<string, unknown>): Date | null {
-  const dateFields = ['pubDate', 'date', 'publishedDate', 'published'] as const
+function getPublishedDate(
+  frontmatter: Record<string, unknown>,
+  publishedDateField: string | string[]
+): Date | null {
+  // Handle both single string and array of field names
+  const dateFields = Array.isArray(publishedDateField)
+    ? publishedDateField
+    : [publishedDateField]
 
   for (const field of dateFields) {
     const value = frontmatter[field]
@@ -40,10 +47,13 @@ function getPublishedDate(frontmatter: Record<string, unknown>): Date | null {
   return null
 }
 
-function getTitle(file: FileEntry): string {
+function getTitle(file: FileEntry, titleField: string): string {
   // Use frontmatter title if available, otherwise derive from filename
-  if (file.frontmatter?.title && typeof file.frontmatter.title === 'string') {
-    return file.frontmatter.title
+  if (
+    file.frontmatter?.[titleField] &&
+    typeof file.frontmatter[titleField] === 'string'
+  ) {
+    return file.frontmatter[titleField]
   }
 
   // Extract filename without extension as fallback
@@ -71,6 +81,9 @@ export const Sidebar: React.FC = () => {
     loadCollectionFiles: (collectionPath: string) => Promise<void>
     openFile: (file: FileEntry) => Promise<void>
   } = useAppStore()
+
+  // Get effective settings for frontmatter field mappings
+  const { frontmatterMappings } = useEffectiveSettings()
 
   // State for rename functionality
   const [renamingFileId, setRenamingFileId] = React.useState<string | null>(
@@ -208,8 +221,14 @@ export const Sidebar: React.FC = () => {
   // Sort files by published date (reverse chronological), files without dates first
   const sortedFiles = React.useMemo((): FileEntry[] => {
     return [...files].sort((a, b) => {
-      const dateA = getPublishedDate(a.frontmatter || {})
-      const dateB = getPublishedDate(b.frontmatter || {})
+      const dateA = getPublishedDate(
+        a.frontmatter || {},
+        frontmatterMappings.publishedDate
+      )
+      const dateB = getPublishedDate(
+        b.frontmatter || {},
+        frontmatterMappings.publishedDate
+      )
 
       // Files without dates go to top
       if (!dateA && !dateB) return 0
@@ -219,7 +238,7 @@ export const Sidebar: React.FC = () => {
       // Sort by date descending (newest first)
       return dateB.getTime() - dateA.getTime()
     })
-  }, [files])
+  }, [files, frontmatterMappings.publishedDate])
 
   const headerTitle = selectedCollection
     ? selectedCollection.charAt(0).toUpperCase() + selectedCollection.slice(1)
@@ -299,11 +318,15 @@ export const Sidebar: React.FC = () => {
           // Files List
           <div className="p-2">
             {sortedFiles.map(file => {
-              const title = getTitle(file)
-              const publishedDate = getPublishedDate(file.frontmatter || {})
+              const title = getTitle(file, frontmatterMappings.title)
+              const publishedDate = getPublishedDate(
+                file.frontmatter || {},
+                frontmatterMappings.publishedDate
+              )
               const isMdx = file.extension === 'mdx'
               const isFileDraft =
-                file.is_draft || file.frontmatter?.draft === true
+                file.is_draft ||
+                file.frontmatter?.[frontmatterMappings.draft] === true
               const isSelected = currentFile?.id === file.id
 
               return (
