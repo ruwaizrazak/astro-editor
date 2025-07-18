@@ -13,6 +13,7 @@ import { Toaster } from '../ui/sonner'
 import { toast } from '../../lib/toast'
 import { initializeRustToastBridge } from '../../lib/rust-toast-bridge'
 import { PreferencesDialog } from '../preferences'
+import { useCreateFile } from '../../hooks/useCreateFile'
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -92,6 +93,9 @@ export const Layout: React.FC = () => {
   // Preferences dialog state
   const [preferencesOpen, setPreferencesOpen] = useState(false)
 
+  // Get the createNewFile function from our custom hook
+  const { createNewFile: createNewFileWithQuery } = useCreateFile()
+
   // Centralized menu state management - this is where file state lives
   useEffect(() => {
     const shouldEnableMenu = Boolean(currentFile && window.isEditorFocused)
@@ -151,12 +155,20 @@ export const Layout: React.FC = () => {
     if (currentFile) {
       closeCurrentFile()
     }
-  }, { preventDefault: true })
+  }, { 
+    preventDefault: true,
+    enableOnFormTags: ['input', 'textarea', 'select'],
+    enableOnContentEditable: true  // Enable in contenteditable elements like CodeMirror
+  })
 
   useHotkeys('mod+comma', () => {
     // Cmd+,: Open Preferences
     setPreferencesOpen(true)
-  }, { preventDefault: true })
+  }, { 
+    preventDefault: true,
+    enableOnFormTags: ['input', 'textarea', 'select'],
+    enableOnContentEditable: true  // Enable in contenteditable elements like CodeMirror
+  })
 
   // Listen for open preferences events from command palette
   useEffect(() => {
@@ -168,6 +180,17 @@ export const Layout: React.FC = () => {
     return () =>
       window.removeEventListener('open-preferences', handleOpenPreferences)
   }, [])
+
+  // Listen for create new file events
+  useEffect(() => {
+    const handleCreateNewFile = () => {
+      void createNewFileWithQuery()
+    }
+
+    window.addEventListener('create-new-file', handleCreateNewFile)
+    return () =>
+      window.removeEventListener('create-new-file', handleCreateNewFile)
+  }, [createNewFileWithQuery])
 
   // Load persisted project on app start
   useEffect(() => {

@@ -1,9 +1,11 @@
 import { create } from 'zustand'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
+import { queryClient } from '../main'
 // Schema imports removed temporarily until TanStack Query integration is complete
 import { saveRecoveryData, saveCrashReport } from '../lib/recovery'
 import { toast } from '../lib/toast'
+import { queryKeys } from '../lib/query-keys'
 import {
   projectRegistryManager,
   GlobalSettings,
@@ -77,6 +79,7 @@ interface AppState {
   initializeProjectRegistry: () => Promise<void>
   updateGlobalSettings: (settings: Partial<GlobalSettings>) => Promise<void>
   updateProjectSettings: (settings: Partial<ProjectSettings>) => Promise<void>
+  updateCurrentFilePath: (newPath: string) => void
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -218,6 +221,14 @@ export const useAppStore = create<AppState>((set, get) => ({
       }
 
       set({ isDirty: false })
+
+      // Invalidate queries to update UI with new frontmatter
+      const { projectPath } = get()
+      if (projectPath && currentFile.collection) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.collectionFiles(projectPath, currentFile.collection),
+        })
+      }
 
       // Show success toast
       toast.success('File saved successfully')
@@ -504,8 +515,20 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   createNewFile: async () => {
-    // This functionality has been moved to a separate component
-    // that has access to TanStack Query data
-    toast.info('File creation is temporarily disabled during refactoring')
+    // Dispatch event to be handled by components that have access to TanStack Query
+    window.dispatchEvent(new CustomEvent('create-new-file'))
+  },
+
+  updateCurrentFilePath: (newPath: string) => {
+    const { currentFile } = get()
+    if (currentFile) {
+      set({
+        currentFile: {
+          ...currentFile,
+          path: newPath,
+          name: newPath.substring(newPath.lastIndexOf('/') + 1).replace(/\.[^.]+$/, ''),
+        },
+      })
+    }
   },
 }))

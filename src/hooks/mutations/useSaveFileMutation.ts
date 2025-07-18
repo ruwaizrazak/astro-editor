@@ -13,6 +13,7 @@ interface SaveFilePayload {
   imports: string
   schemaFieldOrder: string[] | null
   projectPath: string // Need this for invalidating queries
+  collectionName: string // Need this to invalidate collection files query
 }
 
 const saveFile = (payload: SaveFilePayload) => {
@@ -44,8 +45,10 @@ export const useSaveFileMutation = () => {
 
       // Also invalidate collection files to update any metadata changes
       queryClient.invalidateQueries({
-        queryKey: queryKeys.all,
-        refetchType: 'none', // Don't refetch immediately, just mark as stale
+        queryKey: queryKeys.collectionFiles(
+          variables.projectPath,
+          variables.collectionName
+        ),
       })
 
       toast.success('File saved successfully')

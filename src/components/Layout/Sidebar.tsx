@@ -72,6 +72,7 @@ export const Sidebar: React.FC = () => {
     setProject,
     setSelectedCollection,
     openFile,
+    updateCurrentFilePath,
   } = useAppStore()
 
   const [fileCounts, setFileCounts] = useState<Record<string, number>>({})
@@ -223,6 +224,11 @@ export const Sidebar: React.FC = () => {
           projectPath,
           collectionName: selectedCollection,
         })
+
+        // Update current file path if this is the current file
+        if (currentFile && currentFile.path === file.path) {
+          updateCurrentFilePath(newPath)
+        }
       }
 
       setRenamingFileId(null)

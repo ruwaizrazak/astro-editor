@@ -260,3 +260,13 @@ After this refactor, **Zustand should no longer store server state.**
   - `sidebarVisible` (pure UI state)
 
 By separating server state (in TanStack Query) from client state (in Zustand), our application becomes dramatically simpler, more performant, and easier to reason about.
+
+## BUGS AND TASKS TO FIX
+
+- [x] The File list in the sidebar doesn't update when changes are made to the frontmatter. ie if I change `draft` to true it should update to get a red marker "Draft" pill on it. Same is true of the title. I need to leave the collectiona nd reopen it for this to update.
+- [x] If I rename a file in the sidebar (right click menu) it appears to work fine, but if I then edit its **frontmatter** and thenc ome back, it Has created a new fil. Presumably because the Saving functionality isn't aware that the file has been renamed, and so it uses the old file name to make that save, Resulting in duplicates.
+- [x] `Cmd + ,` Doesn't open the Preferences When the Markdown editor is focused, it works fine everywhere else.
+- [x] `Cmd + W` no longer closes the currently open file
+- [x] `Cmd + N` or the + icon Should create a new file in the current collection. It actually shows a toast saying "File creation is temporarily disabled during refactoring". We should fix that since we're not in the middle of refactoring.
+- [x] The Frontmatter Field mappings dropdowns in the preferences are all empty.
+- [ ] There are some test files that still reference the old state structure (collections, files, loadCollections, etc.). These tests will need to be updated to mock TanStack Query instead of the Zustand store for those operations. (Do this last)

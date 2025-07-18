@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { usePreferences } from '../../../hooks/usePreferences'
+import { useCollectionsQuery } from '../../../hooks/queries/useCollectionsQuery'
 import { parseSchemaJson } from '../../../lib/schema'
 import type { ZodField } from '../../../lib/schema'
 
@@ -40,14 +41,20 @@ const SettingsSection: React.FC<{
 )
 
 export const FrontmatterMappingsPane: React.FC = () => {
-  const { currentProjectSettings, updateProject, collections, projectName } =
+  const { currentProjectSettings, updateProject, projectPath, projectName } =
     usePreferences()
+
+  // Get collections from TanStack Query
+  const { data: collections = [] } = useCollectionsQuery(
+    projectPath,
+    currentProjectSettings?.pathOverrides?.contentDirectory
+  )
 
   // Get all schema fields from all collections
   const allFields = useMemo(() => {
     const fieldMap = new Map<string, ZodField>()
 
-    collections.forEach((collection: any) => {
+    collections.forEach((collection) => {
       if (collection.schema) {
         try {
           const schema = parseSchemaJson(collection.schema)
