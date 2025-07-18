@@ -298,4 +298,6 @@ This refined plan provides a clear, step-by-step guide that is technically accur
 
 ## Bugs and Cleanup Tasks
 
+- [x] Cmd + / should only work in MDX files
+- [ This problem actually isn't unique to this component. ]
 - [ ] Update documentation

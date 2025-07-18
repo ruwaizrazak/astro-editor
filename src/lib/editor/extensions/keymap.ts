@@ -1,9 +1,15 @@
 import { keymap } from '@codemirror/view'
-import { defaultKeymap, historyKeymap } from '@codemirror/commands'
+import {
+  defaultKeymap,
+  historyKeymap,
+  toggleComment,
+} from '@codemirror/commands'
 import { searchKeymap } from '@codemirror/search'
 import { Prec } from '@codemirror/state'
 import { toggleMarkdown, createMarkdownLink } from '../markdown/formatting'
 import { transformLineToHeading } from '../markdown/headings'
+import { useComponentBuilderStore } from '../../../store/componentBuilderStore'
+import { useAppStore } from '../../../store'
 
 /**
  * Create custom markdown shortcuts with high precedence
@@ -22,6 +28,19 @@ export const createMarkdownKeymap = () => {
       {
         key: 'Mod-k',
         run: view => createMarkdownLink(view),
+      },
+      // This is the new keybinding for the component inserter.
+      {
+        key: 'Mod-/',
+        run: view => {
+          const { currentFile } = useAppStore.getState()
+          if (currentFile?.extension === 'mdx') {
+            useComponentBuilderStore.getState().open(view)
+            return true
+          }
+          // For non-mdx files, run the default comment toggling.
+          return toggleComment(view)
+        },
       },
       // Heading transformation shortcuts
       {
@@ -49,10 +68,20 @@ export const createMarkdownKeymap = () => {
 }
 
 /**
- * Create default keymaps with lower precedence
+ * Create default keymaps with lower precedence, but filter out the default
+ * comment toggling so we can use it for our component inserter.
  */
 export const createDefaultKeymap = () => {
-  return keymap.of([...defaultKeymap, ...historyKeymap, ...searchKeymap])
+  // Filter out the default Mod-/ keybinding for comment toggling
+  const filteredDefaultKeymap = defaultKeymap.filter(
+    k => k.run !== toggleComment
+  )
+
+  return keymap.of([
+    ...filteredDefaultKeymap,
+    ...historyKeymap,
+    ...searchKeymap,
+  ])
 }
 
 /**
