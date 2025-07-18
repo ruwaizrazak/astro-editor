@@ -190,7 +190,6 @@ export const ideCommands: AppCommand[] = [
     execute: async (context: CommandContext) => {
       const ideCommand = context.globalSettings?.general?.ideCommand
       if (ideCommand && context.projectPath) {
-        console.log('Opening project in IDE:', context.projectPath)
         await executeIdeCommand(ideCommand, context.projectPath)
       }
     },

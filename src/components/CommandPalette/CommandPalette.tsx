@@ -17,12 +17,26 @@ import { useCommandPalette } from '../../hooks/useCommandPalette'
 export function CommandPalette() {
   const { open, setOpen, commandGroups, executeCommand } = useCommandPalette()
 
+  // Custom filter function that only searches command labels
+  const customFilter = React.useCallback((value: string, search: string) => {
+    // Extract the label from the value (format: "id:label")
+    const label = value.split(':')[1] || value
+
+    // Case-insensitive search on label only
+    if (label.toLowerCase().includes(search.toLowerCase())) {
+      return 1
+    }
+    return 0
+  }, [])
+
   return (
     <CommandDialog
       open={open}
       onOpenChange={setOpen}
       title="Command Palette"
       description="Type a command or search..."
+      filter={customFilter}
+      loop
     >
       <CommandInput placeholder="Type a command or search..." />
       <CommandList>
@@ -36,6 +50,7 @@ export function CommandPalette() {
                 return (
                   <CommandItem
                     key={command.id}
+                    value={`${command.id}:${command.label}`}
                     onSelect={() => void executeCommand(command)}
                     className="cursor-pointer"
                   >

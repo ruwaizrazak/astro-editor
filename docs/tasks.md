@@ -34,7 +34,7 @@ _Goal: Advanced features that differentiate from basic editors_
 
 - [x] Add simple preferences/settings window. Should use standard shadcn/tailwind layout and existing patterns for doing this. We should use a Suitable component from Shadcn to keep this all within the React app. Settings panel should have "tabs" down the left for different panes on the right. We only need three panes right now -> General, Project Settings, Frontmatter Mappings. We will add more later. We may want to separate these into global settings and project settings somehow, perhaps with headings in the "tabs" sidebar. For now, we should only display project settings for the currently open project. Or if no project is open, display none of them. The right-hand panes should have a standard way of displaying form controls as you would expect in any other app settings panel. Again, use standard components. Think like an experienced front-end architect when designing the various React components for this.
 - [x] We must have an easy-to-use and repeatable way to read and write settings from our React components using the preferences system we have built. It should not be complicated and should follow an easy-to-understand pattern. To begin with, let's test this simply by writing one global setting From an appropriate form.
-- [ ] Settings panel should be opened with `Cmd+,` keyboard shortcut, via a menu item in the apps osx menubar or via the command pallette.
+- [x] Settings panel should be opened with `Cmd+,` keyboard shortcut
 - [x] Path Overides pane allows user to optionally override Astro deaults paths for various things. Will need to update all code that usees these paths in the appropriate places. The defaults should be hard-coded as fallbacks in case there are no saved user preferences. These paths should be relative to the project root so they still work if a user moves their whole astro repo and reopens it.
   - Path to Astro content directory (default: `src/content/`)
   - Path to Astro assets directory (default: `src/assets/`)
@@ -46,17 +46,16 @@ _Goal: Advanced features that differentiate from basic editors_
   - "Draft" gets a special marker in the file list (default: `draft`) - must of type boolean in the schema
 - [x] General panel only needs one setting for now:
   - Command for "Open in IDE" (default: ''), recommended setting: "code" or "cursor"
-- [ ] If above setting is set, add three commands to the command palette.:
+- [x] If above setting is set, add three commands to the command palette.:
   - Opens Project in IDE -> eg `code /path/to/project/root`
   - Open collection in IDE -> eg `code /path/to/project/root/src/content/collectionname`. Only available when a collection is open.
   - Open file in IDE -> eg `code /path/to/currently/openfile.md`. Only available when a file is selected.
 
 **Bugs at this stage**
 
-- [ ] Open in IDE commands don't work - fail with an unknown error toast. When in a file, I can only see "Open Project" I should be able to see collection and file too.
 - [ ] Add "Open Preferences" to command palette
 - [ ] Change the label (pill) in CollectionList.tsx to show the number of content items, not the number of fields in the schema.
-- [ ] Add menu item in main menu to open preferences dialog.
+- [ ] Add main menu to open preferences dialog.
 
 **Phase 5.2 - Improved Writing Experience**
 
@@ -71,7 +70,7 @@ _Goal: Advanced features that differentiate from basic editors_
 
 **Phase 5.4: Copyediting and Analysis Mode**
 
-- [ ] Toggleable "editor mode" which enables text analysis features...
+- [ ] Toggleable "copyeditor mode" which enables text analysis features...
   - [ ] Coloured Nouns, Adverbs, Verbs, Conjunctions like iA Writer (see https://ia.net/writer/how-to/edit-and-polish) to help with editing. Should ignore code blocks, links, HTML/Astro tags, inline code etc.
   - [ ] Basic writing analysis algorithms (eg. sentence complexity, readability etc as per Hemmingway App).
 - [ ] Ability to toggle OS-native spelling and grammar checking on and off.
