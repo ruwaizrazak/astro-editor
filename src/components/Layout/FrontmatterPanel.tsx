@@ -1,5 +1,6 @@
 import React from 'react'
-import { useAppStore, type Collection, type FileEntry } from '../../store'
+import { useAppStore, type Collection } from '../../store'
+import { useCollectionsQuery } from '../../hooks/queries/useCollectionsQuery'
 import {
   parseSchemaJson,
   getInputTypeForZodField,
@@ -376,12 +377,15 @@ export const FrontmatterPanel: React.FC = () => {
   const {
     currentFile,
     frontmatter,
-    collections,
-  }: {
-    currentFile: FileEntry | null
-    frontmatter: Record<string, unknown>
-    collections: Collection[]
+    projectPath,
+    currentProjectSettings,
   } = useAppStore()
+
+  // Use TanStack Query to fetch collections
+  const { data: collections = [] } = useCollectionsQuery(
+    projectPath,
+    currentProjectSettings?.pathOverrides?.contentDirectory
+  )
 
   // Get schema for current collection
   const currentCollection: Collection | null = currentFile

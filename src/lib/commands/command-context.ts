@@ -9,7 +9,6 @@ export function useCommandContext(): CommandContext {
   const {
     currentFile,
     selectedCollection,
-    collections,
     projectPath,
     isDirty,
     globalSettings,
@@ -20,14 +19,12 @@ export function useCommandContext(): CommandContext {
     toggleFrontmatterPanel,
     saveFile,
     closeCurrentFile,
-    loadCollections,
-    loadCollectionFiles,
   } = useAppStore()
 
   return {
     currentFile,
     selectedCollection,
-    collections,
+    collections: [], // TODO: Get from TanStack Query
     projectPath,
     isDirty,
     globalSettings,
@@ -38,8 +35,8 @@ export function useCommandContext(): CommandContext {
     toggleFrontmatterPanel,
     saveFile,
     closeCurrentFile,
-    loadCollections,
-    loadCollectionFiles,
+    loadCollections: async () => { /* TODO: Refetch query */ },
+    loadCollectionFiles: async () => { /* TODO: Refetch query */ },
     openPreferences: () => {
       // Dispatch a custom event that Layout can listen to
       window.dispatchEvent(new CustomEvent('open-preferences'))

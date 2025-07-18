@@ -14,7 +14,7 @@ This feature should be implemented as a two-part system: a **robust backend pars
 
 ---
 
-### **Part 1: The Backend - Reliably Parsing Astro Components**
+### **Part 1: The Backend - Reliably Parsing Astro Components** ✅ DONE
 
 The most critical part of this feature is reliably extracting the necessary information from the `.astro` component files. Using regular expressions for this is brittle and should be avoided. The correct approach is to use an Abstract Syntax Tree (AST) parser.
 
@@ -65,7 +65,7 @@ The most critical part of this feature is reliably extracting the necessary info
 
 ---
 
-### **Part 2: The Frontend - The Component Builder Dialog**
+### **Part 2: The Frontend - The Component Builder Dialog** [TODO]
 
 The frontend is responsible for providing a user-friendly interface to select, configure, and insert MDX components.
 

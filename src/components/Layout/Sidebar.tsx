@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { useAppStore, type Collection, type FileEntry } from '../../store'
+import { useCollectionsQuery } from '../../hooks/queries/useCollectionsQuery'
+import { useCollectionFilesQuery } from '../../hooks/queries/useCollectionFilesQuery'
+import { useRenameFileMutation } from '../../hooks/mutations/useRenameFileMutation'
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
 import { FolderOpen, ArrowLeft } from 'lucide-react'
@@ -63,25 +66,34 @@ function getTitle(file: FileEntry, titleField: string): string {
 export const Sidebar: React.FC = () => {
   const {
     selectedCollection,
-    collections,
-    files,
     currentFile,
+    projectPath,
+    currentProjectSettings,
     setProject,
     setSelectedCollection,
-    loadCollectionFiles,
     openFile,
-  }: {
-    selectedCollection: string | null
-    collections: Collection[]
-    files: FileEntry[]
-    currentFile: FileEntry | null
-    setProject: (path: string) => void
-    setSelectedCollection: (collection: string | null) => void
-    loadCollectionFiles: (collectionPath: string) => Promise<void>
-    openFile: (file: FileEntry) => Promise<void>
   } = useAppStore()
 
   const [fileCounts, setFileCounts] = useState<Record<string, number>>({})
+
+  // Use TanStack Query to fetch collections
+  const { data: collections = [] } = useCollectionsQuery(
+    projectPath,
+    currentProjectSettings?.pathOverrides?.contentDirectory
+  )
+
+  // Get the current collection
+  const currentCollection = collections.find(c => c.name === selectedCollection)
+
+  // Use TanStack Query to fetch files for the selected collection
+  const { data: files = [], refetch: refetchFiles } = useCollectionFilesQuery(
+    projectPath,
+    selectedCollection,
+    currentCollection?.path || null
+  )
+
+  // Use mutation for renaming files
+  const renameMutation = useRenameFileMutation()
 
   // Load file counts for all collections
   useEffect(() => {
@@ -131,7 +143,7 @@ export const Sidebar: React.FC = () => {
 
   const handleCollectionClick = (collection: Collection) => {
     setSelectedCollection(collection.name)
-    void loadCollectionFiles(collection.path)
+    // Files will be automatically fetched by the query
   }
 
   const handleBackClick = () => {
@@ -153,12 +165,8 @@ export const Sidebar: React.FC = () => {
       file,
       position: { x: event.clientX, y: event.clientY },
       onRefresh: () => {
-        // Refresh the file list by reloading the collection
-        if (selectedCollection) {
-          void loadCollectionFiles(
-            collections.find(c => c.name === selectedCollection)?.path || ''
-          )
-        }
+        // Refresh the file list using TanStack Query
+        void refetchFiles()
       },
       onRename: handleRename,
     })
@@ -208,20 +216,19 @@ export const Sidebar: React.FC = () => {
       const directory = file.path.substring(0, file.path.lastIndexOf('/'))
       const newPath = `${directory}/${renameValue}`
 
-      await invoke('rename_file', {
-        oldPath: file.path,
-        newPath: newPath,
-      })
+      if (projectPath && selectedCollection) {
+        await renameMutation.mutateAsync({
+          oldPath: file.path,
+          newPath: newPath,
+          projectPath,
+          collectionName: selectedCollection,
+        })
+      }
 
       setRenamingFileId(null)
       setRenameValue('')
 
-      // Refresh the file list
-      if (selectedCollection) {
-        void loadCollectionFiles(
-          collections.find(c => c.name === selectedCollection)?.path || ''
-        )
-      }
+      // Files will be automatically refreshed by the query invalidation
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Failed to rename file:', error)

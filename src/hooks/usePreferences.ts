@@ -12,7 +12,6 @@ export const usePreferences = () => {
     updateGlobalSettings,
     updateProjectSettings,
     currentProjectId,
-    collections,
     projectPath,
   } = useAppStore()
 
@@ -42,7 +41,7 @@ export const usePreferences = () => {
     updateProject,
     hasProject: !!currentProjectId,
     currentProjectId,
-    collections,
+    collections: [], // TODO: Get from TanStack Query
     projectPath,
     projectName,
   }
