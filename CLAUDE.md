@@ -406,6 +406,141 @@ This allows:
 - Performance optimization
 - Third-party plugin integration
 
+### Command Palette Architecture
+
+The app uses a centralized command system for all user actions. This pattern ensures consistency and enables keyboard shortcuts, menu items, and command palette to share the same logic.
+
+#### Adding New Command Groups
+
+To add a new command group to the command palette:
+
+1. **Update Command Types** (`src/lib/commands/types.ts`):
+```typescript
+export type CommandGroup = 'file' | 'navigation' | 'project' | 'settings' | 'ide' | 'your-new-group'
+
+export interface CommandContext {
+  // Add new context function if needed
+  yourNewFunction: () => void
+}
+```
+
+2. **Implement Context Function** (`src/lib/commands/command-context.ts`):
+```typescript
+export function useCommandContext(): CommandContext {
+  return {
+    // ... existing context
+    yourNewFunction: () => {
+      // Use custom events for UI communication
+      window.dispatchEvent(new CustomEvent('your-custom-event'))
+    }
+  }
+}
+```
+
+3. **Define Commands** (`src/lib/commands/app-commands.ts`):
+```typescript
+export const yourNewCommands: AppCommand[] = [
+  {
+    id: 'your-command',
+    label: 'Your Command',
+    description: 'Description of what this does',
+    icon: YourIcon,
+    group: 'your-new-group',
+    execute: (context: CommandContext) => {
+      context.yourNewFunction()
+    },
+    isAvailable: () => true,
+  },
+]
+
+// Add to getAllCommands function
+export function getAllCommands(context: CommandContext): AppCommand[] {
+  return [
+    // ... existing commands
+    ...yourNewCommands,
+  ].filter(command => command.isAvailable(context))
+}
+```
+
+4. **Update Group Ordering** (`src/hooks/useCommandPalette.ts`):
+```typescript
+const groupOrder: Array<{ key: string; heading: string }> = [
+  { key: 'file', heading: 'File' },
+  { key: 'navigation', heading: 'Navigation' },
+  { key: 'project', heading: 'Project' },
+  { key: 'settings', heading: 'Settings' },
+  { key: 'your-new-group', heading: 'Your Group' },
+  { key: 'ide', heading: 'IDE' },
+]
+```
+
+5. **Add Event Listener** (if needed, in `src/components/Layout/Layout.tsx`):
+```typescript
+useEffect(() => {
+  const handleYourEvent = () => {
+    // Handle the custom event
+  }
+  window.addEventListener('your-custom-event', handleYourEvent)
+  return () => window.removeEventListener('your-custom-event', handleYourEvent)
+}, [])
+```
+
+#### Custom Event Communication Pattern
+
+For UI actions that need to communicate between command palette and components:
+
+```typescript
+// In command context
+yourAction: () => {
+  window.dispatchEvent(new CustomEvent('your-action-name', { 
+    detail: { optionalData: 'value' } 
+  }))
+}
+
+// In Layout component
+useEffect(() => {
+  const handleAction = (event: CustomEvent) => {
+    // Access event.detail for any passed data
+    performAction(event.detail)
+  }
+  window.addEventListener('your-action-name', handleAction)
+  return () => window.removeEventListener('your-action-name', handleAction)
+}, [])
+```
+
+**Why This Pattern:**
+- Decouples command definitions from UI components
+- Enables command reuse across keyboard shortcuts, menus, and palette
+- Provides type-safe command execution
+- Allows conditional command availability based on app state
+
+#### Component Cleanup and Refactoring Safety
+
+**CRITICAL:** Before making changes to components, always verify what's actually being used:
+
+1. **Check for Duplicate Logic**: Search for similar functionality across components
+2. **Verify Component Usage**: Check imports and references to see if components are actually used
+3. **Step-by-Step Refactoring**: Clean up unused code first, then implement new features
+4. **Immediate Verification**: Test each step to ensure nothing breaks
+
+**Example Discovery Process:**
+```bash
+# Find all references to a component
+rg "ComponentName" --type tsx
+
+# Check if component is exported but not imported
+grep -r "import.*ComponentName" src/
+
+# Verify no broken functionality after cleanup
+npm run check:all
+```
+
+**Why This Approach:**
+- Prevents accumulation of dead code
+- Reduces confusion during development
+- Ensures refactoring doesn't break existing functionality
+- Maintains clean architecture
+
 ## Editor System Architecture
 
 ### Custom Syntax Highlighting System
