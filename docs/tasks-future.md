@@ -2,6 +2,7 @@
 
 ## Potential Future Features
 
+- [ ] Switch to Tanstack Query - see `prd-tanstack-query.md`
 - [ ] Focus mode which greys out all but the current sentence/paragraph.
 - [ ] Search functionality (by filename and title [if present] only)
 - [ ] Hanging headers in markdown editor (hashes in the left margin as per iA Writer)
