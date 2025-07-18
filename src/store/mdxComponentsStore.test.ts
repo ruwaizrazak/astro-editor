@@ -53,6 +53,7 @@ describe('useMdxComponentsStore', () => {
     expect(result.current.error).toBe(null)
     expect(invoke).toHaveBeenCalledWith('scan_mdx_components', {
       projectPath: '/test/project',
+      mdxDirectory: undefined,
     })
   })
 

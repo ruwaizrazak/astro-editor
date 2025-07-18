@@ -136,7 +136,8 @@ export const useAppStore = create<AppState>((set, get) => ({
         await get().loadCollections()
         await get().startFileWatcher()
         // Load MDX components for autocomplete
-        await useMdxComponentsStore.getState().loadComponents(path)
+        const mdxComponentsDirectory = projectSettings?.pathOverrides?.mdxComponentsDirectory
+        await useMdxComponentsStore.getState().loadComponents(path, mdxComponentsDirectory)
       } catch (error) {
         toast.error('Failed to set project', {
           description:

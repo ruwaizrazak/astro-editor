@@ -20,7 +20,7 @@ interface MdxComponentsState {
   components: MdxComponent[]
   isLoading: boolean
   error: string | null
-  loadComponents: (projectPath: string) => Promise<void>
+  loadComponents: (projectPath: string, mdxDirectory?: string) => Promise<void>
   clearComponents: () => void
 }
 
@@ -29,12 +29,13 @@ export const useMdxComponentsStore = create<MdxComponentsState>((set) => ({
   isLoading: false,
   error: null,
 
-  loadComponents: async (projectPath: string) => {
+  loadComponents: async (projectPath: string, mdxDirectory?: string) => {
     set({ isLoading: true, error: null })
     
     try {
       const components = await invoke<MdxComponent[]>('scan_mdx_components', {
-        projectPath
+        projectPath,
+        mdxDirectory
       })
       
       set({ components, isLoading: false })

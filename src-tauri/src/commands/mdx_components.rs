@@ -11,8 +11,9 @@ use swc_ecma_visit::{Visit, VisitWith};
 use walkdir::WalkDir;
 
 #[tauri::command]
-pub async fn scan_mdx_components(project_path: String) -> Result<Vec<MdxComponent>, String> {
-    let mdx_dir = Path::new(&project_path).join("src/components/mdx");
+pub async fn scan_mdx_components(project_path: String, mdx_directory: Option<String>) -> Result<Vec<MdxComponent>, String> {
+    let mdx_dir_path = mdx_directory.unwrap_or_else(|| "src/components/mdx".to_string());
+    let mdx_dir = Path::new(&project_path).join(mdx_dir_path);
     
     if !mdx_dir.exists() {
         return Ok(vec![]);

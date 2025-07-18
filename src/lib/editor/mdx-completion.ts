@@ -70,7 +70,7 @@ function getPlaceholderForType(type: string, defaultValue?: string): string {
 function isInsideUrlOrTag(context: CompletionContext): boolean {
   const tree = syntaxTree(context.state)
   const pos = context.pos
-  let node = tree.resolveInner(pos, -1)
+  let node: any = tree.resolveInner(pos, -1)
   
   // Walk up the syntax tree to check parent nodes
   while (node) {
