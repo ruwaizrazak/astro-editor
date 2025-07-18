@@ -58,6 +58,8 @@ _Goal: Advanced features that differentiate from basic editors_
 
 **Phase 5.2 - Insert Astro Components into MDX files**
 
+See `/docs/feature-prds/feature-prd-mdx-component-inserter.md` for a potential approach (created by gemini)
+
 - [ ] Discovery of Astro components intended for use in MDX files (from `src/components/mdx/`)
 - [ ] Pane in settings to view all discovered Astro components and toggle on and off. Those switched _off_ are saved in the project settings.
 - [ ] Slash command system for inserting Astro components in MDX files easily
