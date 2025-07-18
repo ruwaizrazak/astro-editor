@@ -1,25 +1,30 @@
 import { EditorView } from '@codemirror/view'
+import { snippet } from '@codemirror/autocomplete'
 
 /**
- * Inserts text at the current cursor position
+ * Inserts a snippet at the current cursor position with tab navigation support
  * @param view The CodeMirror EditorView
- * @param text The text to insert
- *
- * Note: This currently inserts plain text. To support snippet placeholders
- * with tab navigation, we would need to integrate with CodeMirror's
- * autocomplete snippet functionality or implement a custom solution.
+ * @param template The snippet template string with ${} placeholders
  */
-export function insertSnippet(view: EditorView, text: string) {
+export function insertSnippet(view: EditorView, template: string) {
   if (!view) return
 
   // Get the current cursor position
   const { from, to } = view.state.selection.main
 
-  // Replace selection with the text
-  view.dispatch({
-    changes: { from, to, insert: text },
-    scrollIntoView: true,
-  })
+  // Create a snippet completion that can be applied to the editor
+  const snippetCompletion = snippet(template)
 
-  view.focus()
+  // Apply the snippet to the editor
+  snippetCompletion(
+    {
+      state: view.state,
+      dispatch: view.dispatch.bind(view),
+    },
+    null, // completion object (not needed for programmatic insertion)
+    from,
+    to
+  )
+
+  // Focus will be automatically handled by the snippet system
 }
