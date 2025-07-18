@@ -54,8 +54,7 @@ _Goal: Advanced features that differentiate from basic editors_
 **Bugs at this stage**
 
 - [x] Add "Open Preferences" to command palette
-- [ ] Change the label (pill) in CollectionList.tsx to show the number of content items, not the number of fields in the schema.
-- [ ] Add a "Preferences" menu item under "Astro Editor" macoOS menubar menu which opens the settings. The correct coyboard shortcut is `Cmd+,` which already works. Do this in the same way you have with other Tauri menubar items.
+- [x] Change the label (pill) in CollectionList.tsx to show the number of content items, not the number of fields in the schema.
 
 **Phase 5.2 - Insert Astro Components into MDX files**
 
@@ -77,6 +76,10 @@ _Goal: Advanced features that differentiate from basic editors_
 
 **Deliverable:** Feature-rich writing & editing app with seamless astro integration.
 
+**Phase 5.5 - Bug Blitz**
+
+- [ ] Add a "Preferences" menu item under "Astro Editor" macoOS menubar menu which opens the settings. The correct coyboard shortcut is `Cmd+,` which already works. Do this in the same way you have with other Tauri menubar items.
+
 **Phase 6: Pre-Release Tasks**
 
 - [ ] Add custom App icons and confirm all package/app metadata is correct
@@ -92,9 +95,10 @@ _Goal: Advanced features that differentiate from basic editors_
   - Remove all unnececary `console.log` and code comments.
   - Expert review of entire codebase for potential security issues.
 - [ ] Performance optimization & profiling
-- [ ] Automated production buld & Release for macOS (via GitHub actions?)
 - [ ] Update all docs:
-  - Create `docs/developer_guide.md` with comprehensive documentation on the project and how everything works, written for a human audience.
-  - Move all working documentation/notes/specs/prds etc to `docs/archive` and mark as no longer relevant.
-  - Update CLAUDE.md to remove all info on roadmap/planning etc and just contain optimal instuctions for working effectively on this project in the future.
-  - Write a short, punchy README.md
+  - [ ] Create `docs/developer_guide.md` with comprehensive documentation on the project and how everything works, written for a human audience.
+  - [ ] Move all working documentation/notes/specs/prds etc to `docs/archive` and mark as no longer relevant.
+  - [ ] Update CLAUDE.md to remove all info on roadmap/planning etc and just contain optimal instuctions for working effectively on this project in the future.
+  - [ ] Write a short, punchy README.md
+  - [ ] Add user guide to docs
+  - [ ] Review all non-code files for things which can be removed

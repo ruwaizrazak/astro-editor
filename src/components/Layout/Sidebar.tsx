@@ -87,19 +87,18 @@ export const Sidebar: React.FC = () => {
   useEffect(() => {
     const loadFileCounts = async () => {
       const counts: Record<string, number> = {}
-      
+
       for (const collection of collections) {
         try {
           const files = await invoke<unknown[]>('scan_collection_files', {
             collectionPath: collection.path,
           })
           counts[collection.name] = files.length
-        } catch (error) {
-          console.warn(`Failed to load file count for ${collection.name}:`, error)
+        } catch {
           counts[collection.name] = 0
         }
       }
-      
+
       setFileCounts(counts)
     }
 
