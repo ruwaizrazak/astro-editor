@@ -1,5 +1,9 @@
 # Claude Instructions for Astro Blog Editor
 
+## Current Status
+
+Current Task: `docs/tasks-todo/task-1-tanstack-query.md`
+
 ## Project Overview
 
 **Goal:** Native macOS markdown editor specifically designed for Astro content collections. Creates a distraction-free writing environment with seamless frontmatter editing, inspired by iA Writer's design philosophy.
@@ -7,6 +11,7 @@
 **Purpose:** Replace the need for code editors (VSCode/Cursor) when writing content. Provides a calm, focused environment for long-form writing while understanding Astro's content structure.
 
 **Key Features:**
+
 - Auto-discovers Astro content collections from `src/content/config.ts`
 - Dynamic frontmatter forms generated from Zod schemas
 - File management: create, rename, duplicate, delete with context menus
@@ -21,8 +26,9 @@
 ## Core Rules
 
 ### New Sessions
-- Read `docs/tasks.md` for current status and next steps
-- Review `docs/architecture-guide.md` for architectural patterns
+
+- Read @docs/TASKS.md for instructions on task management and the locations of the current tasks.
+- Review `docs/developer/architecture-guide.md` for architectural patterns
 - Check git status and project structure for recent changes
 
 ### Development Practices
@@ -30,7 +36,7 @@
 **CRITICAL:** Follow these practices strictly:
 
 1. **Read Before Editing**: Always read files before modifying them to understand context and existing patterns
-2. **Follow Established Patterns**: Use design patterns from this file and `docs/architecture-guide.md`. Only introduce new patterns when necessary and document immediately
+2. **Follow Established Patterns**: Use design patterns from this file and `docs/developer` to inform your decisions. Only introduce new patterns when necessary and document immediately.
 3. **Senior Architect Mindset**: Apply expert-level thinking considering performance, maintainability, testability, and scalability
 4. **Batch Operations**: Use multiple tool calls in single responses for efficiency when possible
 5. **Match Code Style**: Follow the existing formatting and patterns in the specific file being edited
@@ -38,51 +44,43 @@
 7. **Quality Gates**: Run `npm run check:all` after significant changes to ensure all tests pass
 8. **No Dev Server**: Ask user to run dev server and report back instead of executing it yourself
 9. **No Unsolicited Commits**: Only create commits when explicitly requested
-10. **Documentation**: Update `docs/architecture-guide.md` and this file when introducing new patterns
+10. **Documentation**: Update `docs/developer/architecture-guide.md` and this file when introducing new patterns
 
 ### Documentation & Versions
+
 - **Context7 First**: Always use Context7 for framework docs before WebSearch
 - **Version Requirements**: Tauri v2.x, shadcn/ui v4.x, Tailwind v4.x, React 19.x, Zustand v5.x, CodeMirror v6.x, Vitest v3.x
-- **Progress Tracking**: Update `docs/tasks.md` after completing major work
-
-## Current Status
-
-**Phase 3.1 - In Progress** (Advanced editor features)
-- ✅ Core functionality implemented with comprehensive test suite (83 frontend, 42 Rust tests)
-- ✅ Major EditorView.tsx refactor extracting functionality into modular lib/editor system
-- ✅ Advanced editor features: URL clicking, drag & drop, paste handling, markdown commands
-- ✅ Command registry pattern for extensible editor operations
-- ✅ Custom syntax highlighting system with comprehensive markdown support
-- ✅ File operations with native context menus
-- ✅ Auto-save with conflict resolution
-- ✅ Responsive UI with resizable panels
-
-**Current Focus:** Polish, usability improvements, and command palette implementation
+- **Progress Tracking**: Update the current task in `docs/tasks-todo` after completing major work. You may use `docs/tasks.md` as a scratchpad for tasks which have no document in `docs/tasks-todo`
 
 ## Notification System
 
 ### Toast Notifications
+
 The app uses a comprehensive toast notification system for user feedback. See `@docs/toast-system.md` for complete documentation.
 
 **Key Components:**
+
 - `src/lib/toast.ts` - Main API for dispatching notifications
 - `src/lib/theme-provider.tsx` - Custom theme provider (replaces next-themes)
 - `src/lib/rust-toast-bridge.ts` - Rust-to-frontend event bridge
 - `src/components/ui/sonner.tsx` - Customized shadcn/ui component
 
 **Usage:**
+
 ```typescript
 import { toast } from '../lib/toast'
 
 toast.success('File saved successfully')
-toast.error('Operation failed', { 
+toast.error('Operation failed', {
   description: 'Detailed error message',
-  action: { label: 'Retry', onClick: () => retry() }
+  action: { label: 'Retry', onClick: () => retry() },
 })
 ```
 
 ### Theme System
+
 The app uses a **custom theme provider** (`src/lib/theme-provider.tsx`) instead of `next-themes` for Tauri compatibility. This provider:
+
 - Manages light/dark mode switching
 - Integrates with existing CSS variables system
 - Supports system theme detection
@@ -117,6 +115,7 @@ The theme provider wraps the entire app in `App.tsx` and works with our existing
 5. **Performance-First**: Memoization, debouncing, and lazy loading patterns
 
 ### App Layout Structure
+
 - **UnifiedTitleBar:** macOS-style window chrome with menu integration
 - **Layout:** Main orchestrator container with ResizablePanelGroup system
   - **Sidebar:** Collection/file navigation (collapsible)
@@ -126,7 +125,9 @@ The theme provider wraps the entire app in `App.tsx` and works with our existing
 ### State Management Philosophy
 
 #### Global State (Zustand)
+
 Use for state that:
+
 - Represents business data (files, content, frontmatter)
 - Needs persistence across sessions
 - Is accessed by multiple unrelated components
@@ -142,7 +143,9 @@ isDirty: boolean
 ```
 
 #### Local State (React Components)
+
 Keep state local when it:
+
 - Only affects UI presentation
 - Is derived from props or global state
 - Doesn't need persistence
@@ -155,12 +158,14 @@ window.isEditorFocused = false // Global flag for menu coordination
 ```
 
 **Why This Split?**
+
 - **Performance**: Local state changes don't trigger global re-renders
 - **Clarity**: Clear ownership of different concerns
 - **Testability**: Business logic can be tested independently of UI
 - **Maintainability**: Changes to UI don't affect business logic
 
 ### Data Flow
+
 1. **Project Discovery:** Parse `src/content/config.ts` → extract collections & schemas
 2. **File Loading:** Read markdown → separate frontmatter/content → populate editor
 3. **Editing:** Direct store updates → auto-save every 2 seconds
@@ -168,6 +173,7 @@ window.isEditorFocused = false // Global flag for menu coordination
 5. **Editor Operations:** Command registry → CodeMirror transactions
 
 ### Frontend Structure (Updated)
+
 ```
 src/
 ├── components/
@@ -201,6 +207,7 @@ src/
 ```
 
 ### Backend Structure (Rust)
+
 ```
 src-tauri/src/
 ├── commands/             # Tauri commands (files.rs, project.rs)
@@ -215,6 +222,7 @@ src-tauri/src/
 #### When to Extract to `lib/`
 
 Extract code into `lib/` when:
+
 1. **Complexity Threshold**: 50+ lines of related logic
 2. **Reusability**: Used by 2+ components
 3. **Testability**: Needs unit tests
@@ -222,6 +230,7 @@ Extract code into `lib/` when:
 5. **External Integration**: APIs, file system, etc.
 
 Example module structure:
+
 ```
 lib/editor/commands/
 ├── index.ts           # Public API exports
@@ -234,12 +243,14 @@ lib/editor/commands/
 #### When to Extract to `hooks/`
 
 Create custom hooks for:
+
 1. **Stateful Logic**: Uses React hooks internally
 2. **Component Logic**: Tightly coupled to React lifecycle
 3. **Shared Behavior**: Same logic needed in multiple components
 4. **Side Effects**: Manages subscriptions, timers, etc.
 
 Example hook patterns:
+
 ```typescript
 // Setup hook - initialization and configuration
 export const useEditorSetup = (
@@ -275,6 +286,7 @@ export const useEditorHandlers = () => {
 ## Development Commands
 
 ### Development
+
 ```bash
 npm run dev              # Start dev server
 npm run build            # Production build
@@ -283,6 +295,7 @@ npm run tauri:build      # Build app
 ```
 
 ### Quality Checks
+
 ```bash
 npm run check:all        # All checks (TS + Rust + tests)
 npm run fix:all          # Auto-fix all issues
@@ -293,6 +306,7 @@ npm run rust:clippy      # Rust linting
 ```
 
 ### Testing
+
 ```bash
 npm run test             # Watch mode
 npm run test:run         # Run once
@@ -302,6 +316,7 @@ npm run test:coverage    # Coverage report
 ```
 
 ### Data Management
+
 ```bash
 npm run reset:testdata   # Reset test project
 ```
@@ -309,6 +324,7 @@ npm run reset:testdata   # Reset test project
 ## Key Patterns
 
 ### Direct Store Pattern (CRITICAL)
+
 **Problem:** React Hook Form + Zustand causes infinite loops when extracting components.
 **Solution:** Components access store directly with `updateFrontmatterField`.
 
@@ -320,7 +336,7 @@ const StringField: React.FC<{
   required?: boolean
 }> = ({ name, label, required }) => {
   const { frontmatter, updateFrontmatterField } = useAppStore()
-  
+
   return (
     <div className="space-y-2">
       <label className="text-sm font-medium">
@@ -336,7 +352,9 @@ const StringField: React.FC<{
 }
 
 // ❌ WRONG: Callback dependencies cause infinite loops
-const BadField = ({ name, onChange }) => { /* Don't do this */ }
+const BadField = ({ name, onChange }) => {
+  /* Don't do this */
+}
 ```
 
 **Why:** Enables component extraction, prevents infinite loops, maintains real-time updates and auto-save.
@@ -355,6 +373,7 @@ globalCommandRegistry.execute('formatHeading', 1)
 ```
 
 **Benefits:**
+
 - Decouples command definition from UI triggers
 - Enables keyboard shortcuts, menus, and buttons to share logic
 - Provides central place for command state management
@@ -371,6 +390,7 @@ The app uses multiple event systems:
 5. **Toast Events**: For Rust-to-frontend notifications via rust-toast-bridge
 
 Example:
+
 ```typescript
 // Custom event for focus tracking
 window.dispatchEvent(new CustomEvent('editor-focus-changed'))
@@ -381,7 +401,7 @@ listen('menu-format-bold', () => {
 })
 
 // Toast event from Rust backend
-listen('rust-toast', (event) => {
+listen('rust-toast', event => {
   toast.success(event.payload.message)
 })
 ```
@@ -396,11 +416,12 @@ const extensions = [
   syntaxHighlighting(comprehensiveHighlightStyle),
   urlPlugin(),
   dropTargetPlugin(handleDrop),
-  keymap.of(customKeymap)
+  keymap.of(customKeymap),
 ]
 ```
 
 This allows:
+
 - Feature isolation
 - Easy enable/disable of features
 - Performance optimization
@@ -415,8 +436,15 @@ The app uses a centralized command system for all user actions. This pattern ens
 To add a new command group to the command palette:
 
 1. **Update Command Types** (`src/lib/commands/types.ts`):
+
 ```typescript
-export type CommandGroup = 'file' | 'navigation' | 'project' | 'settings' | 'ide' | 'your-new-group'
+export type CommandGroup =
+  | 'file'
+  | 'navigation'
+  | 'project'
+  | 'settings'
+  | 'ide'
+  | 'your-new-group'
 
 export interface CommandContext {
   // Add new context function if needed
@@ -425,6 +453,7 @@ export interface CommandContext {
 ```
 
 2. **Implement Context Function** (`src/lib/commands/command-context.ts`):
+
 ```typescript
 export function useCommandContext(): CommandContext {
   return {
@@ -432,12 +461,13 @@ export function useCommandContext(): CommandContext {
     yourNewFunction: () => {
       // Use custom events for UI communication
       window.dispatchEvent(new CustomEvent('your-custom-event'))
-    }
+    },
   }
 }
 ```
 
 3. **Define Commands** (`src/lib/commands/app-commands.ts`):
+
 ```typescript
 export const yourNewCommands: AppCommand[] = [
   {
@@ -463,6 +493,7 @@ export function getAllCommands(context: CommandContext): AppCommand[] {
 ```
 
 4. **Update Group Ordering** (`src/hooks/useCommandPalette.ts`):
+
 ```typescript
 const groupOrder: Array<{ key: string; heading: string }> = [
   { key: 'file', heading: 'File' },
@@ -475,6 +506,7 @@ const groupOrder: Array<{ key: string; heading: string }> = [
 ```
 
 5. **Add Event Listener** (if needed, in `src/components/Layout/Layout.tsx`):
+
 ```typescript
 useEffect(() => {
   const handleYourEvent = () => {
@@ -492,9 +524,11 @@ For UI actions that need to communicate between command palette and components:
 ```typescript
 // In command context
 yourAction: () => {
-  window.dispatchEvent(new CustomEvent('your-action-name', { 
-    detail: { optionalData: 'value' } 
-  }))
+  window.dispatchEvent(
+    new CustomEvent('your-action-name', {
+      detail: { optionalData: 'value' },
+    })
+  )
 }
 
 // In Layout component
@@ -509,6 +543,7 @@ useEffect(() => {
 ```
 
 **Why This Pattern:**
+
 - Decouples command definitions from UI components
 - Enables command reuse across keyboard shortcuts, menus, and palette
 - Provides type-safe command execution
@@ -524,6 +559,7 @@ useEffect(() => {
 4. **Immediate Verification**: Test each step to ensure nothing breaks
 
 **Example Discovery Process:**
+
 ```bash
 # Find all references to a component
 rg "ComponentName" --type tsx
@@ -536,6 +572,7 @@ npm run check:all
 ```
 
 **Why This Approach:**
+
 - Prevents accumulation of dead code
 - Reduces confusion during development
 - Ensures refactoring doesn't break existing functionality
@@ -552,6 +589,7 @@ The editor uses a **comprehensive custom highlighting system** that replaces Cod
 #### Two-Part Styling System
 
 1. **Custom Markdown Tags** (`markdownTags.ts`):
+
 ```typescript
 export const markdownTags = {
   heading1: Tag.define(),
@@ -564,21 +602,29 @@ export const markdownTags = {
 ```
 
 2. **Standard Language Tags** from `@lezer/highlight`:
+
 - `tags.tagName`, `tags.attributeName` - HTML elements
 - `tags.keyword`, `tags.string`, `tags.comment` - Programming constructs
 
 #### Comprehensive Highlight Style
 
 **Single source of truth** for all syntax highlighting:
+
 ```typescript
 const comprehensiveHighlightStyle = HighlightStyle.define([
-  { tag: markdownTags.heading1, fontSize: '1.8em', fontWeight: 'bold', color: '#8B5CF6' },
+  {
+    tag: markdownTags.heading1,
+    fontSize: '1.8em',
+    fontWeight: 'bold',
+    color: '#8B5CF6',
+  },
   { tag: tags.tagName, color: '#E11D48', fontWeight: 'bold' },
   // ... 50+ comprehensive style rules
 ])
 ```
 
 **Color Families:**
+
 - **Purple family:** Headings (H1-H6)
 - **Orange/Red family:** Emphasis, strong text
 - **Green family:** Code elements
@@ -591,6 +637,7 @@ const comprehensiveHighlightStyle = HighlightStyle.define([
 The editor uses a **CSS variable-based theming system** that separates concerns between CodeMirror syntax highlighting and visual styling.
 
 **Key Files:**
+
 - `src/components/Layout/EditorTheme.css` - Color variables and typography
 - `src/components/Layout/EditorView.css` - Container setup and integration
 
@@ -613,7 +660,7 @@ The editor uses a **CSS variable-based theming system** that separates concerns 
 ### Editor Features
 
 - ✅ **Markdown:** Headings, bold, italic, ~~strikethrough~~, links, lists, blockquotes, tables
-- ✅ **Code:** Inline `code`, ```code blocks```, syntax highlighting
+- ✅ **Code:** Inline `code`, `code blocks`, syntax highlighting
 - ✅ **HTML:** `<tags>`, attributes, mixed content
 - ✅ **Programming:** Keywords, strings, comments, operators
 - ✅ **URL Handling:** Alt+click to open URLs
@@ -624,20 +671,25 @@ The editor uses a **CSS variable-based theming system** that separates concerns 
 ## Performance Patterns
 
 ### Memoization Strategy
+
 ```typescript
 // Memoize expensive computations
-const sortedFiles = useMemo(() => 
-  files.sort((a, b) => compareDates(a, b)),
+const sortedFiles = useMemo(
+  () => files.sort((a, b) => compareDates(a, b)),
   [files]
 )
 
 // Stable callbacks for child components
-const handleChange = useCallback((value: string) => {
-  setEditorContent(value)
-}, [setEditorContent])
+const handleChange = useCallback(
+  (value: string) => {
+    setEditorContent(value)
+  },
+  [setEditorContent]
+)
 ```
 
 ### Debouncing
+
 ```typescript
 // Auto-save debouncing
 scheduleAutoSave: () => {
@@ -647,6 +699,7 @@ scheduleAutoSave: () => {
 ```
 
 ### Lazy Loading
+
 - Dynamic imports for large dependencies
 - Defer heavy operations until needed
 - Virtualize long lists (future consideration)
@@ -654,6 +707,7 @@ scheduleAutoSave: () => {
 ## Testing Strategy
 
 ### Frontend (Vitest + React Testing Library)
+
 - **Unit Tests**: Extracted modules in `lib/editor/`
 - **Integration Tests**: Custom hooks
 - **Component Tests**: UI interactions
@@ -661,12 +715,14 @@ scheduleAutoSave: () => {
 - Mock Tauri with `globalThis.mockTauri`
 
 ### Backend (Cargo)
+
 - File operations with temp files
 - Data structure validation
 - Complete workflow integration
 - Error scenarios (permissions, missing files)
 
 ### Test Data
+
 - `test/dummy-astro-project/` contains sample Astro project
 - Use `npm run reset:testdata` for clean test environment
 - Covers various frontmatter configurations and content types
@@ -674,12 +730,14 @@ scheduleAutoSave: () => {
 ## Code Quality Standards
 
 ### TypeScript Requirements
+
 - Strict mode enabled
 - No `any` types
 - Explicit interface definitions
 - Type-safe store usage
 
 ### Component Guidelines
+
 - Use shadcn/ui v4 components first (NOT v3)
 - Direct Store Pattern for all state modification
 - Extract helper components for repeated JSX (3+ times)
@@ -687,6 +745,7 @@ scheduleAutoSave: () => {
 - Use `EditorAreaWithFrontmatter` pattern for layout helpers
 
 ### Module Guidelines
+
 - Feature-based organization
 - Clear public APIs via index.ts
 - Separate types.ts for interfaces
@@ -694,6 +753,7 @@ scheduleAutoSave: () => {
 - Unit tests for all public functions
 
 ### Styling Standards
+
 - Tailwind v4 utilities over custom CSS
 - Standard spacing: `p-4` panels, `gap-2` small, `gap-4` large
 - Icons: `h-4 w-4` standard, `h-8` toolbar
@@ -703,6 +763,7 @@ scheduleAutoSave: () => {
 ## File Operations
 
 ### File Management
+
 - All I/O through Tauri commands
 - File watching with change detection
 - Frontmatter parsing and validation
@@ -710,6 +771,7 @@ scheduleAutoSave: () => {
 - Context menu operations (create, rename, duplicate, delete)
 
 ### Frontmatter Generation
+
 - Parse Zod schemas from `src/content/config.ts` into JSON
 - Generate dynamic forms for frontmatter editing
 - Field types: string, number, boolean, date, enum, array
@@ -717,20 +779,23 @@ scheduleAutoSave: () => {
 - Schema field ordering preserved in saved frontmatter
 
 ## WebKit/Tauri Considerations
+
 - `field-sizing: content` CSS not supported → use `AutoExpandingTextarea`
-- WebKit behavior differs from Chrome DevTools  
+- WebKit behavior differs from Chrome DevTools
 - JavaScript-based auto-expansion for textareas
 - Tauri v2 has different API than v1 (different import paths, command structure)
 
 ## Best Practices
 
 ### Before Committing
+
 1. Run `npm run check:all` - all tests/linting must pass
 2. Update `docs/tasks.md` with completed work
 3. Manual testing for UI changes
 4. Check for console errors in development
 
 ### Component Development
+
 - **NEVER** use React Hook Form (causes infinite loops with Zustand)
 - **ALWAYS** use Direct Store Pattern: `updateFrontmatterField(key, value)`
 - **AVOID** callback props with changing dependencies
@@ -738,6 +803,7 @@ scheduleAutoSave: () => {
 - **TYPE** store destructuring explicitly for IDE support
 
 ### Module Development
+
 - **EXTRACT** complex logic into `lib/` modules
 - **CREATE** hooks for stateful component logic
 - **DEFINE** clear interfaces and types
@@ -745,12 +811,14 @@ scheduleAutoSave: () => {
 - **DOCUMENT** public APIs
 
 ### Performance Best Practices
+
 - **MEMOIZE** expensive computations
 - **DEBOUNCE** frequent operations (auto-save, search)
 - **LAZY LOAD** heavy dependencies
 - **VIRTUALIZE** long lists (future)
 
 ### Error Handling
+
 - Graceful degradation for missing files/permissions
 - Development-only console logging
 - User-friendly error messages
@@ -760,6 +828,7 @@ scheduleAutoSave: () => {
 ## Key Files Reference
 
 ### Essential Files
+
 - `src/store/index.ts` - Zustand state management
 - `src/lib/editor/` - Extracted editor modules
 - `src/hooks/editor/` - Editor-specific hooks
@@ -769,11 +838,13 @@ scheduleAutoSave: () => {
 - `src/types/common.ts` - Shared TypeScript interfaces
 
 ### Configuration Files
+
 - `components.json` - shadcn/ui setup
 - `vitest.config.ts` - Testing configuration
 - `src-tauri/tauri.conf.json` - App configuration
 
 ### Documentation
+
 - `docs/architecture-guide.md` - Comprehensive architecture patterns
 - `docs/tasks.md` - Current roadmap and status
 - `docs/ia-writer-ui.md` - UI design specifications
@@ -782,6 +853,7 @@ scheduleAutoSave: () => {
 ## Troubleshooting
 
 ### Common Issues
+
 - **Infinite loops:** Ensure Direct Store Pattern, not callback props
 - **Auto-save not working:** Check `scheduleAutoSave()` calls and 2s interval
 - **File watching issues:** Verify file permissions and project paths
@@ -792,11 +864,13 @@ scheduleAutoSave: () => {
 - **Theme switching issues:** Verify theme provider is wrapping app in `App.tsx`
 
 ### Performance Issues
+
 - **Slow editor:** Check for unnecessary re-renders
 - **Memory leaks:** Ensure proper cleanup in useEffect
 - **File operations slow:** Verify Tauri command efficiency
 
 ### Debug Strategies
+
 - Use React DevTools for component inspection
 - Check browser console for errors
 - Use Tauri dev tools for backend debugging
@@ -805,13 +879,16 @@ scheduleAutoSave: () => {
 ## Architecture Notes
 
 ### Current Limitations
+
 - macOS only (initial version)
 - Standard Astro project structures only
 - Basic Zod schema types supported
 - Regex-based TypeScript parsing
 
 ### Future Extensibility
+
 The architecture supports:
+
 - **Plugin System**: Command registry and extension points
 - **Theme System**: Custom editor themes
 - **Language Support**: Beyond markdown
@@ -820,6 +897,7 @@ The architecture supports:
 - **Cloud Sync**: Via store middleware
 
 ### Migration Notes
+
 - Major refactor completed: EditorView.tsx → modular lib/editor system
 - Command pattern implemented for editor operations
 - Custom syntax highlighting system established
@@ -829,4 +907,4 @@ The architecture supports:
 
 ---
 
-*This document reflects the current architecture as of Phase 3.1. Update as the project evolves and new patterns emerge.*
+_This document reflects the current architecture as of Phase 3.1. Update as the project evolves and new patterns emerge._

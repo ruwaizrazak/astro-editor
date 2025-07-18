@@ -88,98 +88,49 @@ The revised data flow is centered around the Component Builder dialog:
 
 ---
 
-## 4. Pre-Implementation Tasks
-
-To ensure a clean and stable foundation for the new feature, two architectural pre-tasks must be completed first.
-
-### 4.1. Pre-Task 1: Remove Obsolete "Slash Command" Feature
-
-The codebase currently contains a partially implemented feature for component insertion triggered by a `/` (slash) command. This approach has been superseded by the "Component Builder Dialog" and must be removed.
-
-**Removal Plan:**
-
-The following files and logic, introduced in commits `8f8ddbac` and `3e6d4f9b`, must be removed or reverted:
-
-1.  **Delete Frontend Files:**
-    *   `src/lib/editor/mdx-completion.ts`: The core CodeMirror extension for the slash command.
-    *   `src/store/mdxComponentsStore.test.ts`: The test file for the related store.
-
-2.  **Modify Editor Setup:**
-    *   **File:** `src/hooks/editor/useEditorSetup.ts`
-    *   **Action:** Remove the logic that conditionally adds the `mdxComponentCompletion()` extension for `.mdx` files.
-
-3.  **Modify `useAppStore`:**
-    *   **File:** `src/store/index.ts`
-    *   **Action:** Remove the `loadMdxComponents` call from the `setProject` action. This will also involve removing the `mdxComponents` state and the `loadMdxComponents` action itself from the main app store, as this logic is now managed by `mdxComponentsStore`.
-
-4.  **Retain but Isolate `mdxComponentsStore`:**
-    *   **File:** `src/store/mdxComponentsStore.ts`
-    *   **Action:** This store is still needed for the new approach to hold the component data. However, ensure it is no longer coupled to the main `useAppStore`'s project loading lifecycle. It should be a standalone store that is populated once and then read by the Component Builder.
-
-5.  **Revert Backend Changes (Optional but Recommended):**
-    *   The changes to the `scan_mdx_components` Rust command to accept a path override are no longer strictly necessary but are harmless. For a clean implementation, reverting this to the simpler version from the first commit (`8f8ddbac`) is recommended. This is a lower priority task.
-
-### 4.2. Pre-Task 2: Standardize Keyboard Shortcuts
-
-It is critical to establish a single, robust pattern for handling keyboard shortcuts. The current implementation in `src/components/Layout/Layout.tsx` uses a manual approach that lacks cross-platform support. We will adopt `react-hotkeys-hook` as the standard.
-
-**Implementation Plan:**
-
-1.  **Install Dependency:**
-    *   Run `npm install react-hotkeys-hook`.
-
-2.  **Refactor `Layout.tsx`:**
-    *   Open `src/components/Layout/Layout.tsx`.
-    *   Import `useHotkeys` from `react-hotkeys-hook`.
-    *   Remove the entire `useEffect` hook that contains the `handleKeyDown` function and the `switch (e.key)` statement.
-    *   Replace it with a series of declarative `useHotkeys` calls for each global shortcut (`mod+s`, `mod+1`, `mod+2`, `mod+n`, `mod+w`, `mod+,`).
-    *   Use the `mod` key to ensure cross-platform (`Cmd`/`Ctrl`) compatibility.
-
-Completing these pre-tasks will establish a clean, maintainable, and architecturally sound foundation for the Component Builder.
-
-## 5. Implementation Plan: The MDX Component Builder Dialog
+## 4. Implementation Plan: The MDX Component Builder Dialog
 
 With the preliminary refactoring complete, we can proceed with building the Component Builder.
 
-### 5.1. File & Component Architecture
+### 4.1. File & Component Architecture
 
 To ensure a clean separation of concerns, the feature will be composed of the following new files:
 
-*   `src/store/componentBuilderStore.ts`: A Zustand store to manage the entire state of the component building workflow.
-*   `src/components/ComponentBuilder/index.ts`: Barrel export file.
-*   `src/components/ComponentBuilder/ComponentBuilderDialog.tsx`: The main React component for the dialog UI.
-*   `src/lib/editor/snippet-builder.ts`: A pure utility file for generating the final CodeMirror snippet string.
-*   `src/lib/editor/commands.ts`: This file will be augmented with a new command to dispatch the snippet to the editor.
+- `src/store/componentBuilderStore.ts`: A Zustand store to manage the entire state of the component building workflow.
+- `src/components/ComponentBuilder/index.ts`: Barrel export file.
+- `src/components/ComponentBuilder/ComponentBuilderDialog.tsx`: The main React component for the dialog UI.
+- `src/lib/editor/snippet-builder.ts`: A pure utility file for generating the final CodeMirror snippet string.
+- `src/lib/editor/commands.ts`: This file will be augmented with a new command to dispatch the snippet to the editor.
 
-### 5.2. State Management (`useComponentBuilderStore`)
+### 4.2. State Management (`useComponentBuilderStore`)
 
 The Zustand store is the brain of the operation.
 
 **File:** `src/store/componentBuilderStore.ts`
 
 ```typescript
-import { EditorView } from '@codemirror/view';
-import { create } from 'zustand';
-import { MdxComponent } from '@/types/common'; // Adjust path as needed
-import { buildSnippet } from '@/lib/editor/snippet-builder';
-import { insertSnippet } from '@/lib/editor/commands';
+import { EditorView } from '@codemirror/view'
+import { create } from 'zustand'
+import { MdxComponent } from '@/types/common' // Adjust path as needed
+import { buildSnippet } from '@/lib/editor/snippet-builder'
+import { insertSnippet } from '@/lib/editor/commands'
 
 // Define State and Actions
 interface ComponentBuilderState {
-  isOpen: boolean;
-  step: 'list' | 'configure';
-  selectedComponent: MdxComponent | null;
-  enabledProps: Set<string>;
-  editorView: EditorView | null;
+  isOpen: boolean
+  step: 'list' | 'configure'
+  selectedComponent: MdxComponent | null
+  enabledProps: Set<string>
+  editorView: EditorView | null
 }
 
 interface ComponentBuilderActions {
-  open: (view: EditorView) => void;
-  close: () => void;
-  selectComponent: (component: MdxComponent) => void;
-  toggleProp: (propName: string) => void;
-  insert: () => void;
-  back: () => void;
+  open: (view: EditorView) => void
+  close: () => void
+  selectComponent: (component: MdxComponent) => void
+  toggleProp: (propName: string) => void
+  insert: () => void
+  back: () => void
 }
 
 const initialState: ComponentBuilderState = {
@@ -188,49 +139,56 @@ const initialState: ComponentBuilderState = {
   selectedComponent: null,
   enabledProps: new Set(),
   editorView: null,
-};
+}
 
 // Create Store
-export const useComponentBuilderStore = create<ComponentBuilderState & ComponentBuilderActions>((set, get) => ({
+export const useComponentBuilderStore = create<
+  ComponentBuilderState & ComponentBuilderActions
+>((set, get) => ({
   ...initialState,
 
-  open: (editorView) => set({ isOpen: true, editorView }),
+  open: editorView => set({ isOpen: true, editorView }),
 
   close: () => set({ ...initialState }), // Fully reset on close
 
-  selectComponent: (component) => {
+  selectComponent: component => {
     const requiredProps = new Set(
       component.props.filter(p => !p.is_optional).map(p => p.name)
-    );
-    set({ selectedComponent: component, step: 'configure', enabledProps: requiredProps });
+    )
+    set({
+      selectedComponent: component,
+      step: 'configure',
+      enabledProps: requiredProps,
+    })
   },
 
-  toggleProp: (propName) => {
+  toggleProp: propName => {
     set(state => {
-      const newEnabledProps = new Set(state.enabledProps);
+      const newEnabledProps = new Set(state.enabledProps)
       if (newEnabledProps.has(propName)) {
-        newEnabledProps.delete(propName);
+        newEnabledProps.delete(propName)
       } else {
-        newEnabledProps.add(propName);
+        newEnabledProps.add(propName)
       }
-      return { enabledProps: newEnabledProps };
-    });
+      return { enabledProps: newEnabledProps }
+    })
   },
 
   insert: () => {
-    const { selectedComponent, enabledProps, editorView } = get();
-    if (!selectedComponent || !editorView) return;
+    const { selectedComponent, enabledProps, editorView } = get()
+    if (!selectedComponent || !editorView) return
 
-    const snippetString = buildSnippet(selectedComponent, enabledProps);
-    insertSnippet(editorView, snippetString);
-    get().close(); // Close and reset after insertion
+    const snippetString = buildSnippet(selectedComponent, enabledProps)
+    insertSnippet(editorView, snippetString)
+    get().close() // Close and reset after insertion
   },
 
-  back: () => set({ step: 'list', selectedComponent: null, enabledProps: new Set() }),
-}));
+  back: () =>
+    set({ step: 'list', selectedComponent: null, enabledProps: new Set() }),
+}))
 ```
 
-### 5.3. UI Implementation (`ComponentBuilderDialog.tsx`)
+### 4.3. UI Implementation (`ComponentBuilderDialog.tsx`)
 
 This component orchestrates the entire UI using `shadcn/ui`.
 
@@ -239,77 +197,87 @@ This component orchestrates the entire UI using `shadcn/ui`.
 **Key Implementation Points:**
 
 1.  **Global Shortcut:** In `src/components/Layout/Layout.tsx`, after completing the refactor, add the new hotkey.
+
     ```tsx
-    import { useHotkeys } from 'react-hotkeys-hook';
-    import { useComponentBuilderStore } from '@/store/componentBuilderStore';
+    import { useHotkeys } from 'react-hotkeys-hook'
+    import { useComponentBuilderStore } from '@/store/componentBuilderStore'
     // Assume editorView is accessible here from a state or ref
-    useHotkeys('mod+i', (e) => {
-        e.preventDefault();
-        useComponentBuilderStore.getState().open(editorView);
-    }, [editorView]);
+    useHotkeys(
+      'mod+i',
+      e => {
+        e.preventDefault()
+        useComponentBuilderStore.getState().open(editorView)
+      },
+      [editorView]
+    )
     ```
 
 2.  **Dialog Structure:**
-    *   Use `CommandDialog` from `shadcn/ui`. Its `open` and `onOpenChange` props will be bound to `store.isOpen` and `store.close`.
-    *   A conditional render based on `store.step` will show either the component list or the props configurator.
+    - Use `CommandDialog` from `shadcn/ui`. Its `open` and `onOpenChange` props will be bound to `store.isOpen` and `store.close`.
+    - A conditional render based on `store.step` will show either the component list or the props configurator.
 
 3.  **Component List (`step === 'list'`):**
-    *   Render `Command.Input`, `Command.List`, etc.
-    *   Map over components from `useMdxComponentsStore` to create `Command.Item` elements.
-    *   `onSelect` for each item should call `store.selectComponent(component)`.
+    - Render `Command.Input`, `Command.List`, etc.
+    - Map over components from `useMdxComponentsStore` to create `Command.Item` elements.
+    - `onSelect` for each item should call `store.selectComponent(component)`.
 
 4.  **Props Configurator (`step === 'configure'`):**
-    *   This view takes over the dialog content when `step` changes.
-    *   **Layout:** Use a `Card` component for structure.
-    *   **Header:** `CardHeader` should contain the `Card.Title` (e.g., "Configure `<Callout />`") and a `Button` (variant="ghost") for "Back", which calls `store.back()`.
-    *   **Content:** `CardContent` will map over `store.selectedComponent.props`. Each prop is rendered in a `div` with `flex items-center justify-between`.
-        *   `Label`: Displays the prop name. Link it to the Switch using `htmlFor`.
-        *   `Switch`:
-            *   `id`: The prop name.
-            *   `checked`: `store.enabledProps.has(prop.name)`.
-            *   `onCheckedChange`: `() => store.toggleProp(prop.name)`.
-            *   `disabled`: `!prop.is_optional`. This provides a clear visual cue for required props.
-    *   **Footer:** `CardFooter` contains a `Button` that reads "Insert Component" and calls `store.insert()`. The entire form should be wrappable in a `<form>` tag whose `onSubmit` also calls `store.insert()` to allow `Enter` key submission.
+    - This view takes over the dialog content when `step` changes.
+    - **Layout:** Use a `Card` component for structure.
+    - **Header:** `CardHeader` should contain the `Card.Title` (e.g., "Configure `<Callout />`") and a `Button` (variant="ghost") for "Back", which calls `store.back()`.
+    - **Content:** `CardContent` will map over `store.selectedComponent.props`. Each prop is rendered in a `div` with `flex items-center justify-between`.
+      - `Label`: Displays the prop name. Link it to the Switch using `htmlFor`.
+      - `Switch`:
+        - `id`: The prop name.
+        - `checked`: `store.enabledProps.has(prop.name)`.
+        - `onCheckedChange`: `() => store.toggleProp(prop.name)`.
+        - `disabled`: `!prop.is_optional`. This provides a clear visual cue for required props.
+    - **Footer:** `CardFooter` contains a `Button` that reads "Insert Component" and calls `store.insert()`. The entire form should be wrappable in a `<form>` tag whose `onSubmit` also calls `store.insert()` to allow `Enter` key submission.
 
-### 5.4. Snippet Logic & Editor Command
+### 4.4. Snippet Logic & Editor Command
 
 This part connects the UI to the CodeMirror editor.
 
 1.  **Snippet Builder (`snippet-builder.ts`):**
-    *   Create a pure function to maximize testability and separation of concerns.
+    - Create a pure function to maximize testability and separation of concerns.
 
     **File:** `src/lib/editor/snippet-builder.ts`
-    ```typescript
-    import { MdxComponent } from '@/types/common';
 
-    export function buildSnippet(component: MdxComponent, enabledProps: Set<string>): string {
-      let propIndex = 1;
+    ```typescript
+    import { MdxComponent } from '@/types/common'
+
+    export function buildSnippet(
+      component: MdxComponent,
+      enabledProps: Set<string>
+    ): string {
+      let propIndex = 1
       const propsString = component.props
         .filter(p => enabledProps.has(p.name))
         .map(p => `${p.name}="\${${propIndex++}}"`)
-        .join(' ');
+        .join(' ')
 
       if (component.has_slot) {
-        return `<${component.name} ${propsString}>\${${propIndex}}</${component.name}>`;
+        return `<${component.name} ${propsString}>\${${propIndex}}</${component.name}>`
       }
-      return `<${component.name} ${propsString} />`;
+      return `<${component.name} ${propsString} />`
     }
     ```
 
 2.  **Editor Command (`commands.ts`):**
-    *   This function will execute the CodeMirror transaction. Note the corrected import path for `snippet`.
+    - This function will execute the CodeMirror transaction. Note the corrected import path for `snippet`.
 
     **File:** `src/lib/editor/commands.ts`
+
     ```typescript
-    import { snippet } from '@codemirror/autocomplete';
-    import { EditorView } from '@codemirror/view';
+    import { snippet } from '@codemirror/autocomplete'
+    import { EditorView } from '@codemirror/view'
 
     export function insertSnippet(view: EditorView, template: string) {
-      if (!view) return;
+      if (!view) return
       // The snippet function returns a command that can be dispatched
-      const snippetCommand = snippet(template);
-      snippetCommand(view); // Execute the command
-      view.focus();
+      const snippetCommand = snippet(template)
+      snippetCommand(view) // Execute the command
+      view.focus()
     }
     ```
 
