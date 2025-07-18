@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Current Task: Ready for next task (task-0-cleanup.md completed)
+Current Task: `/docs/tasks-todo/task-1-tanstack-query.md`
 
 ## Project Overview
 
@@ -108,16 +108,22 @@ The theme provider wraps the entire app in `App.tsx` and works with our existing
 The app uses `react-hotkeys-hook` for standardized, cross-platform keyboard shortcuts. This provides consistent behavior across macOS (Cmd) and Windows/Linux (Ctrl) using the `mod` key.
 
 **Implementation Pattern:**
+
 ```typescript
 import { useHotkeys } from 'react-hotkeys-hook'
 
 // Cross-platform shortcut (Cmd on macOS, Ctrl on Windows/Linux)
-useHotkeys('mod+s', () => {
-  // Save file action
-}, { preventDefault: true })
+useHotkeys(
+  'mod+s',
+  () => {
+    // Save file action
+  },
+  { preventDefault: true }
+)
 ```
 
 **Available Shortcuts:**
+
 - `mod+s` - Save current file
 - `mod+1` - Toggle sidebar
 - `mod+2` - Toggle frontmatter panel
@@ -126,6 +132,7 @@ useHotkeys('mod+s', () => {
 - `mod+comma` - Open preferences
 
 **Benefits:**
+
 - Cross-platform compatibility (automatically maps to Cmd/Ctrl)
 - Declarative API vs manual event handling
 - Built-in preventDefault handling
