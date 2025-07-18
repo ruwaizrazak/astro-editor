@@ -7,7 +7,6 @@ import { altKeyState, urlHoverPlugin, handleUrlClick } from '../urls'
 import { handlePaste } from '../paste'
 import { createKeymapExtensions } from './keymap'
 import { createEditorTheme } from './theme'
-import { mdxComponentCompletion } from '../mdx-completion'
 
 /**
  * Configuration for creating editor extensions
@@ -16,14 +15,13 @@ export interface ExtensionConfig {
   onSave: () => void
   onFocus: () => void
   onBlur: () => void
-  fileExtension?: string
 }
 
 /**
  * Create all editor extensions
  */
 export const createExtensions = (config: ExtensionConfig) => {
-  const { onSave, onFocus, onBlur, fileExtension } = config
+  const { onSave, onFocus, onBlur } = config
 
   const extensions = [
     // Core functionality
@@ -74,10 +72,6 @@ export const createExtensions = (config: ExtensionConfig) => {
     EditorView.lineWrapping,
   ]
 
-  // Add MDX component completion for .mdx files
-  if (fileExtension === 'mdx') {
-    extensions.push(mdxComponentCompletion())
-  }
 
   return extensions
 }

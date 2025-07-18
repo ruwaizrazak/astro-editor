@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useHotkeys } from 'react-hotkeys-hook'
 import { useAppStore } from '../../store'
 import { listen } from '@tauri-apps/api/event'
 import { invoke } from '@tauri-apps/api/core'
@@ -77,7 +78,6 @@ export const Layout: React.FC = () => {
     sidebarVisible,
     frontmatterPanelVisible,
     currentFile,
-    editorContent,
     isDirty,
     saveFile,
     setProject,
@@ -117,69 +117,46 @@ export const Layout: React.FC = () => {
       )
   }, [currentFile])
 
-  // macOS keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // macOS uses metaKey (Cmd key)
-      if (e.metaKey) {
-        switch (e.key) {
-          case 's':
-            e.preventDefault()
-            // Cmd+S: Save File
-            if (currentFile && isDirty) {
-              void saveFile()
-            }
-            break
-          case '1':
-            e.preventDefault()
-            // Cmd+1: Toggle Sidebar
-            toggleSidebar()
-            break
-          case '2':
-            e.preventDefault()
-            // Cmd+2: Toggle Frontmatter Panel
-            toggleFrontmatterPanel()
-            break
-          case 'n':
-            e.preventDefault()
-            // Cmd+N: Create New File (only if a collection is selected)
-            if (selectedCollection) {
-              void createNewFile()
-              // Fix for cursor disappearing - ensure cursor is visible
-              document.body.style.cursor = 'auto'
-              // Force a reflow to ensure the cursor change is applied
-              void document.body.offsetHeight
-            }
-            break
-          case 'w':
-            e.preventDefault()
-            // Cmd+W: Close Current File (only if a file is open)
-            if (currentFile) {
-              closeCurrentFile()
-            }
-            break
-          case ',':
-            e.preventDefault()
-            // Cmd+,: Open Preferences
-            setPreferencesOpen(true)
-            break
-        }
-      }
+  // Keyboard shortcuts using react-hotkeys-hook
+  useHotkeys('mod+s', () => {
+    // Cmd+S: Save File
+    if (currentFile && isDirty) {
+      void saveFile()
     }
+  }, { preventDefault: true })
 
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [
-    currentFile,
-    editorContent,
-    isDirty,
-    saveFile,
-    toggleSidebar,
-    toggleFrontmatterPanel,
-    selectedCollection,
-    createNewFile,
-    closeCurrentFile,
-  ])
+  useHotkeys('mod+1', () => {
+    // Cmd+1: Toggle Sidebar
+    toggleSidebar()
+  }, { preventDefault: true })
+
+  useHotkeys('mod+2', () => {
+    // Cmd+2: Toggle Frontmatter Panel
+    toggleFrontmatterPanel()
+  }, { preventDefault: true })
+
+  useHotkeys('mod+n', () => {
+    // Cmd+N: Create New File (only if a collection is selected)
+    if (selectedCollection) {
+      void createNewFile()
+      // Fix for cursor disappearing - ensure cursor is visible
+      document.body.style.cursor = 'auto'
+      // Force a reflow to ensure the cursor change is applied
+      void document.body.offsetHeight
+    }
+  }, { preventDefault: true })
+
+  useHotkeys('mod+w', () => {
+    // Cmd+W: Close Current File (only if a file is open)
+    if (currentFile) {
+      closeCurrentFile()
+    }
+  }, { preventDefault: true })
+
+  useHotkeys('mod+comma', () => {
+    // Cmd+,: Open Preferences
+    setPreferencesOpen(true)
+  }, { preventDefault: true })
 
   // Listen for open preferences events from command palette
   useEffect(() => {

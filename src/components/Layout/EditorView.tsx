@@ -33,7 +33,7 @@ declare global {
  * - Hooks -> hooks/editor
  */
 export const EditorViewComponent: React.FC = () => {
-  const { editorContent, currentFile } = useAppStore()
+  const { editorContent } = useAppStore()
   const editorRef = useRef<{ view?: EditorView }>(null)
   const [isAltPressed, setIsAltPressed] = useState(false)
 
@@ -96,7 +96,7 @@ export const EditorViewComponent: React.FC = () => {
 
   // Set up editor extensions and commands
   const { extensions, basicSetup, setupCommands, cleanupCommands } =
-    useEditorSetup(handleSave, handleFocus, handleBlur, currentFile?.extension)
+    useEditorSetup(handleSave, handleFocus, handleBlur)
 
   // Set up Tauri listeners
   useTauriListeners(editorRef.current?.view || null)

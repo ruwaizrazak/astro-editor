@@ -184,6 +184,44 @@ listen('menu-format-bold', () => {
 })
 ```
 
+## Keyboard Shortcuts
+
+The app uses `react-hotkeys-hook` for standardized, cross-platform keyboard shortcuts. This replaces manual event handling and provides consistent behavior across operating systems.
+
+### Implementation Pattern
+
+```typescript
+import { useHotkeys } from 'react-hotkeys-hook'
+
+// Cross-platform shortcut (Cmd on macOS, Ctrl on Windows/Linux)
+useHotkeys('mod+s', () => {
+  // Save file action
+}, { preventDefault: true })
+```
+
+### Key Benefits
+
+- **Cross-platform compatibility**: `mod` key automatically maps to Cmd (macOS) or Ctrl (Windows/Linux)
+- **Declarative API**: Define shortcuts where they're used, not in global event handlers
+- **Performance**: Built-in event management and cleanup
+- **Type safety**: Better TypeScript integration than manual event handling
+
+### Integration with Command System
+
+Keyboard shortcuts work seamlessly with the command registry:
+
+```typescript
+useHotkeys('mod+b', () => {
+  globalCommandRegistry.execute('toggleBold')
+}, { preventDefault: true })
+```
+
+This allows the same actions to be triggered from:
+- Keyboard shortcuts
+- Menu items
+- Command palette
+- Programmatic calls
+
 ## Code Extraction Guidelines
 
 ### When to Extract to `lib/`

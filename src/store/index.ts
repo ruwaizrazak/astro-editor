@@ -13,7 +13,6 @@ import {
   GlobalSettings,
   ProjectSettings,
 } from '../lib/project-registry'
-import { useMdxComponentsStore } from './mdxComponentsStore'
 
 export interface FileEntry {
   id: string
@@ -135,9 +134,6 @@ export const useAppStore = create<AppState>((set, get) => ({
 
         await get().loadCollections()
         await get().startFileWatcher()
-        // Load MDX components for autocomplete
-        const mdxComponentsDirectory = projectSettings?.pathOverrides?.mdxComponentsDirectory
-        await useMdxComponentsStore.getState().loadComponents(path, mdxComponentsDirectory)
       } catch (error) {
         toast.error('Failed to set project', {
           description:

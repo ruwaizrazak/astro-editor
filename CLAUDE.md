@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Current Task: `docs/tasks-todo/task-1-tanstack-query.md`
+Current Task: Ready for next task (task-0-cleanup.md completed)
 
 ## Project Overview
 
@@ -45,6 +45,7 @@ Current Task: `docs/tasks-todo/task-1-tanstack-query.md`
 8. **No Dev Server**: Ask user to run dev server and report back instead of executing it yourself
 9. **No Unsolicited Commits**: Only create commits when explicitly requested
 10. **Documentation**: Update `docs/developer/architecture-guide.md` and this file when introducing new patterns
+11. **Removing files**: Always use `rm -f` in place of `rm`
 
 ### Documentation & Versions
 
@@ -101,6 +102,34 @@ The theme provider wraps the entire app in `App.tsx` and works with our existing
 **CRITICAL:** Use Tauri v2 documentation only. v1 approaches don't work.
 
 **CRITICAL:** Always use modern Rust string formatting syntax: `format!("{variable}")` not `format!("{}", variable)`. This is required by Clippy and prevents compilation errors.
+
+## Keyboard Shortcuts
+
+The app uses `react-hotkeys-hook` for standardized, cross-platform keyboard shortcuts. This provides consistent behavior across macOS (Cmd) and Windows/Linux (Ctrl) using the `mod` key.
+
+**Implementation Pattern:**
+```typescript
+import { useHotkeys } from 'react-hotkeys-hook'
+
+// Cross-platform shortcut (Cmd on macOS, Ctrl on Windows/Linux)
+useHotkeys('mod+s', () => {
+  // Save file action
+}, { preventDefault: true })
+```
+
+**Available Shortcuts:**
+- `mod+s` - Save current file
+- `mod+1` - Toggle sidebar
+- `mod+2` - Toggle frontmatter panel
+- `mod+n` - Create new file
+- `mod+w` - Close current file
+- `mod+comma` - Open preferences
+
+**Benefits:**
+- Cross-platform compatibility (automatically maps to Cmd/Ctrl)
+- Declarative API vs manual event handling
+- Built-in preventDefault handling
+- Better performance and memory management
 
 ## Architecture Overview
 
