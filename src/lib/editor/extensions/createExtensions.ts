@@ -12,7 +12,6 @@ import { createEditorTheme } from './theme'
  * Configuration for creating editor extensions
  */
 export interface ExtensionConfig {
-  onSave: () => void
   onFocus: () => void
   onBlur: () => void
 }
@@ -21,7 +20,7 @@ export interface ExtensionConfig {
  * Create all editor extensions
  */
 export const createExtensions = (config: ExtensionConfig) => {
-  const { onSave, onFocus, onBlur } = config
+  const { onFocus, onBlur } = config
 
   const extensions = [
     // Core functionality
@@ -37,7 +36,7 @@ export const createExtensions = (config: ExtensionConfig) => {
     history(),
 
     // Keymaps
-    ...createKeymapExtensions(onSave),
+    ...createKeymapExtensions(),
 
     // Event handlers
     EditorView.domEventHandlers({

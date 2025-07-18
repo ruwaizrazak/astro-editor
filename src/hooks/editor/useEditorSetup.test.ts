@@ -73,7 +73,6 @@ describe('useEditorSetup', () => {
       renderHook(() => useEditorSetup(mockOnSave, mockOnFocus, mockOnBlur))
 
       expect(mockCreateExtensions).toHaveBeenCalledWith({
-        onSave: mockOnSave,
         onFocus: mockOnFocus,
         onBlur: mockOnBlur,
       })
@@ -307,7 +306,6 @@ describe('useEditorSetup', () => {
 
       expect(mockCreateExtensions).toHaveBeenCalledTimes(2)
       expect(mockCreateExtensions).toHaveBeenLastCalledWith({
-        onSave: newOnSave,
         onFocus: mockOnFocus,
         onBlur: mockOnBlur,
       })
@@ -331,7 +329,6 @@ describe('useEditorSetup', () => {
 
       expect(mockCreateExtensions).toHaveBeenCalledTimes(2)
       expect(mockCreateExtensions).toHaveBeenLastCalledWith({
-        onSave: mockOnSave,
         onFocus: newOnFocus,
         onBlur: mockOnBlur,
       })
@@ -355,7 +352,6 @@ describe('useEditorSetup', () => {
 
       expect(mockCreateExtensions).toHaveBeenCalledTimes(2)
       expect(mockCreateExtensions).toHaveBeenLastCalledWith({
-        onSave: mockOnSave,
         onFocus: mockOnFocus,
         onBlur: newOnBlur,
       })

@@ -21,7 +21,6 @@ export const useEditorSetup = (
 ) => {
   // Create extensions with current configuration
   const extensions = createExtensions({
-    onSave,
     onFocus,
     onBlur,
   })

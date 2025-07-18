@@ -90,8 +90,6 @@ The revised data flow is centered around the Component Builder dialog:
 
 ## 4. Implementation Plan: The MDX Component Builder Dialog
 
-With the preliminary refactoring complete, we can proceed with building the Component Builder.
-
 ### 4.1. File & Component Architecture
 
 To ensure a clean separation of concerns, the feature will be composed of the following new files:
@@ -203,7 +201,7 @@ This component orchestrates the entire UI using `shadcn/ui`.
     import { useComponentBuilderStore } from '@/store/componentBuilderStore'
     // Assume editorView is accessible here from a state or ref
     useHotkeys(
-      'mod+i',
+      'mod+/',
       e => {
         e.preventDefault()
         useComponentBuilderStore.getState().open(editorView)

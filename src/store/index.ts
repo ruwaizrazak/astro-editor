@@ -64,7 +64,7 @@ interface AppState {
   setProject: (path: string) => void
   openFile: (file: FileEntry) => Promise<void>
   closeCurrentFile: () => void
-  saveFile: () => Promise<void>
+  saveFile: (showToast?: boolean) => Promise<void>
   createNewFile: () => void
   setEditorContent: (content: string) => void
   updateFrontmatter: (frontmatter: Record<string, unknown>) => void
@@ -189,7 +189,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     })
   },
 
-  saveFile: async () => {
+  saveFile: async (showToast = true) => {
     const { currentFile, editorContent, frontmatter, imports } = get()
     if (!currentFile) return
 
@@ -232,8 +232,10 @@ export const useAppStore = create<AppState>((set, get) => ({
         })
       }
 
-      // Show success toast
-      toast.success('File saved successfully')
+      // Show success toast only if requested
+      if (showToast) {
+        toast.success('File saved successfully')
+      }
 
       // Clear the recently saved file after a delay
       setTimeout(() => {
@@ -308,9 +310,9 @@ export const useAppStore = create<AppState>((set, get) => ({
       clearTimeout(store.autoSaveTimeoutId)
     }
 
-    // Schedule new auto-save
+    // Schedule new auto-save (without toast)
     const timeoutId = setTimeout(() => {
-      void store.saveFile()
+      void store.saveFile(false)
     }, 2000)
 
     set({ autoSaveTimeoutId: timeoutId })

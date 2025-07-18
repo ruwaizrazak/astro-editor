@@ -8,7 +8,7 @@ import { transformLineToHeading } from '../markdown/headings'
 /**
  * Create custom markdown shortcuts with high precedence
  */
-export const createMarkdownKeymap = (onSave: () => void) => {
+export const createMarkdownKeymap = () => {
   return Prec.high(
     keymap.of([
       {
@@ -22,13 +22,6 @@ export const createMarkdownKeymap = (onSave: () => void) => {
       {
         key: 'Mod-k',
         run: view => createMarkdownLink(view),
-      },
-      {
-        key: 'Mod-s',
-        run: () => {
-          onSave()
-          return true
-        },
       },
       // Heading transformation shortcuts
       {
@@ -65,6 +58,6 @@ export const createDefaultKeymap = () => {
 /**
  * Create all keymap extensions
  */
-export const createKeymapExtensions = (onSave: () => void) => {
-  return [createMarkdownKeymap(onSave), createDefaultKeymap()]
+export const createKeymapExtensions = () => {
+  return [createMarkdownKeymap(), createDefaultKeymap()]
 }
