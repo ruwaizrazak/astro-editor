@@ -53,6 +53,7 @@ _Goal: Advanced features that differentiate from basic editors_
 
 **Bugs at this stage**
 
+- [ ] Open in IDE commands don't work - fail with an unknown error toast. When in a file, I can only see "Open Project" I should be able to see collection and file too.
 - [ ] Add "Open Preferences" to command palette
 - [ ] Change the label (pill) in CollectionList.tsx to show the number of content items, not the number of fields in the schema.
 - [ ] Add menu item in main menu to open preferences dialog.

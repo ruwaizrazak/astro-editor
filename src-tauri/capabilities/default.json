@@ -24,6 +24,47 @@
     "fs:allow-remove",
     "dialog:default",
     {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "name": "cursor",
+          "cmd": "cursor",
+          "args": true,
+          "sidecar": false
+        },
+        {
+          "name": "code",
+          "cmd": "code",
+          "args": true,
+          "sidecar": false
+        },
+        {
+          "name": "vim",
+          "cmd": "vim",
+          "args": true,
+          "sidecar": false
+        },
+        {
+          "name": "nvim",
+          "cmd": "nvim",
+          "args": true,
+          "sidecar": false
+        },
+        {
+          "name": "emacs",
+          "cmd": "emacs",
+          "args": true,
+          "sidecar": false
+        },
+        {
+          "name": "subl",
+          "cmd": "subl",
+          "args": true,
+          "sidecar": false
+        }
+      ]
+    },
+    {
       "identifier": "fs:scope",
       "allow": [
         { "path": "**" }

@@ -171,7 +171,8 @@ async function executeIdeCommand(ideCommand: string, path: string) {
     toast.success(`Opened in ${ideCommand}`)
   } catch (error) {
     toast.error('Failed to open in IDE', {
-      description: error instanceof Error ? error.message : 'Unknown error occurred',
+      description:
+        error instanceof Error ? error.message : 'Unknown error occurred',
     })
   }
 }
@@ -189,13 +190,13 @@ export const ideCommands: AppCommand[] = [
     execute: async (context: CommandContext) => {
       const ideCommand = context.globalSettings?.general?.ideCommand
       if (ideCommand && context.projectPath) {
+        console.log('Opening project in IDE:', context.projectPath)
         await executeIdeCommand(ideCommand, context.projectPath)
       }
     },
     isAvailable: (context: CommandContext) => {
       return Boolean(
-        context.globalSettings?.general?.ideCommand && 
-        context.projectPath
+        context.globalSettings?.general?.ideCommand && context.projectPath
       )
     },
   },
@@ -209,7 +210,9 @@ export const ideCommands: AppCommand[] = [
       const ideCommand = context.globalSettings?.general?.ideCommand
       if (ideCommand && context.selectedCollection && context.projectPath) {
         // Find the collection to get its path
-        const collection = context.collections.find(c => c.name === context.selectedCollection)
+        const collection = context.collections.find(
+          c => c.name === context.selectedCollection
+        )
         if (collection) {
           await executeIdeCommand(ideCommand, collection.path)
         }
@@ -217,9 +220,9 @@ export const ideCommands: AppCommand[] = [
     },
     isAvailable: (context: CommandContext) => {
       return Boolean(
-        context.globalSettings?.general?.ideCommand && 
-        context.selectedCollection &&
-        context.projectPath
+        context.globalSettings?.general?.ideCommand &&
+          context.selectedCollection &&
+          context.projectPath
       )
     },
   },
@@ -237,8 +240,7 @@ export const ideCommands: AppCommand[] = [
     },
     isAvailable: (context: CommandContext) => {
       return Boolean(
-        context.globalSettings?.general?.ideCommand && 
-        context.currentFile
+        context.globalSettings?.general?.ideCommand && context.currentFile
       )
     },
   },

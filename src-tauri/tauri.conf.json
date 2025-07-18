@@ -75,6 +75,9 @@
   "plugins": {
     "opener": {
       "requireLiteralLeadingDot": false
+    },
+    "shell": {
+      "open": true
     }
   }
 }
