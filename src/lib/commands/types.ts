@@ -24,6 +24,7 @@ export interface CommandContext {
   closeCurrentFile: () => void
   loadCollections: () => Promise<void>
   loadCollectionFiles: (collectionPath: string) => Promise<void>
+  openPreferences: () => void
 
   // Future extensibility
   editorSelection?: {
@@ -38,7 +39,7 @@ export interface AppCommand {
   label: string
   description?: string
   icon?: React.ComponentType<{ className?: string }>
-  group: 'file' | 'navigation' | 'project' | 'ide'
+  group: 'file' | 'navigation' | 'project' | 'ide' | 'settings'
   execute: (context: CommandContext) => void | Promise<void>
   isAvailable: (context: CommandContext) => boolean
 }

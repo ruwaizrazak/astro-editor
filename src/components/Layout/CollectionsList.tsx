@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAppStore, Collection } from '../../store'
-import { parseSchemaJson } from '../../lib/schema'
+import { invoke } from '@tauri-apps/api/core'
 
 export const CollectionsList: React.FC = () => {
   const {
@@ -9,6 +9,33 @@ export const CollectionsList: React.FC = () => {
     loadCollectionFiles,
     selectedCollection,
   } = useAppStore()
+  
+  const [fileCounts, setFileCounts] = useState<Record<string, number>>({})
+
+  // Load file counts for all collections
+  useEffect(() => {
+    const loadFileCounts = async () => {
+      const counts: Record<string, number> = {}
+      
+      for (const collection of collections) {
+        try {
+          const files = await invoke<unknown[]>('scan_collection_files', {
+            collectionPath: collection.path,
+          })
+          counts[collection.name] = files.length
+        } catch (error) {
+          console.warn(`Failed to load file count for ${collection.name}:`, error)
+          counts[collection.name] = 0
+        }
+      }
+      
+      setFileCounts(counts)
+    }
+
+    if (collections.length > 0) {
+      void loadFileCounts()
+    }
+  }, [collections])
 
   const handleCollectionClick = (collection: Collection) => {
     setSelectedCollection(collection.name)
@@ -19,10 +46,7 @@ export const CollectionsList: React.FC = () => {
     <div>
       {collections.map(collection => {
         const isSelected = selectedCollection === collection.name
-        const schema = collection.schema
-          ? parseSchemaJson(collection.schema)
-          : null
-        const fieldCount = schema?.fields.length || 0
+        const fileCount = fileCounts[collection.name] ?? 0
 
         return (
           <div
@@ -36,25 +60,14 @@ export const CollectionsList: React.FC = () => {
           >
             <div className="flex items-center justify-between mb-1">
               <div className="text-sm font-medium">{collection.name}</div>
-              {schema && (
-                <div className="text-xs text-muted-foreground bg-muted/50 px-2 py-0.5 rounded">
-                  {fieldCount} field{fieldCount !== 1 ? 's' : ''}
-                </div>
-              )}
+              <div className="text-xs text-muted-foreground bg-muted/50 px-2 py-0.5 rounded">
+                {fileCount} item{fileCount !== 1 ? 's' : ''}
+              </div>
             </div>
             <div className="text-xs text-muted-foreground opacity-80">
               {collection.path.split('/').pop()}{' '}
               {/* Show just the directory name */}
             </div>
-            {schema && schema.fields.length > 0 && (
-              <div className="text-xs text-muted-foreground/60 mt-1">
-                {schema.fields
-                  .slice(0, 3)
-                  .map(field => field.name)
-                  .join(', ')}
-                {schema.fields.length > 3 && '...'}
-              </div>
-            )}
           </div>
         )
       })}

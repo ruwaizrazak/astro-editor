@@ -40,6 +40,10 @@ export function useCommandContext(): CommandContext {
     closeCurrentFile,
     loadCollections,
     loadCollectionFiles,
+    openPreferences: () => {
+      // Dispatch a custom event that Layout can listen to
+      window.dispatchEvent(new CustomEvent('open-preferences'))
+    },
     // Future: editor selection context could be added here
   }
 }

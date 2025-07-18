@@ -1,11 +1,10 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { useAppStore, type Collection, type FileEntry } from '../../store'
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
 import { FolderOpen, ArrowLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { parseSchemaJson } from '../../lib/schema'
 import { FileContextMenu } from '../ui/context-menu'
 import { useEffectiveSettings } from '../../lib/project-registry/utils-effective'
 
@@ -81,6 +80,33 @@ export const Sidebar: React.FC = () => {
     loadCollectionFiles: (collectionPath: string) => Promise<void>
     openFile: (file: FileEntry) => Promise<void>
   } = useAppStore()
+
+  const [fileCounts, setFileCounts] = useState<Record<string, number>>({})
+
+  // Load file counts for all collections
+  useEffect(() => {
+    const loadFileCounts = async () => {
+      const counts: Record<string, number> = {}
+      
+      for (const collection of collections) {
+        try {
+          const files = await invoke<unknown[]>('scan_collection_files', {
+            collectionPath: collection.path,
+          })
+          counts[collection.name] = files.length
+        } catch (error) {
+          console.warn(`Failed to load file count for ${collection.name}:`, error)
+          counts[collection.name] = 0
+        }
+      }
+      
+      setFileCounts(counts)
+    }
+
+    if (collections.length > 0) {
+      void loadFileCounts()
+    }
+  }, [collections])
 
   // Get effective settings for frontmatter field mappings
   const { frontmatterMappings } = useEffectiveSettings()
@@ -283,10 +309,7 @@ export const Sidebar: React.FC = () => {
           // Collections List
           <div className="p-2">
             {collections.map(collection => {
-              const schema = collection.schema
-                ? parseSchemaJson(collection.schema)
-                : null
-              const fieldCount = schema?.fields?.length || 0
+              const fileCount = fileCounts[collection.name] ?? 0
 
               return (
                 <button
@@ -296,11 +319,9 @@ export const Sidebar: React.FC = () => {
                 >
                   <div className="flex items-center justify-between w-full">
                     <span className="font-medium">{collection.name}</span>
-                    {fieldCount > 0 && (
-                      <Badge variant="secondary" className="text-xs">
-                        {fieldCount} field{fieldCount !== 1 ? 's' : ''}
-                      </Badge>
-                    )}
+                    <Badge variant="secondary" className="text-xs">
+                      {fileCount} item{fileCount !== 1 ? 's' : ''}
+                    </Badge>
                   </div>
                   <div className="text-xs text-muted-foreground mt-1 font-mono">
                     {collection.path.split('/').pop()}

@@ -53,20 +53,20 @@ _Goal: Advanced features that differentiate from basic editors_
 
 **Bugs at this stage**
 
-- [ ] Add "Open Preferences" to command palette
+- [x] Add "Open Preferences" to command palette
 - [ ] Change the label (pill) in CollectionList.tsx to show the number of content items, not the number of fields in the schema.
-- [ ] Add main menu to open preferences dialog.
+- [ ] Add a "Preferences" menu item under "Astro Editor" macoOS menubar menu which opens the settings. The correct coyboard shortcut is `Cmd+,` which already works. Do this in the same way you have with other Tauri menubar items.
 
-**Phase 5.2 - Improved Writing Experience**
-
-- [ ] "Typewriter mode" (much like iA Writer)
-- [ ] Small image preview popover when hovering over local image URL for >1.5 seconds -> use shadcn components for this
-
-**Phase 5.3 - Insert Astro Components into MDX files**
+**Phase 5.2 - Insert Astro Components into MDX files**
 
 - [ ] Discovery of Astro components intended for use in MDX files (from `src/components/mdx/`)
 - [ ] Pane in settings to view all discovered Astro components and toggle on and off. Those switched _off_ are saved in the project settings.
 - [ ] Slash command system for inserting Astro components in MDX files easily
+
+**Phase 5.3 - Improved Writing Experience**
+
+- [ ] "Typewriter mode" (much like iA Writer)
+- [ ] Small image preview popover when hovering over local image URL for >1.5 seconds -> use shadcn components for this
 
 **Phase 5.4: Copyediting and Analysis Mode**
 

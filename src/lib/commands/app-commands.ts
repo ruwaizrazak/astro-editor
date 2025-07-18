@@ -12,6 +12,7 @@ import {
   ExternalLink,
   Code,
   Folder,
+  Settings,
 } from 'lucide-react'
 import { AppCommand, CommandContext } from './types'
 import { Collection } from '../../store'
@@ -129,6 +130,23 @@ export const projectCommands: AppCommand[] = [
     isAvailable: (context: CommandContext) => {
       return Boolean(context.projectPath)
     },
+  },
+]
+
+/**
+ * Settings-related commands
+ */
+export const settingsCommands: AppCommand[] = [
+  {
+    id: 'open-preferences',
+    label: 'Open Preferences',
+    description: 'Open application preferences and settings',
+    icon: Settings,
+    group: 'settings',
+    execute: (context: CommandContext) => {
+      context.openPreferences()
+    },
+    isAvailable: () => true,
   },
 ]
 
@@ -255,6 +273,7 @@ export function getAllCommands(context: CommandContext): AppCommand[] {
     ...fileCommands,
     ...navigationCommands,
     ...projectCommands,
+    ...settingsCommands,
     ...ideCommands,
     ...collectionCommands,
   ].filter(command => command.isAvailable(context))

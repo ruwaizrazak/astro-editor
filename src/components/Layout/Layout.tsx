@@ -181,6 +181,17 @@ export const Layout: React.FC = () => {
     closeCurrentFile,
   ])
 
+  // Listen for open preferences events from command palette
+  useEffect(() => {
+    const handleOpenPreferences = () => {
+      setPreferencesOpen(true)
+    }
+
+    window.addEventListener('open-preferences', handleOpenPreferences)
+    return () =>
+      window.removeEventListener('open-preferences', handleOpenPreferences)
+  }, [])
+
   // Load persisted project on app start
   useEffect(() => {
     void loadPersistedProject()
