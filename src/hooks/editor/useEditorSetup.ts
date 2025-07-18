@@ -17,13 +17,15 @@ import {
 export const useEditorSetup = (
   onSave: () => void,
   onFocus: () => void,
-  onBlur: () => void
+  onBlur: () => void,
+  fileExtension?: string
 ) => {
   // Create extensions with current configuration
   const extensions = createExtensions({
     onSave,
     onFocus,
     onBlur,
+    fileExtension,
   })
 
   // Set up editor commands when editor view is available

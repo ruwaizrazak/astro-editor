@@ -33,6 +33,10 @@ tauri-plugin-fs = "2.4.0"
 tauri-plugin-dialog = "2.3.0"
 tauri-plugin-shell = "2.3.0"
 chrono = "0.4"
+swc_common = "14"
+swc_ecma_ast = "14"
+swc_ecma_parser = "21"
+swc_ecma_visit = "14"
 
 [dev-dependencies]
 tempfile = "3.8"

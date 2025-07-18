@@ -302,6 +302,7 @@ pub fn run() {
             update_format_menu_state,
             copy_file_to_assets,
             copy_file_to_assets_with_override,
+            scan_mdx_components,
             save_recovery_data,
             save_crash_report,
             get_app_data_dir,
