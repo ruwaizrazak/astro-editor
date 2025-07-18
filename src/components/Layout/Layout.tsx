@@ -9,10 +9,12 @@ import { MainEditor } from './MainEditor'
 import { FrontmatterPanel } from './FrontmatterPanel'
 import { globalCommandRegistry } from '../../lib/editor/commands'
 import { CommandPalette } from '../CommandPalette'
+import { ComponentBuilderDialog } from '../ComponentBuilder'
 import { Toaster } from '../ui/sonner'
 import { toast } from '../../lib/toast'
 import { initializeRustToastBridge } from '../../lib/rust-toast-bridge'
 import { PreferencesDialog } from '../preferences'
+import { useComponentBuilderStore } from '../../store/componentBuilderStore'
 import { useCreateFile } from '../../hooks/useCreateFile'
 import {
   ResizablePanelGroup,
@@ -191,6 +193,23 @@ export const Layout: React.FC = () => {
       preventDefault: true,
       enableOnFormTags: ['input', 'textarea', 'select'],
       enableOnContentEditable: true, // Enable in contenteditable elements like CodeMirror
+    }
+  )
+
+  useHotkeys(
+    'mod+/',
+    () => {
+      // Cmd+/: Open MDX Component Builder (only for .mdx files)
+      if (currentFile?.path.endsWith('.mdx')) {
+        const editorView = globalCommandRegistry.getEditorView()
+        if (editorView) {
+          useComponentBuilderStore.getState().open(editorView)
+        }
+      }
+    },
+    {
+      preventDefault: true,
+      enableOnContentEditable: true,
     }
   )
 
@@ -377,6 +396,9 @@ export const Layout: React.FC = () => {
 
       {/* Command Palette */}
       <CommandPalette />
+
+      {/* MDX Component Builder */}
+      <ComponentBuilderDialog />
 
       {/* Preferences Dialog */}
       <PreferencesDialog

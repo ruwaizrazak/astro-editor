@@ -193,8 +193,8 @@ Use Zustand for state that:
 // Client state in Zustand
 projectPath: string | null
 currentFile: FileEntry | null
-editorContent: string  // Current editing state
-frontmatter: Record<string, unknown>  // Current editing state
+editorContent: string // Current editing state
+frontmatter: Record<string, unknown> // Current editing state
 isDirty: boolean
 sidebarVisible: boolean
 frontmatterPanelVisible: boolean
@@ -236,8 +236,8 @@ After mutations, queries are automatically invalidated to update the UI:
 
 ```typescript
 // After save mutation
-queryClient.invalidateQueries({ 
-  queryKey: queryKeys.collectionFiles(projectPath, collectionName) 
+queryClient.invalidateQueries({
+  queryKey: queryKeys.collectionFiles(projectPath, collectionName),
 })
 ```
 
@@ -489,7 +489,7 @@ listen('rust-toast', event => {
 
 When store actions need access to query data, we use custom events:
 
-```typescript
+````typescript
 // In store (doesn't have access to React Query hooks)
 createNewFile: async () => {
   window.dispatchEvent(new CustomEvent('create-new-file'))
@@ -525,7 +525,7 @@ export const queryKeys = {
   fileContent: (projectPath: string, fileId: string) =>
     [...queryKeys.all, projectPath, 'files', fileId] as const,
 }
-```
+````
 
 #### Query Hooks
 
@@ -1098,3 +1098,4 @@ The architecture supports:
 ---
 
 _This document reflects the current architecture as of Phase 3.1. Update as the project evolves and new patterns emerge._
+```

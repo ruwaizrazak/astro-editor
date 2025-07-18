@@ -65,7 +65,7 @@ The most critical part of this feature is reliably extracting the necessary info
 
 ---
 
-### **Part 2: The Frontend - The Component Builder Dialog** [TODO]
+### **Part 2: The Frontend - The Component Builder Dialog** ✅ DONE
 
 The frontend is responsible for providing a user-friendly interface to select, configure, and insert MDX components.
 
@@ -73,14 +73,29 @@ After initial consideration, an approach using CodeMirror's built-in `autocomple
 
 Therefore, the chosen architecture is a **dedicated modal dialog**, which we will call the **Component Builder**. This approach decouples the insertion logic from the editor's direct input handling, allowing us to use our existing `shadcn/ui` and `Tailwind` infrastructure to build a rich, fully-interactive, and visually consistent UI.
 
+#### 2.2. Architecture Updates (Based on Current Implementation)
+
+Since this plan was written, we have integrated:
+
+- **TanStack Query v5** for server state management
+- **react-hotkeys-hook** for keyboard shortcuts
+- **Command palette pattern** already established
+
+The updated approach will:
+
+1. Use TanStack Query for fetching MDX components (not Zustand store for this data)
+2. Use Zustand only for dialog UI state (isOpen, step, selectedComponent, enabledProps)
+3. Follow the existing CommandDialog pattern from CommandPalette
+4. Use react-hotkeys-hook for the Cmd+/ shortcut
+
 ### 3. Data Flow and User Experience
 
 The revised data flow is centered around the Component Builder dialog:
 
-1.  **Project Load:** The frontend calls the `scan_mdx_components` Tauri command. Rust parses all relevant `.astro` files and returns a structured list of component data.
-2.  **Store Component Data:** The frontend stores this list in the `useMdxComponentsStore` Zustand store for global access.
-3.  **Trigger:** The user, while focused on the editor, presses a dedicated keyboard shortcut (`Cmd+I`).
-4.  **Launch Dialog:** The shortcut triggers a function that opens the `ComponentBuilderDialog` and passes it a reference to the active CodeMirror `EditorView`.
+1.  **Project Load:** A TanStack Query hook (`useMdxComponentsQuery`) calls the `scan_mdx_components` Tauri command. Rust parses all relevant `.astro` files and returns a structured list of component data.
+2.  **Cache Component Data:** TanStack Query caches the component data, making it available throughout the app.
+3.  **Trigger:** The user, while focused on the editor, presses the keyboard shortcut (`Cmd+/`).
+4.  **Launch Dialog:** The shortcut (using react-hotkeys-hook) opens the `ComponentBuilderDialog` with access to the current editor view.
 5.  **Select Component:** The user is presented with a searchable list of available components (e.g., `Callout`, `Figure`). They select one.
 6.  **Configure Props:** The dialog transitions to a new view where the user can see all the props for the selected component. They can toggle optional props on or off using switches.
 7.  **Build & Insert Snippet:** Upon confirming, a utility function generates a CodeMirror-compatible snippet string with placeholders (e.g., `<Callout title="\${1}">\${2}</Callout>`).
@@ -94,11 +109,12 @@ The revised data flow is centered around the Component Builder dialog:
 
 To ensure a clean separation of concerns, the feature will be composed of the following new files:
 
-- `src/store/componentBuilderStore.ts`: A Zustand store to manage the entire state of the component building workflow.
+- `src/hooks/queries/useMdxComponentsQuery.ts`: TanStack Query hook to fetch MDX components.
+- `src/store/componentBuilderStore.ts`: A Zustand store to manage only the dialog UI state.
 - `src/components/ComponentBuilder/index.ts`: Barrel export file.
 - `src/components/ComponentBuilder/ComponentBuilderDialog.tsx`: The main React component for the dialog UI.
 - `src/lib/editor/snippet-builder.ts`: A pure utility file for generating the final CodeMirror snippet string.
-- `src/lib/editor/commands.ts`: This file will be augmented with a new command to dispatch the snippet to the editor.
+- `src/lib/editor/commands/insertSnippet.ts`: A new command to insert snippets in the editor.
 
 ### 4.2. State Management (`useComponentBuilderStore`)
 
@@ -194,19 +210,18 @@ This component orchestrates the entire UI using `shadcn/ui`.
 
 **Key Implementation Points:**
 
-1.  **Global Shortcut:** In `src/components/Layout/Layout.tsx`, after completing the refactor, add the new hotkey.
+1.  **Global Shortcut:** In `src/components/Layout/Layout.tsx`, add the new hotkey following the existing pattern.
 
     ```tsx
-    import { useHotkeys } from 'react-hotkeys-hook'
-    import { useComponentBuilderStore } from '@/store/componentBuilderStore'
-    // Assume editorView is accessible here from a state or ref
     useHotkeys(
       'mod+/',
-      e => {
-        e.preventDefault()
-        useComponentBuilderStore.getState().open(editorView)
+      () => {
+        // Cmd+/: Open MDX Component Builder
+        if (currentFile?.path.endsWith('.mdx')) {
+          useComponentBuilderStore.getState().open(editorView)
+        }
       },
-      [editorView]
+      { preventDefault: true }
     )
     ```
 
@@ -216,7 +231,7 @@ This component orchestrates the entire UI using `shadcn/ui`.
 
 3.  **Component List (`step === 'list'`):**
     - Render `Command.Input`, `Command.List`, etc.
-    - Map over components from `useMdxComponentsStore` to create `Command.Item` elements.
+    - Map over components from `useMdxComponentsQuery` to create `Command.Item` elements.
     - `onSelect` for each item should call `store.selectComponent(component)`.
 
 4.  **Props Configurator (`step === 'configure'`):**
@@ -280,3 +295,7 @@ This part connects the UI to the CodeMirror editor.
     ```
 
 This refined plan provides a clear, step-by-step guide that is technically accurate and architecturally sound, making it much easier to implement correctly.
+
+## Bugs and Cleanup Tasks
+
+- [ ] Update documentation
