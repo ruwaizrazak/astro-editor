@@ -30,9 +30,12 @@ describe('App Store', () => {
     expect(state.isDirty).toBe(false)
   })
 
-  it('should set project path', () => {
+  it('should set project path', async () => {
     const { setProject } = useAppStore.getState()
     setProject('/test/project/path')
+
+    // Wait for async operations to complete
+    await new Promise(resolve => setTimeout(resolve, 0))
 
     const state = useAppStore.getState()
     expect(state.projectPath).toBe('/test/project/path')
@@ -78,16 +81,19 @@ describe('App Store', () => {
     expect(useAppStore.getState().selectedCollection).toBeNull()
   })
 
-  it('should persist project path to localStorage when setting project', () => {
+  it('should persist project path to localStorage when setting project', async () => {
     const testPath = '/test/project'
 
     useAppStore.getState().setProject(testPath)
+
+    // Wait for async operations to complete
+    await new Promise(resolve => setTimeout(resolve, 0))
 
     expect(localStorage.getItem('astro-editor-last-project')).toBe(testPath)
     expect(useAppStore.getState().projectPath).toBe(testPath)
   })
 
-  it('should handle localStorage errors gracefully when setting project', () => {
+  it('should handle localStorage errors gracefully when setting project', async () => {
     const testPath = '/test/project'
     // Mock localStorage to throw an error
     const originalSetItem = localStorage.setItem.bind(localStorage)
@@ -97,6 +103,10 @@ describe('App Store', () => {
 
     // Should not throw error
     expect(() => useAppStore.getState().setProject(testPath)).not.toThrow()
+
+    // Wait for async operations to complete
+    await new Promise(resolve => setTimeout(resolve, 0))
+
     expect(useAppStore.getState().projectPath).toBe(testPath)
 
     // Restore original function
@@ -111,6 +121,9 @@ describe('App Store', () => {
     globalThis.mockTauri.invoke.mockResolvedValue([])
 
     await useAppStore.getState().loadPersistedProject()
+
+    // Wait for any additional async operations (setProject is async)
+    await new Promise(resolve => setTimeout(resolve, 0))
 
     expect(useAppStore.getState().projectPath).toBe(testPath)
     expect(globalThis.mockTauri.invoke).toHaveBeenCalledWith('scan_project', {
