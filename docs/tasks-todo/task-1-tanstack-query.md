@@ -1,4 +1,4 @@
-# Switch to reactQuery?
+# Task: Switch to Tanstack Query everywhere
 
 Asynchronous Operations & Data Caching: TanStack Query (formerly React Query)
 
