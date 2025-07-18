@@ -23,7 +23,7 @@ export const useDeleteFileMutation = () => {
     mutationFn: deleteFile,
     onSuccess: (_, variables) => {
       // Invalidate collection files to remove the deleted file from the list
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: queryKeys.collectionFiles(
           variables.projectPath,
           variables.collectionName
@@ -32,7 +32,10 @@ export const useDeleteFileMutation = () => {
 
       // Remove the file content from cache
       queryClient.removeQueries({
-        queryKey: queryKeys.fileContent(variables.projectPath, variables.filePath),
+        queryKey: queryKeys.fileContent(
+          variables.projectPath,
+          variables.filePath
+        ),
       })
 
       toast.success('File deleted successfully')

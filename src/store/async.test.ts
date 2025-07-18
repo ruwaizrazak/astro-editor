@@ -1,57 +1,64 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { useAppStore } from './index'
+import { queryClient } from '../lib/query-client'
+
+// Mock the queryClient
+vi.mock('../lib/query-client', () => ({
+  queryClient: {
+    invalidateQueries: vi.fn(),
+  },
+}))
 
 describe('Store Async Operations', () => {
   beforeEach(() => {
     useAppStore.setState({
       projectPath: null,
-      collections: [],
-      files: [],
       currentFile: null,
       editorContent: '',
+      frontmatter: {},
       imports: '',
       isDirty: false,
     })
     globalThis.mockTauri.reset()
+    vi.clearAllMocks()
   })
 
-  describe('loadCollections', () => {
-    it('should load collections successfully', async () => {
-      const mockCollections = [
-        { name: 'posts', path: '/project/posts', schema: null },
-        { name: 'blog', path: '/project/blog', schema: null },
-      ]
+  describe('setProject', () => {
+    it('should set project path and start file watcher', async () => {
+      const { setProject } = useAppStore.getState()
 
-      globalThis.mockTauri.invoke.mockResolvedValue(mockCollections)
-      useAppStore.setState({ projectPath: '/test/project' })
+      // Mock successful project setup
+      globalThis.mockTauri.invoke.mockResolvedValue('project-id-123')
 
-      const { loadCollections } = useAppStore.getState()
-      await loadCollections()
+      setProject('/test/project')
 
-      expect(globalThis.mockTauri.invoke).toHaveBeenCalledWith('scan_project', {
-        projectPath: '/test/project',
-      })
-      expect(useAppStore.getState().collections).toEqual(mockCollections)
-    })
+      // Wait for async operations
+      await new Promise(resolve => setTimeout(resolve, 0))
 
-    it('should handle loadCollections error gracefully', async () => {
-      globalThis.mockTauri.invoke.mockRejectedValue(
-        new Error('Project not found')
+      expect(useAppStore.getState().projectPath).toBe('/test/project')
+      expect(globalThis.mockTauri.invoke).toHaveBeenCalledWith(
+        'start_watching_project_with_content_dir',
+        {
+          projectPath: '/test/project',
+          contentDirectory: 'src/content/',
+        }
       )
-      useAppStore.setState({ projectPath: '/invalid/project' })
-
-      const { loadCollections } = useAppStore.getState()
-      await loadCollections()
-
-      // Should not throw and collections should remain empty
-      expect(useAppStore.getState().collections).toEqual([])
     })
 
-    it('should not load collections when no project path is set', async () => {
-      const { loadCollections } = useAppStore.getState()
-      await loadCollections()
+    it('should handle project setup error gracefully', async () => {
+      const { setProject } = useAppStore.getState()
 
-      expect(globalThis.mockTauri.invoke).not.toHaveBeenCalled()
+      globalThis.mockTauri.invoke.mockRejectedValue(
+        new Error('Failed to start file watcher')
+      )
+
+      setProject('/test/project')
+
+      // Wait for async operations
+      await new Promise(resolve => setTimeout(resolve, 0))
+
+      // Project path should still be set even if file watcher fails
+      expect(useAppStore.getState().projectPath).toBe('/test/project')
     })
   })
 
@@ -128,6 +135,7 @@ describe('Store Async Operations', () => {
       const mockFrontmatter = { title: 'Test Post', draft: false }
 
       useAppStore.setState({
+        projectPath: '/test/project',
         currentFile: mockFile,
         editorContent: '# Updated Content',
         frontmatter: mockFrontmatter,
@@ -151,6 +159,12 @@ describe('Store Async Operations', () => {
         }
       )
       expect(useAppStore.getState().isDirty).toBe(false)
+
+      // Should invalidate queries for UI updates
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      expect(queryClient.invalidateQueries).toHaveBeenCalledWith({
+        queryKey: ['project', '/test/project', 'collections', 'posts', 'files'],
+      })
     })
 
     it('should handle save error gracefully', async () => {
@@ -166,6 +180,7 @@ describe('Store Async Operations', () => {
       useAppStore.setState({
         currentFile: mockFile,
         editorContent: '# Updated Content',
+        frontmatter: {},
         imports: '',
         isDirty: true,
       })
@@ -185,6 +200,7 @@ describe('Store Async Operations', () => {
       useAppStore.setState({
         currentFile: null,
         editorContent: '# Content',
+        frontmatter: {},
         imports: '',
         isDirty: true,
       })
@@ -196,50 +212,42 @@ describe('Store Async Operations', () => {
     })
   })
 
-  describe('loadCollectionFiles', () => {
-    it('should load files for collection', async () => {
-      const mockFiles = [
-        {
-          id: 'posts/hello',
-          path: '/project/posts/hello.md',
-          name: 'hello',
-          extension: 'md',
-          is_draft: false,
-          collection: 'posts',
-        },
-        {
-          id: 'posts/world',
-          path: '/project/posts/world.md',
-          name: 'world',
-          extension: 'md',
-          is_draft: true,
-          collection: 'posts',
-        },
-      ]
+  describe('createNewFile', () => {
+    it('should dispatch create-new-file event', () => {
+      const dispatchEventSpy = vi.spyOn(window, 'dispatchEvent')
 
-      globalThis.mockTauri.invoke.mockResolvedValue(mockFiles)
+      const { createNewFile } = useAppStore.getState()
+      createNewFile()
 
-      const { loadCollectionFiles } = useAppStore.getState()
-      await loadCollectionFiles('/project/posts')
-
-      expect(globalThis.mockTauri.invoke).toHaveBeenCalledWith(
-        'scan_collection_files',
-        {
-          collectionPath: '/project/posts',
-        }
+      expect(dispatchEventSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'create-new-file',
+        })
       )
-      expect(useAppStore.getState().files).toEqual(mockFiles)
     })
+  })
 
-    it('should handle collection scan error gracefully', async () => {
-      globalThis.mockTauri.invoke.mockRejectedValue(
-        new Error('Directory not found')
-      )
+  describe('updateCurrentFilePath', () => {
+    it('should update current file path after rename', () => {
+      const mockFile = {
+        id: 'posts/old-name',
+        path: '/project/posts/old-name.md',
+        name: 'old-name',
+        extension: 'md',
+        is_draft: false,
+        collection: 'posts',
+      }
 
-      const { loadCollectionFiles } = useAppStore.getState()
-      await loadCollectionFiles('/invalid/path')
+      useAppStore.setState({
+        currentFile: mockFile,
+      })
 
-      expect(useAppStore.getState().files).toEqual([])
+      const { updateCurrentFilePath } = useAppStore.getState()
+      updateCurrentFilePath('/project/posts/new-name.md')
+
+      const state = useAppStore.getState()
+      expect(state.currentFile?.path).toBe('/project/posts/new-name.md')
+      expect(state.currentFile?.name).toBe('new-name')
     })
   })
 })

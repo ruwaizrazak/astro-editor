@@ -54,7 +54,7 @@ export const FrontmatterMappingsPane: React.FC = () => {
   const allFields = useMemo(() => {
     const fieldMap = new Map<string, ZodField>()
 
-    collections.forEach((collection) => {
+    collections.forEach(collection => {
       if (collection.schema) {
         try {
           const schema = parseSchemaJson(collection.schema)

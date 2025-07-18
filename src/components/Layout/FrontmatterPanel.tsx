@@ -374,12 +374,8 @@ const FrontmatterField: React.FC<FrontmatterFieldProps> = ({
 }
 
 export const FrontmatterPanel: React.FC = () => {
-  const {
-    currentFile,
-    frontmatter,
-    projectPath,
-    currentProjectSettings,
-  } = useAppStore()
+  const { currentFile, frontmatter, projectPath, currentProjectSettings } =
+    useAppStore()
 
   // Use TanStack Query to fetch collections
   const { data: collections = [] } = useCollectionsQuery(

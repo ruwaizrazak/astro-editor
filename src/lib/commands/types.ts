@@ -15,7 +15,7 @@ export interface CommandContext {
   globalSettings: GlobalSettings | null
 
   // Store actions
-  createNewFile: () => Promise<void>
+  createNewFile: () => void
   setSelectedCollection: (collection: string | null) => void
   setProject: (path: string) => void
   toggleSidebar: () => void

@@ -2,7 +2,9 @@
 
 ## Current Status
 
-Current Task: `/docs/tasks-todo/task-1-tanstack-query.md`
+Current Task: `/docs/tasks-todo/task-2-mdx-component-inserter.md`
+
+**Recently Completed:** TanStack Query v5 integration for server state management. Collections, files, and file content are now managed by TanStack Query with automatic caching and invalidation. Client state (editing state, UI preferences) remains in Zustand.
 
 ## Project Overview
 
@@ -93,7 +95,9 @@ The theme provider wraps the entire app in `App.tsx` and works with our existing
 
 - **Framework:** Tauri v2 (Rust + React)
 - **Frontend:** React 19 + TypeScript (strict)
-- **State:** Zustand with persistence + local UI state
+- **State:** Hybrid approach:
+  - **Server State:** TanStack Query v5 for data fetching and caching
+  - **Client State:** Zustand for UI state and editing state
 - **Styling:** Tailwind v4 + shadcn/ui
 - **Editor:** CodeMirror 6 with custom extensions
 - **Testing:** Vitest + React Testing Library, Cargo
@@ -160,22 +164,40 @@ useHotkeys(
 
 ### State Management Philosophy
 
-#### Global State (Zustand)
+#### Server State (TanStack Query)
 
-Use for state that:
+Use TanStack Query for state that:
 
-- Represents business data (files, content, frontmatter)
-- Needs persistence across sessions
-- Is accessed by multiple unrelated components
-- Drives core application functionality
+- Comes from the server/filesystem (collections, files, file content)
+- Benefits from caching and automatic refetching
+- Needs to be synchronized across components
+- Has loading, error, and success states
 
 ```typescript
-// Business state in Zustand
+// Server state managed by TanStack Query
+useCollectionsQuery(projectPath)
+useCollectionFilesQuery(projectPath, collectionName)
+useFileContentQuery(projectPath, fileId)
+```
+
+#### Client State (Zustand)
+
+Use Zustand for state that:
+
+- Represents editing state (current content, frontmatter)
+- Needs persistence across sessions (project path, UI preferences)
+- Is modified locally before syncing to server
+- Drives immediate UI updates
+
+```typescript
+// Client state in Zustand
 projectPath: string | null
 currentFile: FileEntry | null
-editorContent: string
-frontmatter: Record<string, unknown>
+editorContent: string  // Current editing state
+frontmatter: Record<string, unknown>  // Current editing state
 isDirty: boolean
+sidebarVisible: boolean
+frontmatterPanelVisible: boolean
 ```
 
 #### Local State (React Components)
@@ -202,11 +224,22 @@ window.isEditorFocused = false // Global flag for menu coordination
 
 ### Data Flow
 
-1. **Project Discovery:** Parse `src/content/config.ts` → extract collections & schemas
-2. **File Loading:** Read markdown → separate frontmatter/content → populate editor
-3. **Editing:** Direct store updates → auto-save every 2 seconds
-4. **File Operations:** Tauri commands for create/rename/duplicate/delete
+1. **Project Discovery:** TanStack Query fetches collections → caches results
+2. **File Loading:** Query fetches file content → updates Zustand editing state
+3. **Editing:** Direct store updates → auto-save every 2 seconds → invalidate queries
+4. **File Operations:** Mutations (create/rename/delete) → automatic cache invalidation
 5. **Editor Operations:** Command registry → CodeMirror transactions
+
+#### Query Invalidation Pattern
+
+After mutations, queries are automatically invalidated to update the UI:
+
+```typescript
+// After save mutation
+queryClient.invalidateQueries({ 
+  queryKey: queryKeys.collectionFiles(projectPath, collectionName) 
+})
+```
 
 ### Frontend Structure (Updated)
 
@@ -228,15 +261,25 @@ src/
 │   │   ├── paste/           # Paste handling
 │   │   ├── syntax/          # Custom syntax highlighting
 │   │   └── urls/            # URL detection and handling
+│   ├── query-keys.ts        # TanStack Query keys factory
 │   ├── toast.ts             # Toast notification API
 │   ├── theme-provider.tsx   # Custom theme provider (Tauri-compatible)
 │   ├── rust-toast-bridge.ts # Rust-to-frontend event bridge
 │   └── schema.ts            # Zod schema parsing
 ├── hooks/
-│   └── editor/              # Editor-specific hooks
-│       ├── useEditorSetup.ts
-│       ├── useEditorHandlers.ts
-│       └── useTauriListeners.ts
+│   ├── editor/              # Editor-specific hooks
+│   │   ├── useEditorSetup.ts
+│   │   ├── useEditorHandlers.ts
+│   │   └── useTauriListeners.ts
+│   ├── queries/             # TanStack Query hooks
+│   │   ├── useCollectionsQuery.ts
+│   │   ├── useCollectionFilesQuery.ts
+│   │   └── useFileContentQuery.ts
+│   └── mutations/           # TanStack Mutation hooks
+│       ├── useSaveFileMutation.ts
+│       ├── useCreateFileMutation.ts
+│       ├── useRenameFileMutation.ts
+│       └── useDeleteFileMutation.ts
 ├── store/index.ts           # Zustand state management
 ├── types/common.ts          # Shared interfaces
 └── test/                    # Vitest test files
@@ -439,6 +482,92 @@ listen('menu-format-bold', () => {
 // Toast event from Rust backend
 listen('rust-toast', event => {
   toast.success(event.payload.message)
+})
+```
+
+#### Bridge Pattern for Store and Query Data
+
+When store actions need access to query data, we use custom events:
+
+```typescript
+// In store (doesn't have access to React Query hooks)
+createNewFile: async () => {
+  window.dispatchEvent(new CustomEvent('create-new-file'))
+}
+
+// In Layout component (has access to hooks)
+useEffect(() => {
+  const handleCreateNewFile = () => {
+    const collections = queryClient.getQueryData(
+      queryKeys.collections(projectPath)
+    )
+    // Use collections data to create file
+  }
+  window.addEventListener('create-new-file', handleCreateNewFile)
+  return () => window.removeEventListener('create-new-file', handleCreateNewFile)
+}, [])
+
+### TanStack Query Patterns
+
+The app uses TanStack Query v5 for server state management. This provides automatic caching, background refetching, and optimistic updates.
+
+#### Query Keys Factory
+
+All query keys are centralized in `lib/query-keys.ts`:
+
+```typescript
+export const queryKeys = {
+  all: ['project'] as const,
+  collections: (projectPath: string) =>
+    [...queryKeys.all, projectPath, 'collections'] as const,
+  collectionFiles: (projectPath: string, collectionName: string) =>
+    [...queryKeys.collections(projectPath), collectionName, 'files'] as const,
+  fileContent: (projectPath: string, fileId: string) =>
+    [...queryKeys.all, projectPath, 'files', fileId] as const,
+}
+```
+
+#### Query Hooks
+
+Use query hooks to fetch data:
+
+```typescript
+// In components
+const { data: collections, isLoading } = useCollectionsQuery(projectPath)
+const { data: files } = useCollectionFilesQuery(projectPath, collectionName)
+const { data: content } = useFileContentQuery(projectPath, fileId)
+```
+
+#### Mutation Hooks
+
+Use mutation hooks for write operations:
+
+```typescript
+const saveMutation = useSaveFileMutation()
+const createMutation = useCreateFileMutation()
+const renameMutation = useRenameFileMutation()
+const deleteMutation = useDeleteFileMutation()
+
+// Usage
+saveMutation.mutate({
+  projectPath,
+  collectionName,
+  filePath: currentFile.path,
+  frontmatter,
+  content: editorContent,
+  imports,
+  schemaFieldOrder,
+})
+```
+
+#### Automatic Cache Invalidation
+
+Mutations automatically invalidate relevant queries:
+
+```typescript
+// In mutation's onSuccess
+queryClient.invalidateQueries({
+  queryKey: queryKeys.collectionFiles(projectPath, collectionName),
 })
 ```
 
@@ -748,7 +877,29 @@ scheduleAutoSave: () => {
 - **Integration Tests**: Custom hooks
 - **Component Tests**: UI interactions
 - **Store Tests**: Zustand actions and state
+- **Query Tests**: Mock TanStack Query with test utilities
 - Mock Tauri with `globalThis.mockTauri`
+
+#### Testing with TanStack Query
+
+Use the provided test utilities:
+
+```typescript
+import { renderWithProviders } from '../test/test-utils'
+
+// Render component with QueryClient provider
+const { result } = renderWithProviders(<YourComponent />)
+```
+
+Mock query/mutation hooks when needed:
+
+```typescript
+vi.mock('../hooks/queries/useCollectionsQuery', () => ({
+  useCollectionsQuery: vi.fn(() => ({
+    data: mockCollections,
+    isLoading: false,
+  })),
+}))
 
 ### Backend (Cargo)
 
@@ -865,7 +1016,10 @@ scheduleAutoSave: () => {
 
 ### Essential Files
 
-- `src/store/index.ts` - Zustand state management
+- `src/store/index.ts` - Zustand client state management
+- `src/lib/query-keys.ts` - TanStack Query keys factory
+- `src/hooks/queries/` - TanStack Query hooks for data fetching
+- `src/hooks/mutations/` - TanStack Mutation hooks for write operations
 - `src/lib/editor/` - Extracted editor modules
 - `src/hooks/editor/` - Editor-specific hooks
 - `src/components/Layout/Layout.tsx` - Main UI orchestrator

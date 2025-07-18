@@ -35,8 +35,12 @@ export function useCommandContext(): CommandContext {
     toggleFrontmatterPanel,
     saveFile,
     closeCurrentFile,
-    loadCollections: async () => { /* TODO: Refetch query */ },
-    loadCollectionFiles: async () => { /* TODO: Refetch query */ },
+    loadCollections: async () => {
+      /* TODO: Refetch query */
+    },
+    loadCollectionFiles: async () => {
+      /* TODO: Refetch query */
+    },
     openPreferences: () => {
       // Dispatch a custom event that Layout can listen to
       window.dispatchEvent(new CustomEvent('open-preferences'))

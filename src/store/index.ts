@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
-import { queryClient } from '../main'
+import { queryClient } from '../lib/query-client'
 // Schema imports removed temporarily until TanStack Query integration is complete
 import { saveRecoveryData, saveCrashReport } from '../lib/recovery'
 import { toast } from '../lib/toast'
@@ -65,7 +65,7 @@ interface AppState {
   openFile: (file: FileEntry) => Promise<void>
   closeCurrentFile: () => void
   saveFile: () => Promise<void>
-  createNewFile: () => Promise<void>
+  createNewFile: () => void
   setEditorContent: (content: string) => void
   updateFrontmatter: (frontmatter: Record<string, unknown>) => void
   updateFrontmatterField: (key: string, value: unknown) => void
@@ -136,7 +136,6 @@ export const useAppStore = create<AppState>((set, get) => ({
       }
     })()
   },
-
 
   openFile: async (file: FileEntry) => {
     try {
@@ -225,8 +224,11 @@ export const useAppStore = create<AppState>((set, get) => ({
       // Invalidate queries to update UI with new frontmatter
       const { projectPath } = get()
       if (projectPath && currentFile.collection) {
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.collectionFiles(projectPath, currentFile.collection),
+        void queryClient.invalidateQueries({
+          queryKey: queryKeys.collectionFiles(
+            projectPath,
+            currentFile.collection
+          ),
         })
       }
 
@@ -514,7 +516,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
 
-  createNewFile: async () => {
+  createNewFile: () => {
     // Dispatch event to be handled by components that have access to TanStack Query
     window.dispatchEvent(new CustomEvent('create-new-file'))
   },
@@ -526,7 +528,9 @@ export const useAppStore = create<AppState>((set, get) => ({
         currentFile: {
           ...currentFile,
           path: newPath,
-          name: newPath.substring(newPath.lastIndexOf('/') + 1).replace(/\.[^.]+$/, ''),
+          name: newPath
+            .substring(newPath.lastIndexOf('/') + 1)
+            .replace(/\.[^.]+$/, ''),
         },
       })
     }

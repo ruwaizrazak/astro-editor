@@ -1,15 +1,34 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import { render } from '@testing-library/react'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { screen, fireEvent } from '@testing-library/dom'
 import { FrontmatterPanel } from './FrontmatterPanel'
-import { useAppStore } from '../../store'
+import { useAppStore, type Collection } from '../../store'
+import { renderWithProviders } from '../../test/test-utils'
+
+// Mock the query hook - will be configured per test
+import { useCollectionsQuery } from '../../hooks/queries/useCollectionsQuery'
+vi.mock('../../hooks/queries/useCollectionsQuery')
 
 describe('FrontmatterPanel Component', () => {
+  // Helper to set up collections mock
+  const mockCollectionsQuery = (collections: Collection[] = []) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    vi.mocked(useCollectionsQuery).mockReturnValue({
+      data: collections,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any)
+  }
+
   beforeEach(() => {
+    // Default mock - no collections
+    mockCollectionsQuery([])
+
     useAppStore.setState({
       currentFile: null,
       frontmatter: {},
-      collections: [],
       updateFrontmatter: (frontmatter: Record<string, unknown>) => {
         useAppStore.setState({ frontmatter })
       },
@@ -34,7 +53,7 @@ describe('FrontmatterPanel Component', () => {
   })
 
   it('should show placeholder when no file is selected', () => {
-    render(<FrontmatterPanel />)
+    renderWithProviders(<FrontmatterPanel />)
 
     expect(
       screen.getByText('Select a file to edit its frontmatter.')
@@ -74,13 +93,15 @@ describe('FrontmatterPanel Component', () => {
       }),
     }
 
+    // Update mock to return collection
+    mockCollectionsQuery([mockCollection])
+
     useAppStore.setState({
       currentFile: mockFile,
       frontmatter: mockFrontmatter,
-      collections: [mockCollection],
     })
 
-    render(<FrontmatterPanel />)
+    renderWithProviders(<FrontmatterPanel />)
 
     expect(screen.getByDisplayValue('Test Post')).toBeInTheDocument()
     expect(screen.getByRole('switch')).toBeInTheDocument()
@@ -103,7 +124,7 @@ describe('FrontmatterPanel Component', () => {
       frontmatter: { title: 'Original Title' },
     })
 
-    render(<FrontmatterPanel />)
+    renderWithProviders(<FrontmatterPanel />)
 
     const titleInput = screen.getByDisplayValue('Original Title')
     fireEvent.change(titleInput, { target: { value: 'New Title' } })
@@ -130,13 +151,14 @@ describe('FrontmatterPanel Component', () => {
       }),
     }
 
+    mockCollectionsQuery([mockCollection])
+
     useAppStore.setState({
       currentFile: mockFile,
       frontmatter: { draft: false },
-      collections: [mockCollection],
     })
 
-    render(<FrontmatterPanel />)
+    renderWithProviders(<FrontmatterPanel />)
 
     const draftSwitch = screen.getByRole('switch')
     expect(draftSwitch).not.toBeChecked()
@@ -165,13 +187,14 @@ describe('FrontmatterPanel Component', () => {
       }),
     }
 
+    mockCollectionsQuery([mockCollection])
+
     useAppStore.setState({
       currentFile: mockFile,
       frontmatter: { rating: 3 },
-      collections: [mockCollection],
     })
 
-    render(<FrontmatterPanel />)
+    renderWithProviders(<FrontmatterPanel />)
 
     const ratingInput = screen.getByDisplayValue('3')
     fireEvent.change(ratingInput, { target: { value: '5' } })
@@ -194,7 +217,7 @@ describe('FrontmatterPanel Component', () => {
       frontmatter: {},
     })
 
-    render(<FrontmatterPanel />)
+    renderWithProviders(<FrontmatterPanel />)
 
     expect(screen.getByText('No frontmatter fields found.')).toBeInTheDocument()
   })
@@ -223,13 +246,14 @@ describe('FrontmatterPanel Component', () => {
       }),
     }
 
+    mockCollectionsQuery([mockCollection])
+
     useAppStore.setState({
       currentFile: mockFile,
       frontmatter: { title: 'Test Post' },
-      collections: [mockCollection],
     })
 
-    render(<FrontmatterPanel />)
+    renderWithProviders(<FrontmatterPanel />)
 
     // Should show all schema fields, even if not in frontmatter
     expect(screen.getByDisplayValue('Test Post')).toBeInTheDocument()
@@ -263,13 +287,14 @@ describe('FrontmatterPanel Component', () => {
       }),
     }
 
+    mockCollectionsQuery([mockCollection])
+
     useAppStore.setState({
       currentFile: mockFile,
       frontmatter: { title: 'Test Post' }, // Only has title, missing description and publishDate
-      collections: [mockCollection],
     })
 
-    render(<FrontmatterPanel />)
+    renderWithProviders(<FrontmatterPanel />)
 
     // Should show all schema fields - focus on business logic, not UI details
     expect(screen.getByDisplayValue('Test Post')).toBeInTheDocument() // title
@@ -296,7 +321,7 @@ describe('FrontmatterPanel Component', () => {
       frontmatter: { title: 'Test Post', description: 'Some description' },
     })
 
-    render(<FrontmatterPanel />)
+    renderWithProviders(<FrontmatterPanel />)
 
     const descriptionInput = screen.getByDisplayValue('Some description')
     fireEvent.change(descriptionInput, { target: { value: '' } })
@@ -326,13 +351,14 @@ describe('FrontmatterPanel Component', () => {
       }),
     }
 
+    mockCollectionsQuery([mockCollection])
+
     useAppStore.setState({
       currentFile: mockFile,
       frontmatter: { tags: ['react', 'typescript'] },
-      collections: [mockCollection],
     })
 
-    render(<FrontmatterPanel />)
+    renderWithProviders(<FrontmatterPanel />)
 
     // Should render as TagInput with existing tags
     expect(screen.getByText('react')).toBeInTheDocument()
@@ -362,16 +388,17 @@ describe('FrontmatterPanel Component', () => {
       }),
     }
 
+    mockCollectionsQuery([mockCollection])
+
     useAppStore.setState({
       currentFile: mockFile,
       frontmatter: {
         title: 'Test Post',
         categories: ['tech', 'programming'], // Not in schema but is array of strings
       },
-      collections: [mockCollection],
     })
 
-    render(<FrontmatterPanel />)
+    renderWithProviders(<FrontmatterPanel />)
 
     // Should render title as textarea (from schema)
     expect(screen.getByDisplayValue('Test Post')).toBeInTheDocument()
@@ -401,7 +428,7 @@ describe('FrontmatterPanel Component', () => {
       },
     })
 
-    render(<FrontmatterPanel />)
+    renderWithProviders(<FrontmatterPanel />)
 
     // Should render as text inputs, not TagInput
     expect(screen.getByDisplayValue('1,2,3')).toBeInTheDocument()
@@ -430,7 +457,7 @@ describe('FrontmatterPanel Component', () => {
       },
     })
 
-    render(<FrontmatterPanel />)
+    renderWithProviders(<FrontmatterPanel />)
 
     // Should render title as text input
     expect(screen.getByDisplayValue('Test Post')).toBeInTheDocument()

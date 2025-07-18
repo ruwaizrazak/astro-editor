@@ -28,7 +28,7 @@ export const useCreateFileMutation = () => {
     mutationFn: createFile,
     onSuccess: (_, variables) => {
       // Invalidate collection files to show the new file
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: queryKeys.collectionFiles(
           variables.projectPath,
           variables.collectionName

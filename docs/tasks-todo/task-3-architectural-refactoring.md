@@ -27,10 +27,10 @@ We will split `useAppStore` into three distinct, more focused stores.
 
 **2. `useProjectStore`**
 
-- **Responsibility:** Manages the core project data, collections, and file lists. This state changes much less frequently than the editor's state.
-- **State to Migrate:** `projectPath`, `collections`, `files`, `selectedCollection`.
-- **Actions to Migrate:** `setProject`, `loadCollections`, `loadCollectionFiles`, `createNewFile`.
-- **Note:** After `task-1`, these actions will be simple wrappers around `useQuery` or `useMutation` hooks, or they may be removed entirely in favor of direct component-level data fetching. This store will primarily hold the _identifiers_ (like `projectPath` and `selectedCollection`) that the rest of the app needs to derive its queries.
+- **Responsibility:** Manages the core project identifiers that other parts of the app need for queries.
+- **State to Migrate:** `projectPath`, `selectedCollection`.
+- **Actions to Migrate:** `setProject`, `setSelectedCollection`.
+- **Note:** With TanStack Query now managing server state (collections, files), this store only needs to hold the identifiers that queries depend on. Collections and files data are now fetched via `useCollectionsQuery` and `useCollectionFilesQuery`.
 - **New File:** `src/store/projectStore.ts`
 
 **3. `useUIStore`**

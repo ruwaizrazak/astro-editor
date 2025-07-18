@@ -92,15 +92,32 @@ export async function loadGlobalSettings(): Promise<GlobalSettings> {
 
     const settings = JSON.parse(content) as GlobalSettings
 
-    // Validate and migrate if needed
+    // Validate and migrate if needed - deep merge to preserve nested objects
     return {
       ...DEFAULT_GLOBAL_SETTINGS,
       ...settings,
-      version: settings.version || 1,
+      general: {
+        ...DEFAULT_GLOBAL_SETTINGS.general,
+        ...(settings.general || {}),
+      },
+      defaultProjectSettings: {
+        ...DEFAULT_GLOBAL_SETTINGS.defaultProjectSettings,
+        ...(settings.defaultProjectSettings || {}),
+        pathOverrides: {
+          ...DEFAULT_GLOBAL_SETTINGS.defaultProjectSettings.pathOverrides,
+          ...(settings.defaultProjectSettings?.pathOverrides || {}),
+        },
+        frontmatterMappings: {
+          ...DEFAULT_GLOBAL_SETTINGS.defaultProjectSettings.frontmatterMappings,
+          ...(settings.defaultProjectSettings?.frontmatterMappings || {}),
+        },
+      },
+      version: settings.version || DEFAULT_GLOBAL_SETTINGS.version,
     }
   } catch {
     // File doesn't exist or is invalid, return defaults
-    return { ...DEFAULT_GLOBAL_SETTINGS }
+    // Deep clone to ensure nested objects are preserved
+    return JSON.parse(JSON.stringify(DEFAULT_GLOBAL_SETTINGS)) as GlobalSettings
   }
 }
 

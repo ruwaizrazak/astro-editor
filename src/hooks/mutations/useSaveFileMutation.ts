@@ -36,7 +36,7 @@ export const useSaveFileMutation = () => {
       // After a successful save, we tell TanStack Query that the data
       // for this file is now stale. It will automatically refetch it
       // the next time it's needed, or immediately if it's on screen.
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: queryKeys.fileContent(
           variables.projectPath,
           variables.filePath
@@ -44,7 +44,7 @@ export const useSaveFileMutation = () => {
       })
 
       // Also invalidate collection files to update any metadata changes
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: queryKeys.collectionFiles(
           variables.projectPath,
           variables.collectionName
@@ -54,9 +54,10 @@ export const useSaveFileMutation = () => {
       toast.success('File saved successfully')
     },
     onError: error => {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
-      toast.error('Save failed', { 
-        description: `Could not save file: ${errorMessage}. Recovery data has been saved.` 
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error occurred'
+      toast.error('Save failed', {
+        description: `Could not save file: ${errorMessage}. Recovery data has been saved.`,
       })
     },
   })

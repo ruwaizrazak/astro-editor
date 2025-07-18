@@ -10,8 +10,8 @@ pub struct PropInfo {
 
 #[derive(Serialize, Clone, Debug)]
 pub struct MdxComponent {
-    pub name: String,       // e.g., "Callout"
-    pub file_path: String,  // Relative path from project root
+    pub name: String,      // e.g., "Callout"
+    pub file_path: String, // Relative path from project root
     pub props: Vec<PropInfo>,
     pub has_slot: bool,
     pub description: Option<String>, // Extracted from JSDoc comments if available

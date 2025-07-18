@@ -72,6 +72,5 @@ export const createExtensions = (config: ExtensionConfig) => {
     EditorView.lineWrapping,
   ]
 
-
   return extensions
 }

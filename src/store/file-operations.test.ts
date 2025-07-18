@@ -1,115 +1,183 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { useAppStore } from './index'
 
-describe('File Operations Business Logic', () => {
+// Mock the queryClient
+vi.mock('../lib/query-client', () => ({
+  queryClient: {
+    invalidateQueries: vi.fn(),
+  },
+}))
+
+describe('File Operations', () => {
   beforeEach(() => {
     useAppStore.setState({
       projectPath: '/test/project',
-      collections: [
-        {
-          name: 'posts',
-          path: '/test/project/src/content/posts',
-          schema: JSON.stringify({
-            type: 'zod',
-            fields: [
-              { name: 'title', type: 'String', optional: false },
-              { name: 'pubDate', type: 'Date', optional: true },
-              { name: 'draft', type: 'Boolean', optional: true },
-              { name: 'tags', type: 'Array', optional: true },
-            ],
-          }),
-        },
-      ],
       selectedCollection: 'posts',
-      files: [],
       currentFile: null,
+      editorContent: '',
+      frontmatter: {},
+      isDirty: false,
     })
     globalThis.mockTauri.reset()
+    vi.clearAllMocks()
   })
 
-  describe('New File Creation', () => {
-    it('should create new file with schema-based frontmatter defaults', async () => {
-      const mockExistingFiles = [
-        {
-          id: 'posts/existing',
-          path: '/test/project/src/content/posts/existing.md',
-          name: 'existing',
+  describe('Editor Content Management', () => {
+    it('should update editor content and mark as dirty', () => {
+      const { setEditorContent } = useAppStore.getState()
+
+      setEditorContent('# New Content')
+
+      const state = useAppStore.getState()
+      expect(state.editorContent).toBe('# New Content')
+      expect(state.isDirty).toBe(true)
+    })
+
+    it('should update frontmatter field and mark as dirty', () => {
+      const { updateFrontmatterField } = useAppStore.getState()
+
+      useAppStore.setState({
+        frontmatter: { title: 'Original Title' },
+      })
+
+      updateFrontmatterField('title', 'Updated Title')
+
+      const state = useAppStore.getState()
+      expect(state.frontmatter.title).toBe('Updated Title')
+      expect(state.isDirty).toBe(true)
+    })
+
+    it('should remove frontmatter field when value is empty', () => {
+      const { updateFrontmatterField } = useAppStore.getState()
+
+      useAppStore.setState({
+        frontmatter: { title: 'Title', draft: true },
+      })
+
+      updateFrontmatterField('draft', '')
+
+      const state = useAppStore.getState()
+      expect(state.frontmatter.draft).toBeUndefined()
+      expect(Object.keys(state.frontmatter)).toEqual(['title'])
+    })
+  })
+
+  describe('Auto-save Scheduling', () => {
+    beforeEach(() => {
+      vi.useFakeTimers()
+    })
+
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
+    it('should schedule auto-save after content changes', () => {
+      const { setEditorContent, saveFile } = useAppStore.getState()
+      const originalSaveFile = saveFile
+      const saveSpy = vi.fn()
+
+      // Mock the saveFile function
+      useAppStore.setState({
+        saveFile: saveSpy,
+        currentFile: {
+          id: 'test',
+          path: '/test/file.md',
+          name: 'file',
           extension: 'md',
           is_draft: false,
           collection: 'posts',
         },
-      ]
-
-      // Mock the scan_collection_files call first, then create_file
-      globalThis.mockTauri.invoke
-        .mockResolvedValueOnce(mockExistingFiles) // scan_collection_files
-        .mockResolvedValueOnce('/test/project/src/content/posts/2025-07-15.md') // create_file
-
-      const { createNewFile } = useAppStore.getState()
-      await createNewFile()
-
-      // Should first scan collection files
-      expect(globalThis.mockTauri.invoke).toHaveBeenCalledWith(
-        'scan_collection_files',
-        {
-          collectionPath: '/test/project/src/content/posts',
-        }
-      )
-
-      // Then create file with proper frontmatter
-      expect(globalThis.mockTauri.invoke).toHaveBeenCalledWith('create_file', {
-        directory: '/test/project/src/content/posts',
-        filename: expect.stringMatching(
-          /^\d{4}-\d{2}-\d{2}(-\d+)?\.md$/
-        ) as string,
-        content: expect.stringContaining('---') as string,
       })
 
-      // Verify frontmatter has required fields from schema
-      const createCall = globalThis.mockTauri.invoke.mock.calls.find(
-        call => call[0] === 'create_file'
-      ) as
-        | [string, { directory: string; filename: string; content: string }]
-        | undefined
-      const content = createCall?.[1]?.content
-      expect(content).toContain('title: "New Post"')
-      expect(content).toContain(
-        'pubDate: "' + new Date().toISOString().split('T')[0] + '"'
-      )
+      setEditorContent('# Updated')
+
+      // Auto-save should not be called immediately
+      expect(saveSpy).not.toHaveBeenCalled()
+
+      // Fast-forward 2 seconds (auto-save delay)
+      vi.advanceTimersByTime(2000)
+
+      // Now auto-save should have been triggered
+      expect(saveSpy).toHaveBeenCalled()
+
+      // Restore original saveFile
+      useAppStore.setState({ saveFile: originalSaveFile })
     })
 
-    it('should handle collections without date fields', async () => {
-      const collectionWithoutDate = {
-        name: 'notes',
-        path: '/test/project/src/content/notes',
-        schema: JSON.stringify({
-          type: 'zod',
-          fields: [{ name: 'content', type: 'String', optional: false }],
-        }),
-      }
+    it('should clear auto-save timeout when saving manually', async () => {
+      const { setEditorContent, saveFile } = useAppStore.getState()
 
       useAppStore.setState({
-        collections: [collectionWithoutDate],
-        selectedCollection: 'notes',
+        projectPath: '/test/project',
+        editorContent: '# Initial content',
+        frontmatter: {},
+        imports: '',
+        currentFile: {
+          id: 'test',
+          path: '/test/file.md',
+          name: 'file',
+          extension: 'md',
+          is_draft: false,
+          collection: 'posts',
+        },
+        isDirty: true,
       })
 
-      // Mock empty collection files and successful creation
-      globalThis.mockTauri.invoke
-        .mockResolvedValueOnce([]) // scan_collection_files
-        .mockResolvedValueOnce('/test/project/src/content/notes/2025-07-15.md') // create_file
+      // Start auto-save timer
+      setEditorContent('# Updated')
+
+      // Save manually before auto-save triggers
+      globalThis.mockTauri.invoke.mockResolvedValue(undefined)
+      await saveFile()
+
+      // Fast-forward past auto-save delay
+      vi.advanceTimersByTime(3000)
+
+      // saveFile should only have been called once (manually)
+      expect(globalThis.mockTauri.invoke).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('File State Management', () => {
+    it('should close current file and clear state', () => {
+      const { closeCurrentFile } = useAppStore.getState()
+
+      useAppStore.setState({
+        currentFile: {
+          id: 'test',
+          path: '/test/file.md',
+          name: 'file',
+          extension: 'md',
+          is_draft: false,
+          collection: 'posts',
+        },
+        editorContent: '# Content',
+        frontmatter: { title: 'Test' },
+        isDirty: true,
+      })
+
+      closeCurrentFile()
+
+      const state = useAppStore.getState()
+      expect(state.currentFile).toBeNull()
+      expect(state.editorContent).toBe('')
+      expect(state.frontmatter).toEqual({})
+      expect(state.isDirty).toBe(false)
+    })
+  })
+
+  describe('Create New File', () => {
+    it('should dispatch create-new-file event when creating new file', () => {
+      const dispatchSpy = vi.spyOn(window, 'dispatchEvent')
 
       const { createNewFile } = useAppStore.getState()
-      await createNewFile()
+      createNewFile()
 
-      const createCall = globalThis.mockTauri.invoke.mock.calls.find(
-        call => call[0] === 'create_file'
-      ) as
-        | [string, { directory: string; filename: string; content: string }]
-        | undefined
-      const content = createCall?.[1]?.content
-      expect(content).not.toContain('pubDate')
-      expect(content).not.toContain('date')
-      expect(content).toContain('content: ""')
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'create-new-file',
+        })
+      )
     })
   })
 })

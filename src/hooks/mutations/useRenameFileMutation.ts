@@ -26,7 +26,7 @@ export const useRenameFileMutation = () => {
     mutationFn: renameFile,
     onSuccess: (_, variables) => {
       // Invalidate collection files to show the renamed file
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: queryKeys.collectionFiles(
           variables.projectPath,
           variables.collectionName
@@ -34,8 +34,11 @@ export const useRenameFileMutation = () => {
       })
 
       // Invalidate the old file content cache
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.fileContent(variables.projectPath, variables.oldPath),
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.fileContent(
+          variables.projectPath,
+          variables.oldPath
+        ),
       })
 
       toast.success('File renamed successfully')

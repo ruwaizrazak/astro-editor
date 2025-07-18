@@ -18,21 +18,40 @@ The codebase follows a clear separation between different types of concerns:
 
 ### 2. State Management Philosophy
 
-#### Global State (Zustand)
-Use Zustand for state that:
-- Represents business data (files, content, frontmatter)
-- Needs persistence across sessions
-- Is accessed by multiple unrelated components
-- Drives core application functionality
+We use a hybrid approach with TanStack Query and Zustand:
+
+#### Server State (TanStack Query)
+Use TanStack Query for state that:
+- Comes from the server/filesystem (collections, files, file content)
+- Benefits from caching and automatic refetching
+- Needs to be synchronized across components
+- Has loading, error, and success states
 
 Examples:
 ```typescript
-// Business state in Zustand
+// Server state managed by TanStack Query
+const { data: collections } = useCollectionsQuery(projectPath)
+const { data: files } = useCollectionFilesQuery(projectPath, collectionName)
+const { data: content } = useFileContentQuery(projectPath, fileId)
+```
+
+#### Client State (Zustand)
+Use Zustand for state that:
+- Represents editing state (current content, frontmatter)
+- Needs persistence across sessions (project path, UI preferences)
+- Is modified locally before syncing to server
+- Drives immediate UI updates
+
+Examples:
+```typescript
+// Client state in Zustand
 projectPath: string | null
 currentFile: FileEntry | null
-editorContent: string
-frontmatter: Record<string, unknown>
+editorContent: string  // Current editing state
+frontmatter: Record<string, unknown>  // Current editing state
 isDirty: boolean
+sidebarVisible: boolean
+frontmatterPanelVisible: boolean
 ```
 
 #### Local State (React Components)
@@ -164,7 +183,83 @@ This allows:
 - Performance optimization
 - Third-party plugin integration
 
-### 3. Event-Driven Communication
+### 3. TanStack Query Patterns
+
+#### Query Keys Factory
+
+All query keys are centralized for consistency:
+
+```typescript
+// lib/query-keys.ts
+export const queryKeys = {
+  all: ['project'] as const,
+  collections: (projectPath: string) =>
+    [...queryKeys.all, projectPath, 'collections'] as const,
+  collectionFiles: (projectPath: string, collectionName: string) =>
+    [...queryKeys.collections(projectPath), collectionName, 'files'] as const,
+  fileContent: (projectPath: string, fileId: string) =>
+    [...queryKeys.all, projectPath, 'files', fileId] as const,
+}
+```
+
+#### Query and Mutation Hooks
+
+Create dedicated hooks for each data operation:
+
+```typescript
+// hooks/queries/useCollectionsQuery.ts
+export const useCollectionsQuery = (projectPath: string | null) => {
+  return useQuery({
+    queryKey: queryKeys.collections(projectPath || ''),
+    queryFn: () => fetchCollections(projectPath!),
+    enabled: !!projectPath,
+  })
+}
+
+// hooks/mutations/useSaveFileMutation.ts
+export const useSaveFileMutation = () => {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: saveFile,
+    onSuccess: (_, variables) => {
+      // Invalidate queries to update UI
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.collectionFiles(
+          variables.projectPath,
+          variables.collectionName
+        ),
+      })
+    },
+  })
+}
+```
+
+#### Bridge Pattern for Store/Query Integration
+
+When Zustand store actions need query data:
+
+```typescript
+// In store (can't use hooks)
+createNewFile: async () => {
+  window.dispatchEvent(new CustomEvent('create-new-file'))
+}
+
+// In component with hook access
+const handleCreateNewFile = useCallback(() => {
+  const collections = queryClient.getQueryData(
+    queryKeys.collections(projectPath)
+  )
+  // Use collections to create file
+}, [projectPath])
+
+useEffect(() => {
+  window.addEventListener('create-new-file', handleCreateNewFile)
+  return () => window.removeEventListener('create-new-file', handleCreateNewFile)
+}, [handleCreateNewFile])
+```
+
+### 4. Event-Driven Communication
 
 The app uses multiple event systems:
 
@@ -370,14 +465,22 @@ The architecture is designed to support future plugins:
 
 ```
 App
-├── Layout (orchestrator)
-│   ├── Sidebar
-│   ├── EditorView
-│   │   ├── hooks/editor/* (setup, handlers)
-│   │   └── lib/editor/* (commands, syntax, etc.)
-│   └── FrontmatterPanel
-├── store (Zustand)
-│   └── lib/schema (parsing)
+├── QueryClientProvider (TanStack Query)
+│   └── Layout (orchestrator)
+│       ├── Sidebar
+│       │   ├── useCollectionsQuery
+│       │   └── useCollectionFilesQuery
+│       ├── EditorView
+│       │   ├── hooks/editor/* (setup, handlers)
+│       │   └── lib/editor/* (commands, syntax, etc.)
+│       └── FrontmatterPanel
+│           └── useCollectionsQuery
+├── store (Zustand - client state)
+│   ├── editorContent
+│   ├── frontmatter
+│   └── isDirty
+├── hooks/queries/* (server state)
+├── hooks/mutations/* (write operations)
 └── Tauri Commands (Rust)
 ```
 

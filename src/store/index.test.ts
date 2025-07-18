@@ -6,11 +6,9 @@ describe('App Store', () => {
     // Reset store state before each test
     useAppStore.setState({
       projectPath: null,
-      collections: [],
       sidebarVisible: true,
       frontmatterPanelVisible: true,
       currentFile: null,
-      files: [],
       selectedCollection: null,
       editorContent: '',
       isDirty: false,
@@ -23,7 +21,6 @@ describe('App Store', () => {
   it('should initialize with default state', () => {
     const state = useAppStore.getState()
     expect(state.projectPath).toBeNull()
-    expect(state.collections).toEqual([])
     expect(state.sidebarVisible).toBe(true)
     expect(state.frontmatterPanelVisible).toBe(true)
     expect(state.editorContent).toBe('')

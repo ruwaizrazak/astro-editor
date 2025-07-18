@@ -14,7 +14,7 @@ const fetchCollections = async (
     // TanStack Query handles errors, so we can throw
     throw new Error('Project path is required to fetch collections.')
   }
-  
+
   if (contentDirectory && contentDirectory !== 'src/content') {
     return invoke('scan_project_with_content_dir', {
       projectPath,

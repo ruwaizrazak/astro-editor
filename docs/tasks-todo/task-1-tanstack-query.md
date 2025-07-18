@@ -269,4 +269,5 @@ By separating server state (in TanStack Query) from client state (in Zustand), o
 - [x] `Cmd + W` no longer closes the currently open file
 - [x] `Cmd + N` or the + icon Should create a new file in the current collection. It actually shows a toast saying "File creation is temporarily disabled during refactoring". We should fix that since we're not in the middle of refactoring.
 - [x] The Frontmatter Field mappings dropdowns in the preferences are all empty.
-- [ ] There are some test files that still reference the old state structure (collections, files, loadCollections, etc.). These tests will need to be updated to mock TanStack Query instead of the Zustand store for those operations. (Do this last)
+- [x] There are some test files that still reference the old state structure (collections, files, loadCollections, etc.). These tests will need to be updated to mock TanStack Query instead of the Zustand store for those operations. (Do this last)
+- [ ] Remove code that triggers save in src/lib/editor/extensions/keymap.ts. This works globally anyway

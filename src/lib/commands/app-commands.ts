@@ -28,8 +28,8 @@ export const fileCommands: AppCommand[] = [
     description: 'Create a new file in the selected collection',
     icon: Plus,
     group: 'file',
-    execute: async (context: CommandContext) => {
-      await context.createNewFile()
+    execute: (context: CommandContext) => {
+      context.createNewFile()
     },
     isAvailable: (context: CommandContext) => {
       return Boolean(context.selectedCollection && context.projectPath)

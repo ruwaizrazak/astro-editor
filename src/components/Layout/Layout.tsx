@@ -122,53 +122,77 @@ export const Layout: React.FC = () => {
   }, [currentFile])
 
   // Keyboard shortcuts using react-hotkeys-hook
-  useHotkeys('mod+s', () => {
-    // Cmd+S: Save File
-    if (currentFile && isDirty) {
-      void saveFile()
+  useHotkeys(
+    'mod+s',
+    () => {
+      // Cmd+S: Save File
+      if (currentFile && isDirty) {
+        void saveFile()
+      }
+    },
+    { preventDefault: true }
+  )
+
+  useHotkeys(
+    'mod+1',
+    () => {
+      // Cmd+1: Toggle Sidebar
+      toggleSidebar()
+    },
+    { preventDefault: true }
+  )
+
+  useHotkeys(
+    'mod+2',
+    () => {
+      // Cmd+2: Toggle Frontmatter Panel
+      toggleFrontmatterPanel()
+    },
+    { preventDefault: true }
+  )
+
+  useHotkeys(
+    'mod+n',
+    () => {
+      // Cmd+N: Create New File (only if a collection is selected)
+      if (selectedCollection) {
+        void createNewFile()
+        // Fix for cursor disappearing - ensure cursor is visible
+        document.body.style.cursor = 'auto'
+        // Force a reflow to ensure the cursor change is applied
+        void document.body.offsetHeight
+      }
+    },
+    { preventDefault: true }
+  )
+
+  useHotkeys(
+    'mod+w',
+    () => {
+      // Cmd+W: Close Current File (only if a file is open)
+      if (currentFile) {
+        closeCurrentFile()
+      }
+    },
+    {
+      preventDefault: true,
+      enableOnFormTags: ['input', 'textarea', 'select'],
+      enableOnContentEditable: true, // Enable in contenteditable elements like CodeMirror
     }
-  }, { preventDefault: true })
+  )
 
-  useHotkeys('mod+1', () => {
-    // Cmd+1: Toggle Sidebar
-    toggleSidebar()
-  }, { preventDefault: true })
-
-  useHotkeys('mod+2', () => {
-    // Cmd+2: Toggle Frontmatter Panel
-    toggleFrontmatterPanel()
-  }, { preventDefault: true })
-
-  useHotkeys('mod+n', () => {
-    // Cmd+N: Create New File (only if a collection is selected)
-    if (selectedCollection) {
-      void createNewFile()
-      // Fix for cursor disappearing - ensure cursor is visible
-      document.body.style.cursor = 'auto'
-      // Force a reflow to ensure the cursor change is applied
-      void document.body.offsetHeight
+  useHotkeys(
+    'mod+comma',
+    () => {
+      // Cmd+,: Open Preferences
+      setPreferencesOpen(true)
+    },
+    {
+      preventDefault: true,
+      enableOnFormTags: ['input', 'textarea', 'select'],
+      enableOnContentEditable: true, // Enable in contenteditable elements like CodeMirror
     }
-  }, { preventDefault: true })
-
-  useHotkeys('mod+w', () => {
-    // Cmd+W: Close Current File (only if a file is open)
-    if (currentFile) {
-      closeCurrentFile()
-    }
-  }, { 
-    preventDefault: true,
-    enableOnFormTags: ['input', 'textarea', 'select'],
-    enableOnContentEditable: true  // Enable in contenteditable elements like CodeMirror
-  })
-
-  useHotkeys('mod+comma', () => {
-    // Cmd+,: Open Preferences
-    setPreferencesOpen(true)
-  }, { 
-    preventDefault: true,
-    enableOnFormTags: ['input', 'textarea', 'select'],
-    enableOnContentEditable: true  // Enable in contenteditable elements like CodeMirror
-  })
+  )
 
   // Listen for open preferences events from command palette
   useEffect(() => {
