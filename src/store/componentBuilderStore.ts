@@ -37,11 +37,12 @@ export const useComponentBuilderStore = create<
 >((set, get) => ({
   ...initialState,
 
-  open: editorView => set({ 
-    ...initialState, 
-    isOpen: true, 
-    editorView,
-  }),
+  open: editorView =>
+    set({
+      ...initialState,
+      isOpen: true,
+      editorView,
+    }),
 
   close: () => set({ ...initialState }), // Fully reset on close
 
@@ -49,7 +50,7 @@ export const useComponentBuilderStore = create<
     const requiredProps = new Set(
       component.props.filter(p => !p.is_optional).map(p => p.name)
     )
-    
+
     // Always show configuration step, even for components without props
     set({
       selectedComponent: component,
@@ -85,7 +86,7 @@ export const useComponentBuilderStore = create<
       const snippetString = buildSnippet(selectedComponent, enabledProps)
       insertSnippet(editorView, snippetString)
       get().close() // Close and reset after insertion
-      
+
       // Focus the editor after a short delay to ensure dialog has closed
       setTimeout(() => {
         editorView.focus()
@@ -94,7 +95,12 @@ export const useComponentBuilderStore = create<
   },
 
   back: () =>
-    set({ step: 'list', selectedComponent: null, enabledProps: new Set(), propSearchQuery: '' }),
+    set({
+      step: 'list',
+      selectedComponent: null,
+      enabledProps: new Set(),
+      propSearchQuery: '',
+    }),
 
   setPropSearchQuery: (query: string) => set({ propSearchQuery: query }),
 }))

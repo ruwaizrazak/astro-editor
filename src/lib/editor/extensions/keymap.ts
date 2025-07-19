@@ -5,7 +5,12 @@ import {
   toggleComment,
 } from '@codemirror/commands'
 import { searchKeymap } from '@codemirror/search'
-import { snippetKeymap } from '@codemirror/autocomplete'
+import {
+  hasNextSnippetField,
+  nextSnippetField,
+  hasPrevSnippetField,
+  prevSnippetField,
+} from '@codemirror/autocomplete'
 import { Prec } from '@codemirror/state'
 import { toggleMarkdown, createMarkdownLink } from '../markdown/formatting'
 import { transformLineToHeading } from '../markdown/headings'
@@ -86,12 +91,58 @@ export const createDefaultKeymap = () => {
 }
 
 /**
+ * Create tab handling that always stays in editor
+ */
+export const createTabKeymap = () => {
+  return Prec.highest(
+    keymap.of([
+      {
+        key: 'Tab',
+        run: view => {
+          // If there's a snippet field, navigate to it
+          if (hasNextSnippetField(view.state)) {
+            return nextSnippetField(view)
+          }
+
+          // Otherwise, insert a tab character and stay in editor
+          const from = view.state.selection.main.from
+          const to = view.state.selection.main.to
+          view.dispatch({
+            changes: {
+              from,
+              to,
+              insert: '\t',
+            },
+            selection: {
+              anchor: from + 1,
+            },
+          })
+          return true // Always consume the event
+        },
+      },
+      {
+        key: 'Shift-Tab',
+        run: view => {
+          // If there's a previous snippet field, navigate to it
+          if (hasPrevSnippetField(view.state)) {
+            return prevSnippetField(view)
+          }
+
+          // Otherwise, consume the event to stay in editor
+          return true
+        },
+      },
+    ])
+  )
+}
+
+/**
  * Create all keymap extensions
  */
 export const createKeymapExtensions = () => {
   return [
-    // Built-in snippet keymap with high precedence
-    Prec.high(keymap.of(snippetKeymap)),
+    // Tab handling must be highest precedence to trap Tab key
+    createTabKeymap(),
     createMarkdownKeymap(),
     createDefaultKeymap(),
   ]

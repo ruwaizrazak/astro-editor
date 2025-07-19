@@ -299,11 +299,15 @@ This refined plan provides a clear, step-by-step guide that is technically accur
 ## Bugs and Cleanup Tasks
 
 - [x] Cmd + / should only work in MDX files
-- [ ] The third thing that we need to do, which is most important I guess out of all of them, is deal with the options card which comes up when one of these is chosen. This is currently rendered using a card and some toggles which not only look horrible but this should be a fast and easy keyboard-navigable interface. So perhaps what we should do is reload the panel and redesign the whole thing. When we have gone into a component, I can choose the props I want by toggling them on/off somehow in the panel, and then when I hit (I don't know) Command+Enter or something, it inserts it. We need to think like a designer here: what's the best way of making this very easy to do just from a keyboard? The key design goal is I need to be able to choose a component, toggle on the props that I want, and then somehow submit that. It needs to be done in the same way that you would expect to do this in something like Raycast or one of the panels in VSCode. It needs to feel fast, snappy, and also look beautiful. So have a think about all that, get together a plan. If you need to look at the Shadcn documentation, do so. And then tell me what your plan is before we start executing.
-- [ ] When we actually insert the snippet, I think we are just inserting a string rather than using CodeMirror's snippet functionality. We need to ensure we're building and inserting a snippet with tabbing in the editor.
-  - eg. `<Callout title="[tab1]" type="[tab2]" icon="[tab3]">[tab4]</Callout>". Ideally this would work kinda like textmate snippets.
-  - Snippets @codemirror/autocomplete. With this enabled, we must disable the normal CodeMirror autocomplete dropdown when typing HTML tags and attributes etc.
-  - The editor window also needs to be focused.
-  - Snippets docs: https://codemirror.net/docs/ref/#h_snippets
-  - Codemirror tab handling: https://codemirror.net/examples/tab/
-- [ ] Update documentation
+- [x] Restyle second menu (props picker)
+
+### Get Snipped Insertion Working
+
+There is a simple reference implementation in the `DebugScreen.tsx` which works perfectly and is very simple. All the logic for the entire editor is within that file. Subtasks:
+
+- [ ] Refactor Codemirror (without affecting functionality) to stop using basicSetup and replace it with only the nececarry extensions
+- [ ] Simplify any other code in `src/lib/editor` and `src/hooks/editor` and `EditorView.tsx` so it is as simple as possible and easy to reason about and read. Remove any unnececarry code related to Failed attempts at snippet insertion and tag completion.
+- [ ] Actially implement the snippet insertion from the `/src/components/ComponentBuilder/ComponentBuilderDialog.tsx` system pallete, based on the pattern in the DebugScreen.
+- [ ] Double-check the code for anything else which can be simplified or removed once this is working.
+
+You are to go through these step-by-step.

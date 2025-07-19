@@ -51,6 +51,7 @@ export const createExtensions = (config: ExtensionConfig) => {
         return false // Let default handling proceed
       },
       keydown: event => {
+        // TODO: This hack looks like it doesn't actually do anything.
         // Handle synthetic keyboard events from menu
         if (event.isTrusted === false) {
           // This is a synthetic event from menu, delegate to the editor

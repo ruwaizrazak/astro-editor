@@ -71,7 +71,7 @@ export const EDITOR_BASIC_SETUP = {
   dropCursor: false, // We're adding our own custom dropCursor
   allowMultipleSelections: false,
   indentOnInput: true,
-  bracketMatching: true,
+  bracketMatching: false,
   closeBrackets: true,
   autocompletion: false,
   highlightSelectionMatches: false,
