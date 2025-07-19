@@ -48,17 +48,33 @@ export const createEditorTheme = () => {
       borderLeftWidth: '3px',
       height: '1.1em',
     },
-    // Selection styling - only fix the artifacts without breaking functionality
+    // Selection styling
     '.cm-selectionBackground': {
       backgroundColor: 'var(--editor-color-selectedtext-background) !important',
     },
     '.cm-focused .cm-selectionBackground': {
       backgroundColor: 'var(--editor-color-selectedtext-background) !important',
     },
-    // URL Alt+Click hover styling - keep it simple
+    // URL Alt+Click hover styling
     '&.alt-pressed .cm-content': {
       cursor: 'default',
     },
+
+    // Snippet field styling
+    '.cm-snippetField': {
+      border: '1px solid rgba(0, 0, 0, 0.05)',
+      backgroundColor: 'var(--editor-color-background)',
+      borderRadius: '1px',
+      padding: '1px',
+      color: 'var(--editor-color-text)',
+    },
+    '.cm-snippetFieldPosition': {
+      borderLeft: '1px solid rgba(0, 0, 0, 0.05)',
+    },
+    // Active/focused snippet field
+    '.cm-snippetField.cm-focused': {
+      backgroundColor: 'var(--editor-color-background)',
+      border: '1px solid rgba(0, 0, 0, 0.1)',
+    },
   })
 }
-
