@@ -2,7 +2,6 @@ import { EditorView, dropCursor } from '@codemirror/view'
 import { markdown } from '@codemirror/lang-markdown'
 import { syntaxHighlighting } from '@codemirror/language'
 import { history } from '@codemirror/commands'
-import { autocompletion } from '@codemirror/autocomplete'
 import { markdownStyleExtension, comprehensiveHighlightStyle } from '../syntax'
 import { altKeyState, urlHoverPlugin, handleUrlClick } from '../urls'
 import { handlePaste } from '../paste'
@@ -28,7 +27,8 @@ export const createExtensions = (config: ExtensionConfig) => {
     altKeyState,
     urlHoverPlugin,
     dropCursor(),
-    autocompletion(), // Required for snippet functionality
+    // Note: autocompletion() removed - was showing unwanted HTML tag suggestions
+    // Snippet functionality works without the general autocompletion extension
 
     // Language support
     markdown({
