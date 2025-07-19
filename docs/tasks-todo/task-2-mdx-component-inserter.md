@@ -300,5 +300,10 @@ This refined plan provides a clear, step-by-step guide that is technically accur
 
 - [x] Cmd + / should only work in MDX files
 - [ ] The third thing that we need to do, which is most important I guess out of all of them, is deal with the options card which comes up when one of these is chosen. This is currently rendered using a card and some toggles which not only look horrible but this should be a fast and easy keyboard-navigable interface. So perhaps what we should do is reload the panel and redesign the whole thing. When we have gone into a component, I can choose the props I want by toggling them on/off somehow in the panel, and then when I hit (I don't know) Command+Enter or something, it inserts it. We need to think like a designer here: what's the best way of making this very easy to do just from a keyboard? The key design goal is I need to be able to choose a component, toggle on the props that I want, and then somehow submit that. It needs to be done in the same way that you would expect to do this in something like Raycast or one of the panels in VSCode. It needs to feel fast, snappy, and also look beautiful. So have a think about all that, get together a plan. If you need to look at the Shadcn documentation, do so. And then tell me what your plan is before we start executing.
-- [ ] The whole snippet thing isn't working at all. I don't think we're actually inserting snippets using CodeMirrors functionality (just plain text?). We need to make this work so When a snippet is inserted, the CodeMirror tab stuff works properly.
+- [ ] When we actually insert the snippet, I think we are just inserting a string rather than using CodeMirror's snippet functionality. We need to ensure we're building and inserting a snippet with tabbing in the editor.
+  - eg. `<Callout title="[tab1]" type="[tab2]" icon="[tab3]">[tab4]</Callout>". Ideally this would work kinda like textmate snippets.
+  - Snippets @codemirror/autocomplete. With this enabled, we must disable the normal CodeMirror autocomplete dropdown when typing HTML tags and attributes etc.
+  - The editor window also needs to be focused.
+  - Snippets docs: https://codemirror.net/docs/ref/#h_snippets
+  - Codemirror tab handling: https://codemirror.net/examples/tab/
 - [ ] Update documentation

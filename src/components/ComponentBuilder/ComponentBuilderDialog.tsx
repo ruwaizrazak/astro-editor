@@ -199,7 +199,7 @@ export function ComponentBuilderDialog() {
                         )}
                         <span className="text-xs text-muted-foreground">
                           {component.props.length} props
-                          {component.has_slot && ' • Has slot'}
+                          {component.has_slot && ' + slot'}
                         </span>
                       </div>
                     </CommandItem>
