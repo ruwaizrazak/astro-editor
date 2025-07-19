@@ -2,9 +2,12 @@
 
 ## Current Status
 
-Current Task: `/docs/tasks-todo/task-2-mdx-component-inserter.md`
+Current Task: `/docs/tasks-todo/task-4-focus-and-typewriter-mode.md`
 
-**Recently Completed:** TanStack Query v5 integration for server state management. Collections, files, and file content are now managed by TanStack Query with automatic caching and invalidation. Client state (editing state, UI preferences) remains in Zustand.
+**Recently Completed:**
+
+- TanStack Query v5 integration for server state management. Collections, files, and file content are now managed by TanStack Query with automatic caching and invalidation. Client state (editing state, UI preferences) remains in Zustand.
+- MDX Component Inserter with snippet field support and dynamic component building.
 
 ## Project Overview
 
@@ -99,7 +102,7 @@ The theme provider wraps the entire app in `App.tsx` and works with our existing
   - **Server State:** TanStack Query v5 for data fetching and caching
   - **Client State:** Zustand for UI state and editing state
 - **Styling:** Tailwind v4 + shadcn/ui
-- **Editor:** CodeMirror 6 with custom extensions
+- **Editor:** CodeMirror 6 (vanilla) with custom extensions and syntax highlighting
 - **Testing:** Vitest + React Testing Library, Cargo
 - **Quality:** ESLint, Prettier, Clippy
 
@@ -457,6 +460,32 @@ globalCommandRegistry.execute('formatHeading', 1)
 - Enables keyboard shortcuts, menus, and buttons to share logic
 - Provides central place for command state management
 - Facilitates testing and extensibility
+
+### Snippet Insertion Pattern
+
+The editor supports CodeMirror snippet insertion for MDX components and other templates. To insert snippets from React components:
+
+```typescript
+import { insertSnippet } from '../lib/editor/commands/insertSnippet'
+import { buildSnippet } from '../lib/editor/snippet-builder'
+
+// From a React component (e.g., component builder)
+const handleInsertSnippet = () => {
+  const editorView = getEditorView() // Get current CodeMirror view
+  const template = buildSnippet(component, enabledProps)
+  insertSnippet(editorView, template)
+}
+
+// Example snippet template with placeholders
+const template = `<${component.name} ${propsString}>\${1}\</${component.name}>\${}`
+```
+
+**Key Points:**
+
+- Use `\${n}` for numbered tab stops (e.g., `\${1}`, `\${2}`)
+- Use `\${n:defaultValue}` for placeholders with defaults
+- Use `\${}` for final cursor position
+- Snippet fields are styled via CodeMirror theme (`.cm-snippetField`, `.cm-snippetFieldPosition`)
 
 ### Event-Driven Communication
 

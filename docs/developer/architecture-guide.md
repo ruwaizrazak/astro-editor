@@ -165,7 +165,7 @@ Benefits:
 
 ### 2. Plugin Architecture (CodeMirror)
 
-Editor functionality is composed through plugins:
+The editor uses **vanilla CodeMirror 6** (not react-codemirror) for maximum control and performance. Editor functionality is composed through extensions:
 
 ```typescript
 const extensions = [
@@ -173,15 +173,28 @@ const extensions = [
   syntaxHighlighting(comprehensiveHighlightStyle),
   urlPlugin(),
   dropTargetPlugin(handleDrop),
-  // ... more plugins
+  keymap.of(customKeymap),
+  EditorView.theme(themeConfig),
+  // ... more extensions
 ]
+
+// Direct CodeMirror initialization
+const view = new EditorView({
+  state: EditorState.create({
+    doc: content,
+    extensions,
+  }),
+  parent: containerElement,
+})
 ```
 
 This allows:
-- Feature isolation
+- Feature isolation through extensions
 - Easy enable/disable of features
 - Performance optimization
 - Third-party plugin integration
+- Direct control over editor lifecycle
+- Custom syntax highlighting and theming
 
 ### 3. TanStack Query Patterns
 
