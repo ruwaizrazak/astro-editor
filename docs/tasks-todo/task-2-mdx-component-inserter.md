@@ -305,9 +305,9 @@ This refined plan provides a clear, step-by-step guide that is technically accur
 
 There is a simple reference implementation in the `DebugScreen.tsx` which works perfectly and is very simple. All the logic for the entire editor is within that file. Subtasks:
 
-- [ ] Refactor Codemirror (without affecting functionality) to stop using basicSetup and replace it with only the nececarry extensions
-- [ ] Simplify any other code in `src/lib/editor` and `src/hooks/editor` and `EditorView.tsx` so it is as simple as possible and easy to reason about and read. Remove any unnececarry code related to Failed attempts at snippet insertion and tag completion.
-- [ ] Actially implement the snippet insertion from the `/src/components/ComponentBuilder/ComponentBuilderDialog.tsx` system pallete, based on the pattern in the DebugScreen.
-- [ ] Double-check the code for anything else which can be simplified or removed once this is working.
+- [x] Refactor Codemirror (without affecting functionality) to stop using basicSetup and replace it with only the nececarry extensions
+- [x] Simplify any other code in `src/lib/editor` and `src/hooks/editor` and `EditorView.tsx` so it is as simple as possible and easy to reason about and read. Remove any unnececarry code related to Failed attempts at snippet insertion and tag completion.
+- [x] Actially implement the snippet insertion from the `/src/components/ComponentBuilder/ComponentBuilderDialog.tsx` system pallete, based on the pattern in the DebugScreen.
+- [x] Double-check the code for anything else which can be simplified or removed once this is working.
 
 You are to go through these step-by-step.
