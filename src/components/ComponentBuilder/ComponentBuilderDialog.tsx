@@ -1,5 +1,5 @@
 import React from 'react'
-import { Check, Code2, FileCode2, ArrowLeft } from 'lucide-react'
+import { Check, ArrowLeft } from 'lucide-react'
 import {
   CommandDialog,
   CommandEmpty,
