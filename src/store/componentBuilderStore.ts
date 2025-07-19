@@ -85,6 +85,11 @@ export const useComponentBuilderStore = create<
       const snippetString = buildSnippet(selectedComponent, enabledProps)
       insertSnippet(editorView, snippetString)
       get().close() // Close and reset after insertion
+      
+      // Focus the editor after a short delay to ensure dialog has closed
+      setTimeout(() => {
+        editorView.focus()
+      }, 100)
     })()
   },
 

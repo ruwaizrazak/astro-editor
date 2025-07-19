@@ -26,5 +26,6 @@ export function insertSnippet(view: EditorView, template: string) {
     to
   )
 
-  // Focus will be automatically handled by the snippet system
+  // Ensure the editor is focused after insertion
+  view.focus()
 }
