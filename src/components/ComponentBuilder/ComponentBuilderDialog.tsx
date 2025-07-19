@@ -71,9 +71,13 @@ export function ComponentBuilderDialog() {
     'mod+a',
     () => {
       if (step === 'configure' && selectedComponent) {
-        const optionalProps = selectedComponent.props.filter(prop => prop.is_optional)
-        const allOptionalEnabled = optionalProps.every(prop => enabledProps.has(prop.name))
-        
+        const optionalProps = selectedComponent.props.filter(
+          prop => prop.is_optional
+        )
+        const allOptionalEnabled = optionalProps.every(prop =>
+          enabledProps.has(prop.name)
+        )
+
         // If all optional props are enabled, disable them all
         // Otherwise, enable all optional props
         optionalProps.forEach(prop => {
@@ -92,23 +96,27 @@ export function ComponentBuilderDialog() {
   )
 
   // Handle Cmd+Enter to insert component
-  const handleInsertKeyDown = React.useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-      e.preventDefault()
-      e.stopPropagation()
-      insert()
-    }
-  }, [insert])
+  const handleInsertKeyDown = React.useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault()
+        e.stopPropagation()
+        insert()
+      }
+    },
+    [insert]
+  )
 
   // Filter props based on search query
   const filteredProps = React.useMemo(() => {
     if (!selectedComponent) return { required: [], optional: [] }
-    
-    const filtered = selectedComponent.props.filter(prop =>
-      prop.name.toLowerCase().includes(propSearchQuery.toLowerCase()) ||
-      prop.prop_type.toLowerCase().includes(propSearchQuery.toLowerCase())
+
+    const filtered = selectedComponent.props.filter(
+      prop =>
+        prop.name.toLowerCase().includes(propSearchQuery.toLowerCase()) ||
+        prop.prop_type.toLowerCase().includes(propSearchQuery.toLowerCase())
     )
-    
+
     return {
       required: filtered.filter(prop => !prop.is_optional),
       optional: filtered.filter(prop => prop.is_optional),
@@ -118,12 +126,12 @@ export function ComponentBuilderDialog() {
   // Generate preview of what will be inserted
   const generatePreview = React.useCallback(() => {
     if (!selectedComponent) return ''
-    
+
     const propsString = selectedComponent.props
       .filter(prop => enabledProps.has(prop.name))
       .map(prop => `${prop.name}=""`)
       .join(' ')
-    
+
     if (selectedComponent.has_slot) {
       return `<${selectedComponent.name}${propsString ? ' ' + propsString : ''}></${selectedComponent.name}>`
     }
@@ -151,7 +159,7 @@ export function ComponentBuilderDialog() {
             ) : (
               <>
                 <CommandEmpty>No results found.</CommandEmpty>
-                <CommandGroup heading="Available Components">
+                <CommandGroup>
                   {components.map(component => (
                     <CommandItem
                       key={component.name}
@@ -159,9 +167,8 @@ export function ComponentBuilderDialog() {
                       onSelect={() => selectComponent(component)}
                       className="cursor-pointer"
                     >
-                      <FileCode2 className="mr-2 h-4 w-4" />
                       <div className="flex flex-col">
-                        <span>&lt;{component.name} /&gt;</span>
+                        <span>{component.name}</span>
                         {component.description && (
                           <span className="text-xs text-muted-foreground">
                             {component.description}
@@ -186,20 +193,21 @@ export function ComponentBuilderDialog() {
             <ArrowLeft className="h-3 w-3" />
             <span>Configure &lt;{selectedComponent?.name} /&gt;</span>
           </div>
-          <CommandInput 
-            placeholder="Filter props..." 
+          <CommandInput
+            placeholder="Filter props..."
             value={propSearchQuery}
             onValueChange={setPropSearchQuery}
             onKeyDown={handleInsertKeyDown}
             autoFocus
           />
           <CommandList>
-            {filteredProps.required.length === 0 && filteredProps.optional.length === 0 ? (
-              <CommandEmpty>No props match your search.</CommandEmpty>
+            {filteredProps.required.length === 0 &&
+            filteredProps.optional.length === 0 ? (
+              <CommandEmpty>No props match</CommandEmpty>
             ) : (
               <>
                 {filteredProps.required.length > 0 && (
-                  <CommandGroup heading="Required">
+                  <CommandGroup>
                     {filteredProps.required.map(prop => (
                       <CommandItem
                         key={prop.name}
@@ -208,14 +216,16 @@ export function ComponentBuilderDialog() {
                         onKeyDown={handleInsertKeyDown}
                         disabled={!prop.is_optional}
                         className={cn(
-                          "cursor-pointer",
-                          !prop.is_optional && "opacity-60"
+                          'cursor-pointer',
+                          !prop.is_optional && 'opacity-60'
                         )}
                       >
                         <Check
                           className={cn(
-                            "mr-2 h-4 w-4",
-                            enabledProps.has(prop.name) ? "opacity-100" : "opacity-0"
+                            'mr-2 h-4 w-4',
+                            enabledProps.has(prop.name)
+                              ? 'opacity-100'
+                              : 'opacity-0'
                           )}
                         />
                         <span className="flex-1">{prop.name}</span>
@@ -229,9 +239,9 @@ export function ComponentBuilderDialog() {
                     ))}
                   </CommandGroup>
                 )}
-                
+
                 {filteredProps.optional.length > 0 && (
-                  <CommandGroup heading="Optional">
+                  <CommandGroup>
                     {filteredProps.optional.map(prop => (
                       <CommandItem
                         key={prop.name}
@@ -242,15 +252,16 @@ export function ComponentBuilderDialog() {
                       >
                         <Check
                           className={cn(
-                            "mr-2 h-4 w-4",
-                            enabledProps.has(prop.name) ? "opacity-100" : "opacity-0"
+                            'mr-2 h-4 w-4',
+                            enabledProps.has(prop.name)
+                              ? 'opacity-100'
+                              : 'opacity-0'
                           )}
                         />
                         <span className="flex-1">{prop.name}</span>
                         <span className="text-xs text-muted-foreground">
                           {prop.prop_type}
                         </span>
-                        <CommandShortcut>↵ / Space</CommandShortcut>
                       </CommandItem>
                     ))}
                   </CommandGroup>
@@ -258,32 +269,20 @@ export function ComponentBuilderDialog() {
               </>
             )}
           </CommandList>
-          
+
           {/* Preview section */}
           <div className="border-t px-3 py-3">
             <div className="text-xs text-muted-foreground mb-1">Preview:</div>
             <code className="text-xs block bg-muted px-2 py-1 rounded">
               {generatePreview()}
             </code>
-            {selectedComponent?.has_slot && (
-              <p className="text-xs text-muted-foreground mt-2">
-                <Code2 className="inline h-3 w-3 mr-1" />
-                This component has a slot for child content
-              </p>
-            )}
           </div>
-          
+
           {/* Keyboard shortcuts */}
           <div className="border-t px-3 py-2 flex items-center justify-between text-xs text-muted-foreground">
             <div className="flex gap-3">
               <span>
                 <CommandShortcut>⌘↵</CommandShortcut> Insert
-              </span>
-              <span>
-                <CommandShortcut>⌫</CommandShortcut> Back
-              </span>
-              <span>
-                <CommandShortcut>⎋</CommandShortcut> Cancel
               </span>
               {filteredProps.optional.length > 0 && (
                 <span>
