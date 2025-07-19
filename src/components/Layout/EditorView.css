@@ -7,6 +7,11 @@
   background-color: var(--editor-color-background);
 }
 
+/* Ensure text cursor in CodeMirror editor */
+.editor-view .cm-editor .cm-content {
+  cursor: text !important;
+}
+
 /* Fix selection artifacts - hide selections when editor loses focus */
 .editor-view:not(:focus-within) .cm-selectionBackground {
   visibility: hidden !important;

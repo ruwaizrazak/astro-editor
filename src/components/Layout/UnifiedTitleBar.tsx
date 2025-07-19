@@ -10,6 +10,7 @@ import {
   PanelRightClose,
   Plus,
 } from 'lucide-react'
+import { cn } from '../../lib/utils'
 
 export const UnifiedTitleBar: React.FC = () => {
   const {
@@ -51,13 +52,20 @@ export const UnifiedTitleBar: React.FC = () => {
     await window.hide()
   }
 
+  const bothPanelsHidden = !sidebarVisible && !frontmatterPanelVisible
+
   return (
     <div
-      className="h-11 w-full bg-background border-b border-border flex items-center justify-between px-3 select-none"
+      className={cn(
+        "h-11 w-full flex items-center justify-between px-3 select-none border-b",
+        bothPanelsHidden
+          ? "bg-[var(--editor-color-background)] border-transparent"
+          : "bg-background border-border"
+      )}
       data-tauri-drag-region
     >
-      {/* Left: Traffic lights + left sidebar toggle */}
-      <div className="flex items-center gap-2" data-tauri-drag-region>
+      {/* Left: Traffic lights + sidebar toggle + project name */}
+      <div className="flex items-center gap-2 flex-1" data-tauri-drag-region>
         {/* Custom traffic lights - no drag region on these */}
         <div className="flex items-center gap-2 mr-3">
           <button
@@ -94,16 +102,11 @@ export const UnifiedTitleBar: React.FC = () => {
             <PanelLeft className="size-4" />
           )}
         </Button>
-      </div>
 
-      {/* Center: Project path or app title - draggable */}
-      <div
-        className="flex-1 text-center overflow-hidden"
-        data-tauri-drag-region
-      >
+        {/* Project name - on the left */}
         {projectPath ? (
-          <span className="text-xs text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis max-w-xs block">
-            {projectPath}
+          <span className="text-xs text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">
+            {projectPath.split('/').pop() || projectPath}
           </span>
         ) : (
           <span className="text-sm font-medium text-muted-foreground">

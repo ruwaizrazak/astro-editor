@@ -259,20 +259,20 @@ textarea,
   cursor: inherit;
 }
 
-/* Force default cursor on all text elements except inside CodeMirror */
-p:not(.cm-editor *),
-span:not(.cm-editor *),
-div:not(.cm-editor *),
-h1:not(.cm-editor *),
-h2:not(.cm-editor *),
-h3:not(.cm-editor *),
-h4:not(.cm-editor *),
-h5:not(.cm-editor *),
-h6:not(.cm-editor *),
-label:not(.cm-editor *),
-li:not(.cm-editor *),
-td:not(.cm-editor *),
-th:not(.cm-editor *) {
+/* Force default cursor on all text elements except inside CodeMirror editor */
+p:not(.editor-view *, .cm-editor *),
+span:not(.editor-view *, .cm-editor *),
+div:not(.editor-view *, .cm-editor *),
+h1:not(.editor-view *, .cm-editor *),
+h2:not(.editor-view *, .cm-editor *),
+h3:not(.editor-view *, .cm-editor *),
+h4:not(.editor-view *, .cm-editor *),
+h5:not(.editor-view *, .cm-editor *),
+h6:not(.editor-view *, .cm-editor *),
+label:not(.editor-view *, .cm-editor *),
+li:not(.editor-view *, .cm-editor *),
+td:not(.editor-view *, .cm-editor *),
+th:not(.editor-view *, .cm-editor *) {
   cursor: default !important;
 }
 
@@ -282,6 +282,16 @@ th:not(.cm-editor *) {
 .cm-focused {
   isolation: isolate;
   outline: none !important;
+}
+
+/* Ensure text cursor in all CodeMirror editor areas */
+.editor-view,
+.editor-view .cm-editor,
+.editor-view .cm-scroller,
+.editor-view .cm-content,
+.cm-editor .cm-scroller,
+.cm-editor .cm-content {
+  cursor: text !important;
 }
 
 /* Only links should have pointer cursor in native app */
