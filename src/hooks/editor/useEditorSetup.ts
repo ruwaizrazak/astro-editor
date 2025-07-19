@@ -15,7 +15,7 @@ export const useEditorSetup = (
   onSave: () => void,
   onFocus: () => void,
   onBlur: () => void,
-  componentBuilderHandler?: (view: any) => boolean
+  componentBuilderHandler?: (view: EditorView) => boolean
 ) => {
   // Create extensions with current configuration
   const extensions = createExtensions({

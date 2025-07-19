@@ -50,7 +50,7 @@ export const EditorViewComponent: React.FC = () => {
     useEditorHandlers()
 
   // Component builder handler for Cmd+/ shortcut
-  const componentBuilderHandler = useCallback((view: any) => {
+  const componentBuilderHandler = useCallback((view: EditorView) => {
     const { currentFile } = useAppStore.getState()
     if (currentFile?.extension === 'mdx') {
       useComponentBuilderStore.getState().open(view)

@@ -3,7 +3,13 @@ import { useAppStore } from '../../store'
 import { cn } from '../../lib/utils'
 
 export const StatusBar: React.FC = () => {
-  const { currentFile, editorContent, isDirty, sidebarVisible, frontmatterPanelVisible } = useAppStore()
+  const {
+    currentFile,
+    editorContent,
+    isDirty,
+    sidebarVisible,
+    frontmatterPanelVisible,
+  } = useAppStore()
 
   const wordCount = editorContent
     .split(/\s+/)
@@ -12,12 +18,12 @@ export const StatusBar: React.FC = () => {
   const bothPanelsHidden = !sidebarVisible && !frontmatterPanelVisible
 
   return (
-    <div 
+    <div
       className={cn(
-        "flex justify-between items-center px-4 py-1 text-xs h-6 border-t",
+        'flex justify-between items-center px-4 py-1 text-xs h-6 border-t',
         bothPanelsHidden
-          ? "bg-[var(--editor-color-background)] border-transparent text-muted-foreground/40"
-          : "bg-muted/50 border-border text-muted-foreground"
+          ? 'bg-[var(--editor-color-background)] border-transparent text-muted-foreground/40'
+          : 'bg-muted/50 border-border text-muted-foreground'
       )}
     >
       <div className="flex items-center">

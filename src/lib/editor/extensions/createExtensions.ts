@@ -16,7 +16,7 @@ import { createEditorTheme } from './theme'
 export interface ExtensionConfig {
   onFocus: () => void
   onBlur: () => void
-  componentBuilderHandler?: (view: any) => boolean
+  componentBuilderHandler?: (view: EditorView) => boolean
 }
 
 /**
@@ -33,7 +33,9 @@ export const createExtensions = (config: ExtensionConfig) => {
     drawSelection(),
     closeBrackets(),
     EditorState.allowMultipleSelections.of(true),
-    EditorView.clickAddsSelectionRange.of(event => event.metaKey || event.ctrlKey),
+    EditorView.clickAddsSelectionRange.of(
+      event => event.metaKey || event.ctrlKey
+    ),
 
     // Language support
     markdown({

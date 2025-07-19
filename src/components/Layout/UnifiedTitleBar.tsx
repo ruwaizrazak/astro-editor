@@ -57,10 +57,10 @@ export const UnifiedTitleBar: React.FC = () => {
   return (
     <div
       className={cn(
-        "h-11 w-full flex items-center justify-between px-3 select-none border-b",
+        'h-11 w-full flex items-center justify-between px-3 select-none border-b',
         bothPanelsHidden
-          ? "bg-[var(--editor-color-background)] border-transparent"
-          : "bg-background border-border"
+          ? 'bg-[var(--editor-color-background)] border-transparent'
+          : 'bg-background border-border'
       )}
       data-tauri-drag-region
     >

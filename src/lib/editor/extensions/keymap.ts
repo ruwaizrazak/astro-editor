@@ -1,4 +1,4 @@
-import { keymap } from '@codemirror/view'
+import { keymap, EditorView } from '@codemirror/view'
 import {
   defaultKeymap,
   historyKeymap,
@@ -20,7 +20,7 @@ import { transformLineToHeading } from '../markdown/headings'
  * Create custom markdown shortcuts with high precedence
  */
 export const createMarkdownKeymap = (
-  componentBuilderHandler?: (view: any) => boolean
+  componentBuilderHandler?: (view: EditorView) => boolean
 ) => {
   return Prec.high(
     keymap.of([
@@ -141,7 +141,7 @@ export const createTabKeymap = () => {
  * Create all keymap extensions
  */
 export const createKeymapExtensions = (
-  componentBuilderHandler?: (view: any) => boolean
+  componentBuilderHandler?: (view: EditorView) => boolean
 ) => {
   return [
     // Tab handling must be highest precedence to trap Tab key

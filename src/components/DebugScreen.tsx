@@ -21,7 +21,9 @@ export const DebugScreen: React.FC = () => {
       history(),
       drawSelection(),
       EditorState.allowMultipleSelections.of(true),
-      EditorView.clickAddsSelectionRange.of(event => event.metaKey || event.ctrlKey),
+      EditorView.clickAddsSelectionRange.of(
+        event => event.metaKey || event.ctrlKey
+      ),
       markdown(),
       closeBrackets(),
       syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
