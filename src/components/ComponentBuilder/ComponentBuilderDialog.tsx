@@ -1,5 +1,5 @@
 import React from 'react'
-import { Code2, FileCode2 } from 'lucide-react'
+import { Check, Code2, FileCode2, ArrowLeft } from 'lucide-react'
 import {
   CommandDialog,
   CommandEmpty,
@@ -7,21 +7,14 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  CommandShortcut,
 } from '../ui/command'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '../ui/card'
-import { Button } from '../ui/button'
-import { Label } from '../ui/label'
-import { Switch } from '../ui/switch'
+import { Badge } from '../ui/badge'
+import { cn } from '../../lib/utils'
 import { useComponentBuilderStore } from '../../store/componentBuilderStore'
 import { useMdxComponentsQuery } from '../../hooks/queries/useMdxComponentsQuery'
 import { useAppStore } from '../../store'
+import { useHotkeys } from 'react-hotkeys-hook'
 
 /**
  * MDX Component Builder Dialog
@@ -34,11 +27,13 @@ export function ComponentBuilderDialog() {
     step,
     selectedComponent,
     enabledProps,
+    propSearchQuery,
     close,
     selectComponent,
     toggleProp,
     insert,
     back,
+    setPropSearchQuery,
   } = useComponentBuilderStore()
 
   // Fetch MDX components using TanStack Query
@@ -57,10 +52,83 @@ export function ComponentBuilderDialog() {
     return 0
   }, [])
 
-  const handleInsert = (e?: React.FormEvent) => {
-    e?.preventDefault()
-    void insert()
-  }
+  // Keyboard shortcuts for configuration step
+  useHotkeys(
+    'backspace',
+    () => {
+      if (step === 'configure') {
+        back()
+      }
+    },
+    {
+      enabled: isOpen && step === 'configure' && propSearchQuery === '',
+      preventDefault: true,
+    }
+  )
+
+  // Cmd+A to toggle all optional props
+  useHotkeys(
+    'mod+a',
+    () => {
+      if (step === 'configure' && selectedComponent) {
+        const optionalProps = selectedComponent.props.filter(prop => prop.is_optional)
+        const allOptionalEnabled = optionalProps.every(prop => enabledProps.has(prop.name))
+        
+        // If all optional props are enabled, disable them all
+        // Otherwise, enable all optional props
+        optionalProps.forEach(prop => {
+          if (allOptionalEnabled && enabledProps.has(prop.name)) {
+            toggleProp(prop.name)
+          } else if (!allOptionalEnabled && !enabledProps.has(prop.name)) {
+            toggleProp(prop.name)
+          }
+        })
+      }
+    },
+    {
+      enabled: isOpen && step === 'configure',
+      preventDefault: true,
+    }
+  )
+
+  // Handle Cmd+Enter to insert component
+  const handleInsertKeyDown = React.useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault()
+      e.stopPropagation()
+      insert()
+    }
+  }, [insert])
+
+  // Filter props based on search query
+  const filteredProps = React.useMemo(() => {
+    if (!selectedComponent) return { required: [], optional: [] }
+    
+    const filtered = selectedComponent.props.filter(prop =>
+      prop.name.toLowerCase().includes(propSearchQuery.toLowerCase()) ||
+      prop.prop_type.toLowerCase().includes(propSearchQuery.toLowerCase())
+    )
+    
+    return {
+      required: filtered.filter(prop => !prop.is_optional),
+      optional: filtered.filter(prop => prop.is_optional),
+    }
+  }, [selectedComponent, propSearchQuery])
+
+  // Generate preview of what will be inserted
+  const generatePreview = React.useCallback(() => {
+    if (!selectedComponent) return ''
+    
+    const propsString = selectedComponent.props
+      .filter(prop => enabledProps.has(prop.name))
+      .map(prop => `${prop.name}=""`)
+      .join(' ')
+    
+    if (selectedComponent.has_slot) {
+      return `<${selectedComponent.name}${propsString ? ' ' + propsString : ''}></${selectedComponent.name}>`
+    }
+    return `<${selectedComponent.name}${propsString ? ' ' + propsString : ''} />`
+  }, [selectedComponent, enabledProps])
 
   return (
     <CommandDialog
@@ -70,7 +138,7 @@ export function ComponentBuilderDialog() {
       description="Select a component to insert"
       filter={customFilter}
     >
-      {step === 'list' ? (
+      {step === 'list' && (
         <>
           <CommandInput placeholder="Search components..." />
           <CommandList>
@@ -111,66 +179,120 @@ export function ComponentBuilderDialog() {
             )}
           </CommandList>
         </>
-      ) : (
-        <form onSubmit={handleInsert} className="p-4">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>
-                    Configure &lt;{selectedComponent?.name} /&gt;
-                  </CardTitle>
-                  <CardDescription>
-                    Select the props you want to include
-                  </CardDescription>
-                </div>
-                <Button type="button" variant="ghost" size="sm" onClick={back}>
-                  Back
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {selectedComponent?.props.map(prop => (
-                <div
-                  key={prop.name}
-                  className="flex items-center justify-between space-x-2"
-                >
-                  <Label
-                    htmlFor={prop.name}
-                    className="flex-1 flex items-center gap-2"
-                  >
-                    <span>{prop.name}</span>
-                    <span className="text-xs text-muted-foreground">
-                      ({prop.prop_type})
-                    </span>
-                    {!prop.is_optional && (
-                      <span className="text-xs text-destructive">required</span>
-                    )}
-                  </Label>
-                  <Switch
-                    id={prop.name}
-                    checked={enabledProps.has(prop.name)}
-                    onCheckedChange={() => toggleProp(prop.name)}
-                    disabled={!prop.is_optional}
-                  />
-                </div>
-              ))}
-              {selectedComponent?.has_slot && (
-                <div className="pt-2 border-t">
-                  <p className="text-sm text-muted-foreground">
-                    <Code2 className="inline h-3 w-3 mr-1" />
-                    This component has a slot for child content
-                  </p>
-                </div>
+      )}
+      {step === 'configure' && selectedComponent && (
+        <>
+          <div className="flex items-center gap-2 px-3 pb-2 pt-3 text-sm text-muted-foreground">
+            <ArrowLeft className="h-3 w-3" />
+            <span>Configure &lt;{selectedComponent?.name} /&gt;</span>
+          </div>
+          <CommandInput 
+            placeholder="Filter props..." 
+            value={propSearchQuery}
+            onValueChange={setPropSearchQuery}
+            onKeyDown={handleInsertKeyDown}
+            autoFocus
+          />
+          <CommandList>
+            {filteredProps.required.length === 0 && filteredProps.optional.length === 0 ? (
+              <CommandEmpty>No props match your search.</CommandEmpty>
+            ) : (
+              <>
+                {filteredProps.required.length > 0 && (
+                  <CommandGroup heading="Required">
+                    {filteredProps.required.map(prop => (
+                      <CommandItem
+                        key={prop.name}
+                        value={prop.name}
+                        onSelect={() => toggleProp(prop.name)}
+                        onKeyDown={handleInsertKeyDown}
+                        disabled={!prop.is_optional}
+                        className={cn(
+                          "cursor-pointer",
+                          !prop.is_optional && "opacity-60"
+                        )}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            enabledProps.has(prop.name) ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        <span className="flex-1">{prop.name}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {prop.prop_type}
+                        </span>
+                        <Badge variant="secondary" className="ml-2">
+                          Required
+                        </Badge>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                )}
+                
+                {filteredProps.optional.length > 0 && (
+                  <CommandGroup heading="Optional">
+                    {filteredProps.optional.map(prop => (
+                      <CommandItem
+                        key={prop.name}
+                        value={prop.name}
+                        onSelect={() => toggleProp(prop.name)}
+                        onKeyDown={handleInsertKeyDown}
+                        className="cursor-pointer"
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            enabledProps.has(prop.name) ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        <span className="flex-1">{prop.name}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {prop.prop_type}
+                        </span>
+                        <CommandShortcut>↵ / Space</CommandShortcut>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                )}
+              </>
+            )}
+          </CommandList>
+          
+          {/* Preview section */}
+          <div className="border-t px-3 py-3">
+            <div className="text-xs text-muted-foreground mb-1">Preview:</div>
+            <code className="text-xs block bg-muted px-2 py-1 rounded">
+              {generatePreview()}
+            </code>
+            {selectedComponent?.has_slot && (
+              <p className="text-xs text-muted-foreground mt-2">
+                <Code2 className="inline h-3 w-3 mr-1" />
+                This component has a slot for child content
+              </p>
+            )}
+          </div>
+          
+          {/* Keyboard shortcuts */}
+          <div className="border-t px-3 py-2 flex items-center justify-between text-xs text-muted-foreground">
+            <div className="flex gap-3">
+              <span>
+                <CommandShortcut>⌘↵</CommandShortcut> Insert
+              </span>
+              <span>
+                <CommandShortcut>⌫</CommandShortcut> Back
+              </span>
+              <span>
+                <CommandShortcut>⎋</CommandShortcut> Cancel
+              </span>
+              {filteredProps.optional.length > 0 && (
+                <span>
+                  <CommandShortcut>⌘A</CommandShortcut> Toggle all
+                </span>
               )}
-            </CardContent>
-            <CardFooter>
-              <Button type="submit" className="w-full">
-                Insert Component
-              </Button>
-            </CardFooter>
-          </Card>
-        </form>
+            </div>
+          </div>
+        </>
       )}
     </CommandDialog>
   )

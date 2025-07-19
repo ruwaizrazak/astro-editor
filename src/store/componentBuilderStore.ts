@@ -9,6 +9,7 @@ interface ComponentBuilderState {
   selectedComponent: MdxComponent | null
   enabledProps: Set<string>
   editorView: EditorView | null
+  propSearchQuery: string
 }
 
 interface ComponentBuilderActions {
@@ -18,6 +19,7 @@ interface ComponentBuilderActions {
   toggleProp: (propName: string) => void
   insert: () => void
   back: () => void
+  setPropSearchQuery: (query: string) => void
 }
 
 const initialState: ComponentBuilderState = {
@@ -26,6 +28,7 @@ const initialState: ComponentBuilderState = {
   selectedComponent: null,
   enabledProps: new Set(),
   editorView: null,
+  propSearchQuery: '',
 }
 
 // Create Store
@@ -34,7 +37,11 @@ export const useComponentBuilderStore = create<
 >((set, get) => ({
   ...initialState,
 
-  open: editorView => set({ isOpen: true, editorView }),
+  open: editorView => set({ 
+    ...initialState, 
+    isOpen: true, 
+    editorView,
+  }),
 
   close: () => set({ ...initialState }), // Fully reset on close
 
@@ -42,10 +49,13 @@ export const useComponentBuilderStore = create<
     const requiredProps = new Set(
       component.props.filter(p => !p.is_optional).map(p => p.name)
     )
+    
+    // Always show configuration step, even for components without props
     set({
       selectedComponent: component,
       step: 'configure',
       enabledProps: requiredProps,
+      propSearchQuery: '', // Reset search when selecting a component
     })
   },
 
@@ -79,5 +89,7 @@ export const useComponentBuilderStore = create<
   },
 
   back: () =>
-    set({ step: 'list', selectedComponent: null, enabledProps: new Set() }),
+    set({ step: 'list', selectedComponent: null, enabledProps: new Set(), propSearchQuery: '' }),
+
+  setPropSearchQuery: (query: string) => set({ propSearchQuery: query }),
 }))
