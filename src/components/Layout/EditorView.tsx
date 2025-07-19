@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react'
-import CodeMirror from '@uiw/react-codemirror'
 import { EditorView } from '@codemirror/view'
+import { EditorState } from '@codemirror/state'
 import { useAppStore } from '../../store'
 import {
   useEditorSetup,
@@ -34,7 +34,9 @@ declare global {
  */
 export const EditorViewComponent: React.FC = () => {
   const { editorContent } = useAppStore()
-  const editorRef = useRef<{ view?: EditorView }>(null)
+  const editorRef = useRef<HTMLDivElement>(null)
+  const viewRef = useRef<EditorView | null>(null)
+  const initialContentRef = useRef<string>(editorContent)
   const [isAltPressed, setIsAltPressed] = useState(false)
 
   // Initialize global focus flag (menu state managed in Layout)
@@ -42,14 +44,28 @@ export const EditorViewComponent: React.FC = () => {
     window.isEditorFocused = false
   }, [])
 
+  // Set up event handlers
+  const { handleChange, handleFocus, handleBlur, handleSave } =
+    useEditorHandlers()
+
+  // Set up editor extensions and commands
+  const { extensions, setupCommands, cleanupCommands } = useEditorSetup(
+    handleSave,
+    handleFocus,
+    handleBlur
+  )
+
+  // Set up Tauri listeners
+  useTauriListeners(viewRef.current)
+
   // Track Alt key state for URL highlighting - moved back to component for timing
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.altKey && !isAltPressed) {
         setIsAltPressed(true)
         // Update CodeMirror state
-        if (editorRef.current?.view) {
-          editorRef.current.view.dispatch({
+        if (viewRef.current) {
+          viewRef.current.dispatch({
             effects: altKeyEffect.of(true),
           })
         }
@@ -60,8 +76,8 @@ export const EditorViewComponent: React.FC = () => {
       if (!e.altKey && isAltPressed) {
         setIsAltPressed(false)
         // Update CodeMirror state
-        if (editorRef.current?.view) {
-          editorRef.current.view.dispatch({
+        if (viewRef.current) {
+          viewRef.current.dispatch({
             effects: altKeyEffect.of(false),
           })
         }
@@ -72,8 +88,8 @@ export const EditorViewComponent: React.FC = () => {
     const handleBlur = () => {
       setIsAltPressed(false)
       // Update CodeMirror state
-      if (editorRef.current?.view) {
-        editorRef.current.view.dispatch({
+      if (viewRef.current) {
+        viewRef.current.dispatch({
           effects: altKeyEffect.of(false),
         })
       }
@@ -90,23 +106,65 @@ export const EditorViewComponent: React.FC = () => {
     }
   }, [isAltPressed])
 
-  // Set up event handlers
-  const { handleChange, handleFocus, handleBlur, handleSave } =
-    useEditorHandlers()
+  // Initialize the CodeMirror editor once - EXACTLY like DebugScreen
+  useEffect(() => {
+    if (!editorRef.current || viewRef.current) return
 
-  // Set up editor extensions and commands
-  const { extensions, basicSetup, setupCommands, cleanupCommands } =
-    useEditorSetup(handleSave, handleFocus, handleBlur)
+    // Get current handlers - capture them at effect creation time
+    const currentHandleChange = handleChange
+    const currentSetupCommands = setupCommands
+    const currentCleanupCommands = cleanupCommands
 
-  // Set up Tauri listeners
-  useTauriListeners(editorRef.current?.view || null)
+    const startState = EditorState.create({
+      doc: initialContentRef.current,
+      extensions: [
+        ...extensions,
+        EditorView.updateListener.of(update => {
+          if (update.docChanged) {
+            const newContent = update.state.doc.toString()
+            // Use captured handler to avoid infinite loops
+            currentHandleChange(newContent)
+          }
+        }),
+      ],
+    })
 
-  // Handle editor ready
-  const handleEditorReady = (editor: { view?: EditorView }) => {
-    if (editor?.view) {
-      setupCommands(editor.view)
+    const view = new EditorView({
+      state: startState,
+      parent: editorRef.current,
+    })
+
+    viewRef.current = view
+
+    // Set up commands once the view is ready
+    currentSetupCommands(view)
+
+    return () => {
+      view.destroy()
+      viewRef.current = null
+      currentCleanupCommands()
     }
-  }
+    // CRITICAL: Empty dependency array like DebugScreen - only create once!
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Update editor content when store content changes
+  useEffect(() => {
+    if (
+      viewRef.current &&
+      viewRef.current.state.doc.toString() !== editorContent
+    ) {
+      viewRef.current.dispatch({
+        changes: {
+          from: 0,
+          to: viewRef.current.state.doc.length,
+          insert: editorContent,
+        },
+      })
+    }
+    // Update the initial content ref for future editor recreations
+    initialContentRef.current = editorContent
+  }, [editorContent])
 
   // Cleanup on unmount
   useEffect(() => {
@@ -117,22 +175,9 @@ export const EditorViewComponent: React.FC = () => {
 
   return (
     <div className="editor-view" style={{ padding: '0 24px' }}>
-      <CodeMirror
+      <div
+        ref={editorRef}
         className={`editor-codemirror ${isAltPressed ? 'alt-pressed' : ''}`}
-        ref={editor => {
-          if (editorRef.current !== editor) {
-            // @ts-expect-error - ref assignment is necessary for editor access
-            editorRef.current = editor
-            if (editor) {
-              handleEditorReady(editor)
-            }
-          }
-        }}
-        value={editorContent}
-        onChange={handleChange}
-        extensions={extensions}
-        basicSetup={basicSetup}
-        indentWithTab={false} // Disable tab indentation to allow snippet navigation
       />
     </div>
   )

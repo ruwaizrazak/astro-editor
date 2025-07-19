@@ -7,7 +7,7 @@ function App() {
   return (
     <ThemeProvider defaultTheme="system" storageKey="blog-editor-theme">
       <Layout />
-      {/* <ComponentBuilderDialog /> */}
+      <ComponentBuilderDialog />
     </ThemeProvider>
   )
 }
