@@ -132,6 +132,7 @@ export const EditorViewComponent: React.FC = () => {
         onChange={handleChange}
         extensions={extensions}
         basicSetup={basicSetup}
+        indentWithTab={false} // Disable tab indentation to allow snippet navigation
       />
     </div>
   )

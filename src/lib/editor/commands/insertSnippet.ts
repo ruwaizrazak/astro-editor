@@ -1,5 +1,40 @@
 import { EditorView } from '@codemirror/view'
-import { snippet } from '@codemirror/autocomplete'
+import { snippet, hasNextSnippetField } from '@codemirror/autocomplete'
+
+/**
+ * Test function to check if snippet functionality is enabled
+ */
+export function testSnippetFunctionality(view: EditorView) {
+  console.log('=== SNIPPET FUNCTIONALITY TEST ===')
+  console.log('hasNextSnippetField before:', hasNextSnippetField(view.state))
+  
+  // Try inserting a simple test snippet
+  const testTemplate = 'Hello ${1:world}!'
+  console.log('Test template:', testTemplate)
+  
+  try {
+    const { dispatch, state } = view
+    const { from, to } = state.selection.main
+    
+    snippet(testTemplate)(
+      { dispatch, state },
+      null,
+      from,
+      to
+    )
+    
+    setTimeout(() => {
+      console.log('hasNextSnippetField after:', hasNextSnippetField(view.state))
+      console.log('Current selection:', view.state.selection.main)
+      console.log('Document content:', view.state.doc.sliceString(
+        Math.max(0, view.state.selection.main.from - 10),
+        Math.min(view.state.doc.length, view.state.selection.main.to + 10)
+      ))
+    }, 50)
+  } catch (error) {
+    console.error('Test failed:', error)
+  }
+}
 
 /**
  * Inserts a snippet at the current cursor position with tab navigation support
@@ -9,23 +44,25 @@ import { snippet } from '@codemirror/autocomplete'
 export function insertSnippet(view: EditorView, template: string) {
   if (!view) return
 
-  // Get the current cursor position
-  const { from, to } = view.state.selection.main
+  console.log('Inserting snippet:', template)
+  
+  // First test snippet functionality
+  testSnippetFunctionality(view)
 
-  // Create a snippet completion that can be applied to the editor
-  const snippetCompletion = snippet(template)
-
-  // Apply the snippet to the editor
-  snippetCompletion(
-    {
-      state: view.state,
-      dispatch: view.dispatch.bind(view),
-    },
-    null, // completion object (not needed for programmatic insertion)
-    from,
-    to
-  )
-
-  // Ensure the editor is focused after insertion
-  view.focus()
+  try {
+    const { dispatch, state } = view
+    const { from, to } = state.selection.main
+    
+    // Use the basic snippet function as documented
+    snippet(template)(
+      { dispatch, state },
+      null,
+      from,
+      to
+    )
+    
+    view.focus()
+  } catch (error) {
+    console.error('Error inserting snippet:', error)
+  }
 }

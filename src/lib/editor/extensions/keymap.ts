@@ -5,11 +5,7 @@ import {
   toggleComment,
 } from '@codemirror/commands'
 import { searchKeymap } from '@codemirror/search'
-import {
-  nextSnippetField,
-  prevSnippetField,
-  clearSnippet,
-} from '@codemirror/autocomplete'
+import { snippetKeymap } from '@codemirror/autocomplete'
 import { Prec } from '@codemirror/state'
 import { toggleMarkdown, createMarkdownLink } from '../markdown/formatting'
 import { transformLineToHeading } from '../markdown/headings'
@@ -90,33 +86,13 @@ export const createDefaultKeymap = () => {
 }
 
 /**
- * Create snippet navigation keymap
- */
-export const createSnippetKeymap = () => {
-  return keymap.of([
-    {
-      key: 'Tab',
-      run: nextSnippetField,
-    },
-    {
-      key: 'Shift-Tab',
-      run: prevSnippetField,
-    },
-    {
-      key: 'Escape',
-      run: clearSnippet,
-    },
-  ])
-}
-
-/**
  * Create all keymap extensions
  */
 export const createKeymapExtensions = () => {
   return [
+    // Built-in snippet keymap with high precedence
+    Prec.high(keymap.of(snippetKeymap)),
     createMarkdownKeymap(),
     createDefaultKeymap(),
-    // Add snippet navigation keymap to enable Tab/Shift-Tab navigation
-    createSnippetKeymap(),
   ]
 }

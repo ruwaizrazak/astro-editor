@@ -26,15 +26,16 @@ export function buildSnippet(
       }
 
       // Use snippet placeholder with default value or empty
-      return `${p.name}="\${${placeholderIndex++}:${defaultValue}}"`
+      // Make sure defaultValue is always a string
+      return `${p.name}="$\{${placeholderIndex++}:${defaultValue || ''}\}"`
     })
     .join(' ')
 
   if (component.has_slot) {
     const propsPrefix = propsString ? ' ' + propsString : ''
-    return `<${component.name}${propsPrefix}>\${${placeholderIndex}}</${component.name}>`
+    return `<${component.name}${propsPrefix}>$\{${placeholderIndex}\}</${component.name}>$\{\}`
   }
 
   const propsPrefix = propsString ? ' ' + propsString : ''
-  return `<${component.name}${propsPrefix} />`
+  return `<${component.name}${propsPrefix} />$\{\}`
 }

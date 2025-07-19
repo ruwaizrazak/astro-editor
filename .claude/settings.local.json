@@ -25,7 +25,8 @@
       "Bash(cargo fmt:*)",
       "Bash(node:*)",
       "Bash(npm add:*)",
-      "WebFetch(domain:medium.com)"
+      "WebFetch(domain:medium.com)",
+      "WebFetch(domain:codemirror.net)"
     ],
     "deny": []
   }
