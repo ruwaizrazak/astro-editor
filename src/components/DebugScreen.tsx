@@ -20,6 +20,8 @@ export const DebugScreen: React.FC = () => {
     const extensions = [
       history(),
       drawSelection(),
+      EditorState.allowMultipleSelections.of(true),
+      EditorView.clickAddsSelectionRange.of(event => event.metaKey || event.ctrlKey),
       markdown(),
       closeBrackets(),
       syntaxHighlighting(defaultHighlightStyle, { fallback: true }),

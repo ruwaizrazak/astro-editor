@@ -10,6 +10,7 @@ import {
   nextSnippetField,
   hasPrevSnippetField,
   prevSnippetField,
+  closeBracketsKeymap,
 } from '@codemirror/autocomplete'
 import { Prec } from '@codemirror/state'
 import { toggleMarkdown, createMarkdownLink } from '../markdown/formatting'
@@ -86,6 +87,7 @@ export const createDefaultKeymap = () => {
     ...filteredDefaultKeymap,
     ...historyKeymap,
     ...searchKeymap,
+    ...closeBracketsKeymap,
   ])
 }
 
