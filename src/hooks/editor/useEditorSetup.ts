@@ -1,9 +1,6 @@
 import { useCallback } from 'react'
 import { EditorView } from '@codemirror/view'
-import {
-  createExtensions,
-  EDITOR_BASIC_SETUP,
-} from '../../lib/editor/extensions'
+import { createExtensions } from '../../lib/editor/extensions'
 import {
   globalCommandRegistry,
   createEditorCommandRegistry,
@@ -17,12 +14,14 @@ import {
 export const useEditorSetup = (
   onSave: () => void,
   onFocus: () => void,
-  onBlur: () => void
+  onBlur: () => void,
+  componentBuilderHandler?: (view: any) => boolean
 ) => {
   // Create extensions with current configuration
   const extensions = createExtensions({
     onFocus,
     onBlur,
+    componentBuilderHandler,
   })
 
   // Set up editor commands when editor view is available
@@ -43,7 +42,6 @@ export const useEditorSetup = (
 
   return {
     extensions,
-    basicSetup: EDITOR_BASIC_SETUP,
     setupCommands,
     cleanupCommands,
   }

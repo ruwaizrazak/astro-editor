@@ -62,18 +62,3 @@ export const createEditorTheme = () => {
   })
 }
 
-/**
- * Basic setup configuration for CodeMirror
- */
-export const EDITOR_BASIC_SETUP = {
-  lineNumbers: false,
-  foldGutter: false,
-  dropCursor: false, // We're adding our own custom dropCursor
-  allowMultipleSelections: false,
-  indentOnInput: true,
-  bracketMatching: false,
-  closeBrackets: true,
-  autocompletion: false,
-  highlightSelectionMatches: false,
-  highlightActiveLine: false,
-} as const

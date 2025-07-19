@@ -14,13 +14,14 @@ import { createEditorTheme } from './theme'
 export interface ExtensionConfig {
   onFocus: () => void
   onBlur: () => void
+  componentBuilderHandler?: (view: any) => boolean
 }
 
 /**
  * Create all editor extensions
  */
 export const createExtensions = (config: ExtensionConfig) => {
-  const { onFocus, onBlur } = config
+  const { onFocus, onBlur, componentBuilderHandler } = config
 
   const extensions = [
     // Core functionality
@@ -38,7 +39,7 @@ export const createExtensions = (config: ExtensionConfig) => {
     history(),
 
     // Keymaps
-    ...createKeymapExtensions(),
+    ...createKeymapExtensions(componentBuilderHandler),
 
     // Event handlers
     EditorView.domEventHandlers({
@@ -47,15 +48,6 @@ export const createExtensions = (config: ExtensionConfig) => {
         // Handle Alt+Click for URL opening
         if (event.altKey) {
           void handleUrlClick(view, event)
-        }
-        return false // Let default handling proceed
-      },
-      keydown: event => {
-        // TODO: This hack looks like it doesn't actually do anything.
-        // Handle synthetic keyboard events from menu
-        if (event.isTrusted === false) {
-          // This is a synthetic event from menu, delegate to the editor
-          return false // Let the keymap handle it
         }
         return false // Let default handling proceed
       },

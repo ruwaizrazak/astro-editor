@@ -24,5 +24,5 @@
 
 export { createExtensions } from './createExtensions'
 export { createKeymapExtensions } from './keymap'
-export { createEditorTheme, EDITOR_BASIC_SETUP } from './theme'
+export { createEditorTheme } from './theme'
 export type { ExtensionConfig } from './createExtensions'

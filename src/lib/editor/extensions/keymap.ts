@@ -14,13 +14,13 @@ import {
 import { Prec } from '@codemirror/state'
 import { toggleMarkdown, createMarkdownLink } from '../markdown/formatting'
 import { transformLineToHeading } from '../markdown/headings'
-import { useComponentBuilderStore } from '../../../store/componentBuilderStore'
-import { useAppStore } from '../../../store'
 
 /**
  * Create custom markdown shortcuts with high precedence
  */
-export const createMarkdownKeymap = () => {
+export const createMarkdownKeymap = (
+  componentBuilderHandler?: (view: any) => boolean
+) => {
   return Prec.high(
     keymap.of([
       {
@@ -39,12 +39,11 @@ export const createMarkdownKeymap = () => {
       {
         key: 'Mod-/',
         run: view => {
-          const { currentFile } = useAppStore.getState()
-          if (currentFile?.extension === 'mdx') {
-            useComponentBuilderStore.getState().open(view)
+          // Try component builder first if handler is provided
+          if (componentBuilderHandler && componentBuilderHandler(view)) {
             return true
           }
-          // For non-mdx files, run the default comment toggling.
+          // Fallback to default comment toggling
           return toggleComment(view)
         },
       },
@@ -139,11 +138,13 @@ export const createTabKeymap = () => {
 /**
  * Create all keymap extensions
  */
-export const createKeymapExtensions = () => {
+export const createKeymapExtensions = (
+  componentBuilderHandler?: (view: any) => boolean
+) => {
   return [
     // Tab handling must be highest precedence to trap Tab key
     createTabKeymap(),
-    createMarkdownKeymap(),
+    createMarkdownKeymap(componentBuilderHandler),
     createDefaultKeymap(),
   ]
 }

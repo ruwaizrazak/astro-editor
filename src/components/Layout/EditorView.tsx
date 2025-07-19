@@ -1,7 +1,8 @@
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { EditorView } from '@codemirror/view'
 import { EditorState } from '@codemirror/state'
 import { useAppStore } from '../../store'
+import { useComponentBuilderStore } from '../../store/componentBuilderStore'
 import {
   useEditorSetup,
   useEditorHandlers,
@@ -48,11 +49,22 @@ export const EditorViewComponent: React.FC = () => {
   const { handleChange, handleFocus, handleBlur, handleSave } =
     useEditorHandlers()
 
+  // Component builder handler for Cmd+/ shortcut
+  const componentBuilderHandler = useCallback((view: any) => {
+    const { currentFile } = useAppStore.getState()
+    if (currentFile?.extension === 'mdx') {
+      useComponentBuilderStore.getState().open(view)
+      return true
+    }
+    return false
+  }, [])
+
   // Set up editor extensions and commands
   const { extensions, setupCommands, cleanupCommands } = useEditorSetup(
     handleSave,
     handleFocus,
-    handleBlur
+    handleBlur,
+    componentBuilderHandler
   )
 
   // Set up Tauri listeners

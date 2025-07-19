@@ -8,7 +8,6 @@ import { EditorCommandRegistry } from '../../lib/editor/commands/types'
 // Mock the dependencies
 vi.mock('../../lib/editor/extensions', () => ({
   createExtensions: vi.fn(),
-  EDITOR_BASIC_SETUP: { mockBasicSetup: true },
 }))
 
 vi.mock('../../lib/editor/commands', () => ({
@@ -89,7 +88,6 @@ describe('useEditorSetup', () => {
       )
 
       expect(result.current.extensions).toBe(mockExtensions)
-      expect(result.current.basicSetup).toEqual({ mockBasicSetup: true })
     })
 
     it('should return setup and cleanup functions', () => {
