@@ -95,16 +95,39 @@ export function ComponentBuilderDialog() {
     }
   )
 
-  // Handle Cmd+Enter to insert component
-  const handleInsertKeyDown = React.useCallback(
+  // Handle keyboard shortcuts in CommandItems
+  const handleCommandItemKeyDown = React.useCallback(
     (e: React.KeyboardEvent) => {
+      // Cmd+Enter to insert
       if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault()
         e.stopPropagation()
         insert()
+        return
+      }
+
+      // Cmd+A to toggle all optional props
+      if (e.key === 'a' && (e.metaKey || e.ctrlKey) && selectedComponent) {
+        e.preventDefault()
+        e.stopPropagation()
+
+        const optionalProps = selectedComponent.props.filter(
+          prop => prop.is_optional
+        )
+        const allOptionalEnabled = optionalProps.every(prop =>
+          enabledProps.has(prop.name)
+        )
+
+        optionalProps.forEach(prop => {
+          if (allOptionalEnabled && enabledProps.has(prop.name)) {
+            toggleProp(prop.name)
+          } else if (!allOptionalEnabled && !enabledProps.has(prop.name)) {
+            toggleProp(prop.name)
+          }
+        })
       }
     },
-    [insert]
+    [insert, selectedComponent, enabledProps, toggleProp]
   )
 
   // Filter props based on search query
@@ -197,7 +220,7 @@ export function ComponentBuilderDialog() {
             placeholder="Filter props..."
             value={propSearchQuery}
             onValueChange={setPropSearchQuery}
-            onKeyDown={handleInsertKeyDown}
+            onKeyDown={handleCommandItemKeyDown}
             autoFocus
           />
           <CommandList>
@@ -213,7 +236,7 @@ export function ComponentBuilderDialog() {
                         key={prop.name}
                         value={prop.name}
                         onSelect={() => toggleProp(prop.name)}
-                        onKeyDown={handleInsertKeyDown}
+                        onKeyDown={handleCommandItemKeyDown}
                         disabled={!prop.is_optional}
                         className={cn(
                           'cursor-pointer',
@@ -247,7 +270,7 @@ export function ComponentBuilderDialog() {
                         key={prop.name}
                         value={prop.name}
                         onSelect={() => toggleProp(prop.name)}
-                        onKeyDown={handleInsertKeyDown}
+                        onKeyDown={handleCommandItemKeyDown}
                         className="cursor-pointer"
                       >
                         <Check
