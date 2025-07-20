@@ -10,7 +10,7 @@ This document details the architectural patterns and principles used in the Astr
 
 The codebase follows a clear separation between different types of concerns:
 
-- **Business Logic**: Lives in Zustand store (`src/store/index.ts`)
+- **Business Logic**: Lives in decomposed Zustand stores (`src/store/`)
 - **UI Orchestration**: Managed by container components (e.g., `Layout.tsx`)
 - **Editor Logic**: Isolated in `src/lib/editor/` modules
 - **Reusable UI Logic**: Extracted to `src/hooks/`
@@ -36,23 +36,41 @@ const { data: content } = useFileContentQuery(projectPath, fileId)
 ```
 
 #### Client State (Zustand)
-Use Zustand for state that:
-- Represents editing state (current content, frontmatter)
-- Needs persistence across sessions (project path, UI preferences)
-- Is modified locally before syncing to server
-- Drives immediate UI updates
+We use a **decomposed store architecture** with three focused stores:
 
-Examples:
+**1. Editor Store (`useEditorStore`)** - File editing state (most volatile):
 ```typescript
-// Client state in Zustand
-projectPath: string | null
+// src/store/editorStore.ts
 currentFile: FileEntry | null
-editorContent: string  // Current editing state
-frontmatter: Record<string, unknown>  // Current editing state
-isDirty: boolean
+editorContent: string        // Current editing content
+frontmatter: Record<string, unknown>  // Current frontmatter being edited
+isDirty: boolean            // Tracks unsaved changes
+// Actions: openFile, saveFile, setEditorContent, updateFrontmatterField
+```
+
+**2. Project Store (`useProjectStore`)** - Project-level state:
+```typescript
+// src/store/projectStore.ts
+projectPath: string | null
+currentProjectId: string | null
+selectedCollection: string | null
+globalSettings: GlobalSettings | null
+// Actions: setProject, setSelectedCollection, loadPersistedProject
+```
+
+**3. UI Store (`useUIStore`)** - UI layout state:
+```typescript
+// src/store/uiStore.ts
 sidebarVisible: boolean
 frontmatterPanelVisible: boolean
+// Actions: toggleSidebar, toggleFrontmatterPanel
 ```
+
+**Why This Decomposition?**
+- **Performance**: Only relevant components re-render when specific state changes
+- **Clarity**: Each store has a single, focused responsibility  
+- **Maintainability**: Easier to reason about and modify individual concerns
+- **Testability**: Each store can be tested independently
 
 #### Local State (React Components)
 Keep state local when it:
@@ -482,24 +500,37 @@ App
 │   └── Layout (orchestrator)
 │       ├── Sidebar
 │       │   ├── useCollectionsQuery
-│       │   └── useCollectionFilesQuery
-│       ├── EditorView
-│       │   ├── hooks/editor/* (setup, handlers)
-│       │   └── lib/editor/* (commands, syntax, etc.)
+│       │   ├── useCollectionFilesQuery
+│       │   └── useProjectStore (selectedCollection)
+│       ├── MainEditor
+│       │   ├── Editor
+│       │   │   ├── useEditorStore (currentFile, content, frontmatter)
+│       │   │   ├── hooks/editor/* (setup, handlers)
+│       │   │   └── lib/editor/* (commands, syntax, etc.)
+│       │   └── StatusBar
 │       └── FrontmatterPanel
-│           └── useCollectionsQuery
-├── store (Zustand - client state)
-│   ├── editorContent
-│   ├── frontmatter
-│   └── isDirty
-├── hooks/queries/* (server state)
-├── hooks/mutations/* (write operations)
-└── Tauri Commands (Rust)
+│           ├── useCollectionsQuery
+│           └── useEditorStore (frontmatter, updateFrontmatterField)
+├── Decomposed Zustand Stores:
+│   ├── editorStore (file editing state)
+│   │   ├── currentFile, editorContent, frontmatter
+│   │   ├── isDirty, autoSaveTimeoutId
+│   │   └── openFile, saveFile, updateFrontmatterField
+│   ├── projectStore (project-level state)
+│   │   ├── projectPath, currentProjectId, selectedCollection
+│   │   ├── globalSettings, currentProjectSettings
+│   │   └── setProject, loadPersistedProject, startFileWatcher
+│   └── uiStore (UI layout state)
+│       ├── sidebarVisible, frontmatterPanelVisible
+│       └── toggleSidebar, toggleFrontmatterPanel
+├── hooks/queries/* (server state via TanStack Query)
+├── hooks/mutations/* (write operations via TanStack Query)
+└── Tauri Commands (Rust backend)
 ```
 
 This architecture ensures:
-- Clear data flow
-- Testable modules
-- Extensible design
-- Performance optimization
-- Maintainable codebase
+- Clear data flow with focused responsibilities
+- Testable modules with single concerns
+- Extensible design with clean separation
+- Performance optimization through targeted re-renders
+- Maintainable codebase with explicit state ownership

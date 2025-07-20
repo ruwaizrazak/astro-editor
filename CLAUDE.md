@@ -183,24 +183,36 @@ useCollectionFilesQuery(projectPath, collectionName)
 useFileContentQuery(projectPath, fileId)
 ```
 
-#### Client State (Zustand)
+#### Client State (Zustand) - Decomposed Architecture
 
-Use Zustand for state that:
+We use **three focused stores** instead of a monolithic store for better performance and maintainability:
 
-- Represents editing state (current content, frontmatter)
-- Needs persistence across sessions (project path, UI preferences)
-- Is modified locally before syncing to server
-- Drives immediate UI updates
-
+**1. Editor Store (`useEditorStore`)** - File editing state (most volatile):
 ```typescript
-// Client state in Zustand
-projectPath: string | null
+// src/store/editorStore.ts
 currentFile: FileEntry | null
 editorContent: string // Current editing state
 frontmatter: Record<string, unknown> // Current editing state
 isDirty: boolean
+// Actions: openFile, saveFile, setEditorContent, updateFrontmatterField
+```
+
+**2. Project Store (`useProjectStore`)** - Project-level state:
+```typescript
+// src/store/projectStore.ts
+projectPath: string | null
+currentProjectId: string | null
+selectedCollection: string | null
+globalSettings: GlobalSettings | null
+// Actions: setProject, loadPersistedProject, setSelectedCollection
+```
+
+**3. UI Store (`useUIStore`)** - UI layout state:
+```typescript
+// src/store/uiStore.ts
 sidebarVisible: boolean
 frontmatterPanelVisible: boolean
+// Actions: toggleSidebar, toggleFrontmatterPanel
 ```
 
 #### Local State (React Components)
@@ -296,7 +308,11 @@ src/
 │       ├── useCreateFileMutation.ts
 │       ├── useRenameFileMutation.ts
 │       └── useDeleteFileMutation.ts
-├── store/index.ts           # Zustand state management
+├── store/                   # Zustand state management (decomposed)
+│   ├── editorStore.ts       # File editing state
+│   ├── projectStore.ts      # Project-level state
+│   ├── uiStore.ts           # UI layout state
+│   └── index.ts             # Type exports for backward compatibility
 ├── types/common.ts          # Shared interfaces
 └── test/                    # Vitest test files
 ```
@@ -464,7 +480,7 @@ const StringField: React.FC<{
   label: string
   required?: boolean
 }> = ({ name, label, required }) => {
-  const { frontmatter, updateFrontmatterField } = useAppStore()
+  const { frontmatter, updateFrontmatterField } = useEditorStore()
 
   return (
     <div className="space-y-2">
@@ -1082,13 +1098,16 @@ vi.mock('../hooks/queries/useCollectionsQuery', () => ({
 
 ### Essential Files
 
-- `src/store/index.ts` - Zustand client state management
+- `src/store/editorStore.ts` - File editing state (Zustand)
+- `src/store/projectStore.ts` - Project-level state (Zustand)
+- `src/store/uiStore.ts` - UI layout state (Zustand)
+- `src/store/index.ts` - Type exports for backward compatibility
 - `src/lib/query-keys.ts` - TanStack Query keys factory
 - `src/hooks/queries/` - TanStack Query hooks for data fetching
 - `src/hooks/mutations/` - TanStack Mutation hooks for write operations
 - `src/lib/editor/` - Extracted editor modules
 - `src/hooks/editor/` - Editor-specific hooks
-- `src/components/Layout/Layout.tsx` - Main UI orchestrator
+- `src/components/layout/Layout.tsx` - Main UI orchestrator
 - `src/components/editor/Editor.tsx` - Main Editor
 - `src/lib/schema.ts` - Zod schema parsing and validation
 - `src/types/common.ts` - Shared TypeScript interfaces
