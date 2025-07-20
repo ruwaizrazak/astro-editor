@@ -41,7 +41,6 @@ export const usePreferences = () => {
     updateProject,
     hasProject: !!currentProjectId,
     currentProjectId,
-    collections: [], // TODO: Get from TanStack Query
     projectPath,
     projectName,
   }

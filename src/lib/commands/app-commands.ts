@@ -123,8 +123,8 @@ export const projectCommands: AppCommand[] = [
     description: 'Refresh the project structure',
     icon: RefreshCw,
     group: 'project',
-    execute: async (context: CommandContext) => {
-      await context.loadCollections()
+    execute: (context: CommandContext) => {
+      context.loadCollections()
       toast.success('Collections reloaded')
     },
     isAvailable: (context: CommandContext) => {
@@ -162,16 +162,9 @@ export function generateCollectionCommands(
     description: `Switch to the ${collection.name} collection`,
     icon: FileText,
     group: 'navigation' as const,
-    execute: async (context: CommandContext) => {
+    execute: (context: CommandContext) => {
       context.setSelectedCollection(collection.name)
-      try {
-        await context.loadCollectionFiles(collection.path)
-      } catch (error) {
-        toast.error('Failed to load collection files', {
-          description:
-            error instanceof Error ? error.message : 'Unknown error occurred',
-        })
-      }
+      context.loadCollectionFiles()
     },
     isAvailable: (context: CommandContext) => {
       return context.selectedCollection !== collection.name

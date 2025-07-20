@@ -23,7 +23,7 @@ export function useCommandContext(): CommandContext {
   return {
     currentFile,
     selectedCollection,
-    collections: [], // TODO: Get from TanStack Query
+    collections: [], // Available through TanStack Query in components
     projectPath,
     isDirty,
     globalSettings,
@@ -37,11 +37,13 @@ export function useCommandContext(): CommandContext {
     toggleFrontmatterPanel,
     saveFile,
     closeCurrentFile,
-    loadCollections: async () => {
-      /* TODO: Refetch query */
+    loadCollections: () => {
+      // Use custom event pattern since command context can't use React hooks
+      window.dispatchEvent(new CustomEvent('reload-collections'))
     },
-    loadCollectionFiles: async () => {
-      /* TODO: Refetch query */
+    loadCollectionFiles: () => {
+      // Use custom event pattern since command context can't use React hooks
+      window.dispatchEvent(new CustomEvent('reload-collection-files'))
     },
     openPreferences: () => {
       // Dispatch a custom event that Layout can listen to

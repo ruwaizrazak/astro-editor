@@ -22,8 +22,8 @@ export interface CommandContext {
   toggleFrontmatterPanel: () => void
   saveFile: () => Promise<void>
   closeCurrentFile: () => void
-  loadCollections: () => Promise<void>
-  loadCollectionFiles: (collectionPath: string) => Promise<void>
+  loadCollections: () => void
+  loadCollectionFiles: () => void
   openPreferences: () => void
 
   // Future extensibility
