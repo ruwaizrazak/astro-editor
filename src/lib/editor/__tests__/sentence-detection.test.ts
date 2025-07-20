@@ -2,8 +2,7 @@ import { describe, test, expect } from 'vitest'
 import { EditorState } from '@codemirror/state'
 import { 
   detectSentencesInLine, 
-  findCurrentSentence, 
-  shouldExcludeLineFromFocus 
+  findCurrentSentence
 } from '../sentence-detection'
 
 describe('Sentence Detection', () => {
@@ -114,46 +113,4 @@ describe('Sentence Detection', () => {
     })
   })
 
-  describe('shouldExcludeLineFromFocus', () => {
-    test('excludes headers', () => {
-      expect(shouldExcludeLineFromFocus('# Header')).toBe(true)
-      expect(shouldExcludeLineFromFocus('## Sub Header')).toBe(true)
-      expect(shouldExcludeLineFromFocus('### Deep Header')).toBe(true)
-      expect(shouldExcludeLineFromFocus('#### Very Deep Header')).toBe(true)
-    })
-
-    test('excludes headers with whitespace', () => {
-      expect(shouldExcludeLineFromFocus('  # Indented Header')).toBe(true) // Leading whitespace before # not typical
-      expect(shouldExcludeLineFromFocus('#Header')).toBe(true) // No space after #
-    })
-
-    test('excludes code blocks', () => {
-      expect(shouldExcludeLineFromFocus('```javascript')).toBe(true)
-      expect(shouldExcludeLineFromFocus('```')).toBe(true)
-      expect(shouldExcludeLineFromFocus('```python')).toBe(true)
-    })
-
-    test('excludes list items', () => {
-      expect(shouldExcludeLineFromFocus('- List item')).toBe(true)
-      expect(shouldExcludeLineFromFocus('* Another item')).toBe(true)
-      expect(shouldExcludeLineFromFocus('+ Plus item')).toBe(true)
-      expect(shouldExcludeLineFromFocus('  - Indented list item')).toBe(true)
-      expect(shouldExcludeLineFromFocus('   * Indented asterisk item')).toBe(true)
-    })
-
-    test('includes regular text', () => {
-      expect(shouldExcludeLineFromFocus('Regular text')).toBe(false)
-      expect(shouldExcludeLineFromFocus('This is a normal sentence.')).toBe(false)
-      expect(shouldExcludeLineFromFocus('Text with # symbol inside')).toBe(false)
-      expect(shouldExcludeLineFromFocus('Text with - dash but not at start')).toBe(false)
-    })
-
-    test('handles edge cases', () => {
-      expect(shouldExcludeLineFromFocus('')).toBe(false)
-      expect(shouldExcludeLineFromFocus('   ')).toBe(false) // Only whitespace
-      expect(shouldExcludeLineFromFocus('#')).toBe(true) // Just hash
-      expect(shouldExcludeLineFromFocus('-')).toBe(false) // Just dash (needs space after)
-      expect(shouldExcludeLineFromFocus('- ')).toBe(true) // Dash with space
-    })
-  })
 })

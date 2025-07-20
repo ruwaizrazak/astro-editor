@@ -29,13 +29,8 @@
 
 /* Focus Mode Styling */
 .cm-focus-dimmed {
-  color: var(--editor-color-focusmodeunfocussed-text) !important;
-  transition: color 0.2s ease-in-out;
-}
-
-/* Ensure focused text maintains normal color */
-.cm-content :not(.cm-focus-dimmed) {
-  color: var(--editor-color-text);
+  opacity: 0.3;
+  transition: opacity 0.2s ease-in-out;
 }
 
 /* Optional: Add subtle fade transition */
@@ -124,7 +119,6 @@
   --editor-color-green: rgba(66, 131, 44, 1);
   --editor-color-codeblock-background: rgba(238, 238, 238, 1);
   --editor-color-selectedtext-background: rgba(185, 234, 250, 1);
-  --editor-color-focusmodeunfocussed-text: rgba(199, 196, 194, 1);
 
   /* Future use */
   --editor-color-highlight-background: rgba(252, 236, 147, 1);
@@ -145,7 +139,6 @@
   --editor-color-green: rgba(131, 165, 115, 1);
   --editor-color-codeblock-background: rgba(37, 37, 37, 1);
   --editor-color-selectedtext-background: rgba(20, 68, 84, 1);
-  --editor-color-focusmodeunfocussed-text: rgba(112, 112, 112, 1);
 
   /* Future use */
   --editor-color-highlight-background: rgba(68, 59, 15, 1);

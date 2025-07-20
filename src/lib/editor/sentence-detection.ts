@@ -65,6 +65,20 @@ export function findCurrentSentence(
   cursorPos: number
 ): { from: number; to: number } | null {
   const line = state.doc.lineAt(cursorPos)
+  const lineText = line.text.trim()
+  
+  // For special content types, treat the entire line as one sentence
+  if (lineText.startsWith('#') ||       // Headers
+      lineText.startsWith('```') ||      // Code blocks
+      /^\s*[-*+]\s/.test(line.text) ||   // List items
+      lineText.length === 0) {           // Empty lines
+    return {
+      from: line.from,
+      to: line.to
+    }
+  }
+  
+  // For regular text, detect sentences
   const sentences = detectSentencesInLine(line.text)
   const relativeCursorPos = cursorPos - line.from
   
@@ -77,24 +91,10 @@ export function findCurrentSentence(
     }
   }
   
-  return null
+  // Fallback to entire line if no sentence found
+  return {
+    from: line.from,
+    to: line.to
+  }
 }
 
-/**
- * Check if a line should be excluded from sentence detection
- * (headers, code blocks, etc.)
- */
-export function shouldExcludeLineFromFocus(lineText: string): boolean {
-  const trimmed = lineText.trim()
-  
-  // Skip headers (including indented headers)
-  if (trimmed.startsWith('#')) return true
-  
-  // Skip code blocks (simple detection)
-  if (trimmed.startsWith('```')) return true
-  
-  // Skip list items
-  if (/^\s*[-*+]\s/.test(lineText)) return true
-  
-  return false
-}
