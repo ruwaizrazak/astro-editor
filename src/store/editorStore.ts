@@ -37,6 +37,7 @@ interface EditorState {
   isDirty: boolean // True if changes need to be saved
   recentlySavedFile: string | null // Track recently saved file to ignore file watcher
   autoSaveTimeoutId: number | null // Auto-save timeout ID
+  hasUserMadeChanges: boolean // Track if user has actually made changes (to prevent unnecessary auto-saves)
 
   // Actions
   openFile: (file: FileEntry) => Promise<void>
@@ -59,6 +60,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   isDirty: false,
   recentlySavedFile: null,
   autoSaveTimeoutId: null,
+  hasUserMadeChanges: false,
 
   // Actions
   openFile: async (file: FileEntry) => {
@@ -77,6 +79,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         rawFrontmatter: markdownContent.raw_frontmatter,
         imports: markdownContent.imports,
         isDirty: false,
+        hasUserMadeChanges: false, // Reset user changes flag when opening a file
       })
     } catch (error) {
       toast.error('Failed to open file', {
@@ -109,6 +112,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       imports: '',
       isDirty: false,
       autoSaveTimeoutId: null,
+      hasUserMadeChanges: false,
     })
   },
 
@@ -195,7 +199,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         set({ autoSaveTimeoutId: null })
       }
 
-      set({ isDirty: false })
+      set({ isDirty: false, hasUserMadeChanges: false })
 
       // Invalidate queries to update UI with new frontmatter
       if (projectPath && currentFile.collection) {
@@ -241,18 +245,18 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         action: 'save',
       })
 
-      // Keep the file marked as dirty since save failed
+      // Keep the file marked as dirty since save failed, maintain user changes flag
       set({ isDirty: true, recentlySavedFile: null })
     }
   },
 
   setEditorContent: (content: string) => {
-    set({ editorContent: content, isDirty: true })
+    set({ editorContent: content, isDirty: true, hasUserMadeChanges: true })
     get().scheduleAutoSave()
   },
 
   updateFrontmatter: (frontmatter: Record<string, unknown>) => {
-    set({ frontmatter, isDirty: true })
+    set({ frontmatter, isDirty: true, hasUserMadeChanges: true })
     get().scheduleAutoSave()
   },
 
@@ -273,12 +277,21 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       newFrontmatter[key] = value
     }
 
-    set({ frontmatter: newFrontmatter, isDirty: true })
+    set({
+      frontmatter: newFrontmatter,
+      isDirty: true,
+      hasUserMadeChanges: true,
+    })
     get().scheduleAutoSave()
   },
 
   scheduleAutoSave: () => {
     const store = get()
+
+    // Only schedule auto-save if user has actually made changes
+    if (!store.hasUserMadeChanges) {
+      return
+    }
 
     // Clear existing timeout
     if (store.autoSaveTimeoutId) {

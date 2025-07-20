@@ -562,6 +562,16 @@ fn rebuild_markdown_with_frontmatter_and_imports_ordered(
         result.push_str(content);
     }
 
+    // Ensure file always ends with exactly one newline
+    if !result.is_empty() {
+        // Remove any trailing newlines
+        while result.ends_with('\n') {
+            result.pop();
+        }
+        // Add exactly one newline
+        result.push('\n');
+    }
+
     Ok(result)
 }
 
