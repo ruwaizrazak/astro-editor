@@ -563,9 +563,9 @@ FrontmatterFields extraction establishes patterns for:
 
 ### 8.6. Final Cleanup
 
-- [ ] Remove original `useAppStore` if not removed
-- [ ] Remove any old stuff for backwards compatibility or comments saying "Removed X because" etc. Clean up.
-- [ ] Run full test suite
+- [x] Remove original `useAppStore` if not removed
+- [x] Remove any old stuff for backwards compatibility or comments saying "Removed X because" etc. Clean up.
+- [x] Run full test suite
 
 ---
 

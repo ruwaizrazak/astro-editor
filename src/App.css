@@ -312,3 +312,9 @@ a {
     @apply bg-background text-foreground;
   }
 }
+
+/* Focus Mode Toggle Styling */
+.focus-mode-active {
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+}

@@ -25,6 +25,8 @@ export interface CommandContext {
   loadCollections: () => void
   loadCollectionFiles: () => void
   openPreferences: () => void
+  toggleFocusMode: () => void
+  toggleTypewriterMode: () => void
 
   // Future extensibility
   editorSelection?: {

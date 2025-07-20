@@ -12,8 +12,11 @@ import {
   PanelLeftClose,
   PanelRightClose,
   Plus,
+  Eye,
+  EyeOff,
 } from 'lucide-react'
 import { cn } from '../../lib/utils'
+import { Toggle } from '../ui/toggle'
 
 export const UnifiedTitleBar: React.FC = () => {
   const { saveFile, isDirty, currentFile } = useEditorStore()
@@ -25,6 +28,8 @@ export const UnifiedTitleBar: React.FC = () => {
     frontmatterPanelVisible,
     toggleSidebar,
     sidebarVisible,
+    focusModeEnabled,
+    toggleFocusMode,
   } = useUIStore()
 
   const { createNewFile } = useCreateFile()
@@ -37,6 +42,18 @@ export const UnifiedTitleBar: React.FC = () => {
 
   const handleNewFile = () => {
     void createNewFile()
+  }
+
+  const handleToggleFocusMode = () => {
+    console.log('[UnifiedTitleBar] Focus mode toggle clicked')
+    console.log('[UnifiedTitleBar] Current focus mode state:', focusModeEnabled)
+    toggleFocusMode()
+    console.log('[UnifiedTitleBar] Focus mode toggled, new state should be:', !focusModeEnabled)
+    // Verify the state actually changed
+    setTimeout(() => {
+      const newState = useUIStore.getState().focusModeEnabled
+      console.log('[UnifiedTitleBar] Verified new focus mode state:', newState)
+    }, 100)
   }
 
   const handleMinimize = async () => {
@@ -118,7 +135,7 @@ export const UnifiedTitleBar: React.FC = () => {
         )}
       </div>
 
-      {/* Right: New file + Save button + Right sidebar toggle */}
+      {/* Right: New file + Focus mode + Save button + Right sidebar toggle */}
       <div className="flex items-center gap-2" data-tauri-drag-region>
         {/* New file button - only show when in a collection */}
         {selectedCollection && (
@@ -132,6 +149,23 @@ export const UnifiedTitleBar: React.FC = () => {
             <Plus className="size-4" />
           </Button>
         )}
+
+        {/* Focus mode toggle */}
+        <Toggle
+          pressed={focusModeEnabled}
+          onPressedChange={handleToggleFocusMode}
+          size="sm"
+          variant="outline"
+          className="size-7 p-0"
+          title={focusModeEnabled ? 'Disable Focus Mode' : 'Enable Focus Mode'}
+          aria-label={focusModeEnabled ? 'Disable Focus Mode' : 'Enable Focus Mode'}
+        >
+          {focusModeEnabled ? (
+            <EyeOff className="size-4" />
+          ) : (
+            <Eye className="size-4" />
+          )}
+        </Toggle>
 
         {/* Save button - no drag region */}
         <Button

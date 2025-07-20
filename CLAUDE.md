@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Current Task: `/docs/tasks-todo/task-3-architectural-refactoring.md`
+Current Task: `/docs/tasks-todo/task-5-focus-and-typewriter-mode.md`
 
 **Recently Completed:**
 

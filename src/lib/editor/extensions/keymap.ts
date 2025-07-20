@@ -15,6 +15,7 @@ import {
 import { Prec } from '@codemirror/state'
 import { toggleMarkdown, createMarkdownLink } from '../markdown/formatting'
 import { transformLineToHeading } from '../markdown/headings'
+import { globalCommandRegistry } from '../commands'
 
 /**
  * Create custom markdown shortcuts with high precedence
@@ -68,6 +69,21 @@ export const createMarkdownKeymap = (
       {
         key: 'Alt-Mod-0',
         run: view => transformLineToHeading(view, 0),
+      },
+      // Focus and typewriter mode shortcuts
+      {
+        key: 'Mod-Shift-f',
+        run: () => {
+          globalCommandRegistry.execute('toggleFocusMode')
+          return true
+        },
+      },
+      {
+        key: 'Mod-Shift-t',
+        run: () => {
+          globalCommandRegistry.execute('toggleTypewriterMode')
+          return true
+        },
       },
     ])
   )

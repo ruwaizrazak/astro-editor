@@ -3,12 +3,15 @@ import { EditorView } from '@codemirror/view'
 import { EditorState } from '@codemirror/state'
 import { useEditorStore } from '../../store/editorStore'
 import { useComponentBuilderStore } from '../../store/componentBuilderStore'
+import { useUIStore } from '../../store/uiStore'
 import {
   useEditorSetup,
   useEditorHandlers,
   useTauriListeners,
 } from '../../hooks/editor'
 import { altKeyEffect } from '../../lib/editor/urls'
+import { toggleFocusMode } from '../../lib/editor/extensions/focus-mode'
+import { toggleTypewriterMode } from '../../lib/editor/extensions/typewriter-mode'
 import './Editor.css'
 
 // Extend window to include editor focus tracking
@@ -20,6 +23,8 @@ declare global {
 
 export const EditorViewComponent: React.FC = () => {
   const { editorContent } = useEditorStore()
+  const focusModeEnabled = useUIStore(state => state.focusModeEnabled)
+  const typewriterModeEnabled = useUIStore(state => state.typewriterModeEnabled)
   const editorRef = useRef<HTMLDivElement>(null)
   const viewRef = useRef<EditorView | null>(null)
   const initialContentRef = useRef<string>(editorContent)
@@ -55,6 +60,27 @@ export const EditorViewComponent: React.FC = () => {
 
   // Set up Tauri listeners
   useTauriListeners(viewRef.current)
+
+  // Update editor effects when writing modes change
+  useEffect(() => {
+    console.log('[Editor] Focus mode effect triggered')
+    console.log('[Editor] focusModeEnabled:', focusModeEnabled)
+    console.log('[Editor] typewriterModeEnabled:', typewriterModeEnabled)
+    console.log('[Editor] viewRef.current exists:', !!viewRef.current)
+    
+    if (viewRef.current) {
+      console.log('[Editor] Dispatching focus mode effect to CodeMirror')
+      viewRef.current.dispatch({
+        effects: [
+          toggleFocusMode.of(focusModeEnabled),
+          toggleTypewriterMode.of(typewriterModeEnabled)
+        ]
+      })
+      console.log('[Editor] Effect dispatched successfully')
+    } else {
+      console.log('[Editor] No editor view available to dispatch effect')
+    }
+  }, [focusModeEnabled, typewriterModeEnabled])
 
   // Track Alt key state for URL highlighting - moved back to component for timing
   useEffect(() => {
@@ -184,7 +210,7 @@ export const EditorViewComponent: React.FC = () => {
     <div className="editor-view" style={{ padding: '0 24px' }}>
       <div
         ref={editorRef}
-        className={`editor-codemirror ${isAltPressed ? 'alt-pressed' : ''}`}
+        className={`editor-codemirror ${isAltPressed ? 'alt-pressed' : ''} ${typewriterModeEnabled ? 'typewriter-mode' : ''}`}
       />
     </div>
   )

@@ -3,6 +3,7 @@ import { toggleMarkdown, createMarkdownLink } from '../markdown/formatting'
 import { transformLineToHeading } from '../markdown/headings'
 import { HeadingLevel } from '../markdown/types'
 import { EditorCommand, EditorCommandRegistry } from './types'
+import { useUIStore } from '../../../store/uiStore'
 
 /**
  * Create a bold toggle command
@@ -43,6 +44,28 @@ export const createSaveCommand = (onSave: () => void): EditorCommand => {
 }
 
 /**
+ * Create a focus mode toggle command
+ */
+export const createFocusModeCommand = (): EditorCommand => {
+  return () => {
+    const toggleFocusMode = useUIStore.getState().toggleFocusMode
+    toggleFocusMode()
+    return true
+  }
+}
+
+/**
+ * Create a typewriter mode toggle command
+ */
+export const createTypewriterModeCommand = (): EditorCommand => {
+  return () => {
+    const toggleTypewriterMode = useUIStore.getState().toggleTypewriterMode
+    toggleTypewriterMode()
+    return true
+  }
+}
+
+/**
  * Create a complete editor command registry
  */
 export const createEditorCommandRegistry = (
@@ -54,5 +77,7 @@ export const createEditorCommandRegistry = (
     createLink: createLinkCommand(),
     formatHeading: (level: HeadingLevel) => createHeadingCommand(level),
     save: createSaveCommand(onSave),
+    toggleFocusMode: createFocusModeCommand(),
+    toggleTypewriterMode: createTypewriterModeCommand(),
   }
 }

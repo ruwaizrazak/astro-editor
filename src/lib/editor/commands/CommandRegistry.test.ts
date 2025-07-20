@@ -31,6 +31,8 @@ describe('CommandRegistry', () => {
         mockSave()
         return true
       }),
+      toggleFocusMode: vi.fn(() => true),
+      toggleTypewriterMode: vi.fn(() => true),
     }
   })
 

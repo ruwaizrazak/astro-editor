@@ -49,6 +49,12 @@ export function useCommandContext(): CommandContext {
       // Dispatch a custom event that Layout can listen to
       window.dispatchEvent(new CustomEvent('open-preferences'))
     },
+    toggleFocusMode: () => {
+      window.dispatchEvent(new CustomEvent('toggle-focus-mode'))
+    },
+    toggleTypewriterMode: () => {
+      window.dispatchEvent(new CustomEvent('toggle-typewriter-mode'))
+    },
     // Future: editor selection context could be added here
   }
 }

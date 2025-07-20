@@ -9,6 +9,8 @@ import { altKeyState, urlHoverPlugin, handleUrlClick } from '../urls'
 import { handlePaste } from '../paste'
 import { createKeymapExtensions } from './keymap'
 import { createEditorTheme } from './theme'
+import { createFocusModeExtension } from './focus-mode'
+import { createTypewriterModeExtension } from './typewriter-mode'
 
 /**
  * Configuration for creating editor extensions
@@ -66,6 +68,10 @@ export const createExtensions = (config: ExtensionConfig) => {
         return false
       },
     }),
+
+    // Writing modes - Always include extensions, toggle via state
+    ...createFocusModeExtension(),
+    ...createTypewriterModeExtension(),
 
     // Theme and styling
     createEditorTheme(),

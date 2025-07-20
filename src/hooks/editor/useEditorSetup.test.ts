@@ -61,6 +61,8 @@ describe('useEditorSetup', () => {
       createLink: vi.fn(),
       formatHeading: vi.fn(),
       save: vi.fn(),
+      toggleFocusMode: vi.fn(),
+      toggleTypewriterMode: vi.fn(),
     } as EditorCommandRegistry
 
     mockCreateExtensions.mockReturnValue([])
@@ -74,6 +76,7 @@ describe('useEditorSetup', () => {
       expect(mockCreateExtensions).toHaveBeenCalledWith({
         onFocus: mockOnFocus,
         onBlur: mockOnBlur,
+        componentBuilderHandler: undefined,
       })
     })
 
@@ -306,6 +309,7 @@ describe('useEditorSetup', () => {
       expect(mockCreateExtensions).toHaveBeenLastCalledWith({
         onFocus: mockOnFocus,
         onBlur: mockOnBlur,
+        componentBuilderHandler: undefined,
       })
     })
 
@@ -329,6 +333,7 @@ describe('useEditorSetup', () => {
       expect(mockCreateExtensions).toHaveBeenLastCalledWith({
         onFocus: newOnFocus,
         onBlur: mockOnBlur,
+        componentBuilderHandler: undefined,
       })
     })
 
@@ -352,6 +357,7 @@ describe('useEditorSetup', () => {
       expect(mockCreateExtensions).toHaveBeenLastCalledWith({
         onFocus: mockOnFocus,
         onBlur: newOnBlur,
+        componentBuilderHandler: undefined,
       })
     })
   })

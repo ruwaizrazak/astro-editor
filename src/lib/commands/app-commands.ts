@@ -13,6 +13,8 @@ import {
   Code,
   Folder,
   Settings,
+  Eye,
+  Edit,
 } from 'lucide-react'
 import { AppCommand, CommandContext } from './types'
 import { Collection } from '../../store'
@@ -151,6 +153,34 @@ export const settingsCommands: AppCommand[] = [
 ]
 
 /**
+ * Writing mode commands
+ */
+export const viewModeCommands: AppCommand[] = [
+  {
+    id: 'toggle-focus-mode',
+    label: 'Toggle Focus Mode',
+    description: 'Dim all text except current sentence',
+    icon: Eye,
+    group: 'settings',
+    execute: (context: CommandContext) => {
+      context.toggleFocusMode()
+    },
+    isAvailable: () => true,
+  },
+  {
+    id: 'toggle-typewriter-mode',
+    label: 'Toggle Typewriter Mode',
+    description: 'Keep current line centered while typing',
+    icon: Edit,
+    group: 'settings',
+    execute: (context: CommandContext) => {
+      context.toggleTypewriterMode()
+    },
+    isAvailable: () => true,
+  },
+]
+
+/**
  * Generate dynamic collection commands based on available collections
  */
 export function generateCollectionCommands(
@@ -267,6 +297,7 @@ export function getAllCommands(context: CommandContext): AppCommand[] {
     ...navigationCommands,
     ...projectCommands,
     ...settingsCommands,
+    ...viewModeCommands,
     ...ideCommands,
     ...collectionCommands,
   ].filter(command => command.isAvailable(context))

@@ -236,6 +236,25 @@ export const Layout: React.FC = () => {
       window.removeEventListener('create-new-file', handleCreateNewFile)
   }, [createNewFileWithQuery])
 
+  // Listen for focus and typewriter mode toggle events
+  useEffect(() => {
+    const handleToggleFocusMode = () => {
+      useUIStore.getState().toggleFocusMode()
+    }
+    
+    const handleToggleTypewriterMode = () => {
+      useUIStore.getState().toggleTypewriterMode()
+    }
+    
+    window.addEventListener('toggle-focus-mode', handleToggleFocusMode)
+    window.addEventListener('toggle-typewriter-mode', handleToggleTypewriterMode)
+    
+    return () => {
+      window.removeEventListener('toggle-focus-mode', handleToggleFocusMode)
+      window.removeEventListener('toggle-typewriter-mode', handleToggleTypewriterMode)
+    }
+  }, [])
+
   // Load persisted project on app start
   useEffect(() => {
     void loadPersistedProject()
