@@ -1,6 +1,9 @@
 import React from 'react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
-import { useAppStore } from '../../store'
+import { useEditorStore } from '../../store/editorStore'
+import { useProjectStore } from '../../store/projectStore'
+import { useUIStore } from '../../store/uiStore'
+import { useCreateFile } from '../../hooks/useCreateFile'
 import { Button } from '../ui/button'
 import {
   Save,
@@ -13,18 +16,25 @@ import {
 import { cn } from '../../lib/utils'
 
 export const UnifiedTitleBar: React.FC = () => {
+  const { 
+    saveFile,
+    isDirty,
+    currentFile,
+  } = useEditorStore()
+  
   const {
     projectPath,
+    selectedCollection,
+  } = useProjectStore()
+  
+  const {
     toggleFrontmatterPanel,
     frontmatterPanelVisible,
     toggleSidebar,
     sidebarVisible,
-    saveFile,
-    isDirty,
-    currentFile,
-    selectedCollection,
-    createNewFile,
-  } = useAppStore()
+  } = useUIStore()
+
+  const { createNewFile } = useCreateFile()
 
   const handleSave = () => {
     if (currentFile && isDirty) {

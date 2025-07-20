@@ -1,5 +1,6 @@
 import { EditorView } from '@codemirror/view'
-import { useAppStore } from '../../../store'
+import { useEditorStore } from '../../../store/editorStore'
+import { useProjectStore } from '../../../store/projectStore'
 import { processDroppedFiles } from './fileProcessing'
 import {
   validateDropContext,
@@ -53,7 +54,8 @@ export const handleTauriFileDrop = async (
   }
 
   // Get current project path and file from store
-  const { projectPath, currentFile } = useAppStore.getState()
+  const { projectPath } = useProjectStore.getState()
+  const { currentFile } = useEditorStore.getState()
 
   // Validate context and handle edge cases
   const validation = validateDropContext(projectPath, currentFile)

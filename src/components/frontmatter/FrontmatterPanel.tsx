@@ -1,6 +1,13 @@
 import React from 'react'
-import { useAppStore, type Collection } from '../../store'
+import { useEditorStore } from '../../store/editorStore'
+import { useProjectStore } from '../../store/projectStore'
 import { useCollectionsQuery } from '../../hooks/queries/useCollectionsQuery'
+
+interface Collection {
+  name: string
+  path: string
+  schema?: string
+}
 import {
   parseSchemaJson,
   getInputTypeForZodField,
@@ -48,7 +55,7 @@ const StringField: React.FC<StringFieldProps> = ({
   className,
   required,
 }) => {
-  const { frontmatter, updateFrontmatterField } = useAppStore()
+  const { frontmatter, updateFrontmatterField } = useEditorStore()
 
   return (
     <div className="space-y-2">
@@ -83,7 +90,7 @@ const TextareaField: React.FC<TextareaFieldProps> = ({
   maxRows = 6,
   required,
 }) => {
-  const { frontmatter, updateFrontmatterField } = useAppStore()
+  const { frontmatter, updateFrontmatterField } = useEditorStore()
 
   return (
     <div className="space-y-2">
@@ -114,7 +121,7 @@ const NumberField: React.FC<NumberFieldProps> = ({
   placeholder,
   required,
 }) => {
-  const { frontmatter, updateFrontmatterField } = useAppStore()
+  const { frontmatter, updateFrontmatterField } = useEditorStore()
 
   return (
     <div className="space-y-2">
@@ -140,7 +147,7 @@ interface BooleanFieldProps extends FieldProps {
 }
 
 const BooleanField: React.FC<BooleanFieldProps> = ({ name, label, field }) => {
-  const { frontmatter, updateFrontmatterField } = useAppStore()
+  const { frontmatter, updateFrontmatterField } = useEditorStore()
 
   // Helper function to get boolean value considering schema defaults
   const getBooleanValue = (value: unknown) => {
@@ -182,7 +189,7 @@ const BooleanField: React.FC<BooleanFieldProps> = ({ name, label, field }) => {
 }
 
 const DateField: React.FC<FieldProps> = ({ name, label, required }) => {
-  const { frontmatter, updateFrontmatterField } = useAppStore()
+  const { frontmatter, updateFrontmatterField } = useEditorStore()
 
   return (
     <div className="space-y-2">
@@ -219,7 +226,7 @@ const EnumField: React.FC<EnumFieldProps> = ({
   options,
   required,
 }) => {
-  const { frontmatter, updateFrontmatterField } = useAppStore()
+  const { frontmatter, updateFrontmatterField } = useEditorStore()
 
   return (
     <div className="space-y-2">
@@ -258,7 +265,7 @@ const EnumField: React.FC<EnumFieldProps> = ({
 }
 
 const ArrayField: React.FC<FieldProps> = ({ name, label, required }) => {
-  const { frontmatter, updateFrontmatterField } = useAppStore()
+  const { frontmatter, updateFrontmatterField } = useEditorStore()
 
   // Convert frontmatter array to tags
   const currentValue = frontmatter[name]
@@ -304,7 +311,7 @@ const FrontmatterField: React.FC<FrontmatterFieldProps> = ({
   label,
   field,
 }) => {
-  const { frontmatter } = useAppStore()
+  const { frontmatter } = useEditorStore()
   const { frontmatterMappings } = useEffectiveSettings()
   const inputType = field ? getInputTypeForZodField(field.type) : 'text'
   const required = field ? !field.optional : false
@@ -374,8 +381,8 @@ const FrontmatterField: React.FC<FrontmatterFieldProps> = ({
 }
 
 export const FrontmatterPanel: React.FC = () => {
-  const { currentFile, frontmatter, projectPath, currentProjectSettings } =
-    useAppStore()
+  const { currentFile, frontmatter } = useEditorStore()
+  const { projectPath, currentProjectSettings } = useProjectStore()
 
   // Use TanStack Query to fetch collections
   const { data: collections = [] } = useCollectionsQuery(

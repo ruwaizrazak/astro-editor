@@ -1,5 +1,5 @@
 import React from 'react'
-import { useAppStore, type FileEntry } from '../../store'
+import { useEditorStore, type FileEntry } from '../../store/editorStore'
 import { Editor } from '../editor'
 import { StatusBar } from '.'
 
@@ -16,7 +16,7 @@ const WelcomeScreen: React.FC = () => (
 )
 
 export const MainEditor: React.FC = () => {
-  const { currentFile }: { currentFile: FileEntry | null } = useAppStore()
+  const { currentFile }: { currentFile: FileEntry | null } = useEditorStore()
 
   return (
     <div className="flex flex-col h-full">

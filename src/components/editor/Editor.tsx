@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { EditorView } from '@codemirror/view'
 import { EditorState } from '@codemirror/state'
-import { useAppStore } from '../../store'
+import { useEditorStore } from '../../store/editorStore'
 import { useComponentBuilderStore } from '../../store/componentBuilderStore'
 import {
   useEditorSetup,
@@ -19,7 +19,7 @@ declare global {
 }
 
 export const EditorViewComponent: React.FC = () => {
-  const { editorContent } = useAppStore()
+  const { editorContent } = useEditorStore()
   const editorRef = useRef<HTMLDivElement>(null)
   const viewRef = useRef<EditorView | null>(null)
   const initialContentRef = useRef<string>(editorContent)
@@ -36,7 +36,7 @@ export const EditorViewComponent: React.FC = () => {
 
   // Component builder handler for Cmd+/ shortcut
   const componentBuilderHandler = useCallback((view: EditorView) => {
-    const { currentFile } = useAppStore.getState()
+    const { currentFile } = useEditorStore.getState()
     if (currentFile?.extension === 'mdx') {
       useComponentBuilderStore.getState().open(view)
       return true

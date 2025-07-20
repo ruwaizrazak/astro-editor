@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
-import { useAppStore } from '../../store'
+import { useEditorStore } from '../../store/editorStore'
+import { useProjectStore } from '../../store/projectStore'
+import { useUIStore } from '../../store/uiStore'
 import { listen } from '@tauri-apps/api/event'
 import { invoke } from '@tauri-apps/api/core'
 import { UnifiedTitleBar } from './UnifiedTitleBar'
@@ -77,20 +79,28 @@ const EditorAreaWithFrontmatter: React.FC<{
 }
 
 export const Layout: React.FC = () => {
+  // Editor store
   const {
-    sidebarVisible,
-    frontmatterPanelVisible,
     currentFile,
     isDirty,
     saveFile,
+    closeCurrentFile,
+  } = useEditorStore()
+
+  // Project store
+  const {
     setProject,
-    toggleSidebar,
-    toggleFrontmatterPanel,
     loadPersistedProject,
     selectedCollection,
-    createNewFile,
-    closeCurrentFile,
-  } = useAppStore()
+  } = useProjectStore()
+
+  // UI store
+  const {
+    sidebarVisible,
+    frontmatterPanelVisible,
+    toggleSidebar,
+    toggleFrontmatterPanel,
+  } = useUIStore()
 
   // Preferences dialog state
   const [preferencesOpen, setPreferencesOpen] = useState(false)
@@ -158,7 +168,7 @@ export const Layout: React.FC = () => {
     () => {
       // Cmd+N: Create New File (only if a collection is selected)
       if (selectedCollection) {
-        void createNewFile()
+        void createNewFileWithQuery()
         // Fix for cursor disappearing - ensure cursor is visible
         document.body.style.cursor = 'auto'
         // Force a reflow to ensure the cursor change is applied
@@ -289,7 +299,7 @@ export const Layout: React.FC = () => {
     )
     const unlistenNewFile = listen('menu-new-file', () => {
       if (selectedCollection) {
-        void createNewFile()
+        void createNewFileWithQuery()
       }
     })
 
@@ -358,7 +368,7 @@ export const Layout: React.FC = () => {
     toggleSidebar,
     toggleFrontmatterPanel,
     selectedCollection,
-    createNewFile,
+    createNewFileWithQuery,
   ])
 
   return (

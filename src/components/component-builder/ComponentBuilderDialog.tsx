@@ -13,7 +13,7 @@ import { Badge } from '../ui/badge'
 import { cn } from '../../lib/utils'
 import { useComponentBuilderStore } from '../../store/componentBuilderStore'
 import { useMdxComponentsQuery } from '../../hooks/queries/useMdxComponentsQuery'
-import { useAppStore } from '../../store'
+import { useProjectStore } from '../../store/projectStore'
 import { useHotkeys } from 'react-hotkeys-hook'
 
 /**
@@ -21,7 +21,7 @@ import { useHotkeys } from 'react-hotkeys-hook'
  * Allows users to select and configure MDX components for insertion into the editor
  */
 export function ComponentBuilderDialog() {
-  const { projectPath } = useAppStore()
+  const { projectPath } = useProjectStore()
   const {
     isOpen,
     step,

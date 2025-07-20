@@ -1,11 +1,11 @@
 import { useCallback } from 'react'
-import { useAppStore } from '../../store'
+import { useEditorStore } from '../../store/editorStore'
 
 /**
  * Hook for creating editor event handlers
  */
 export const useEditorHandlers = () => {
-  const { setEditorContent, currentFile, saveFile, isDirty } = useAppStore()
+  const { setEditorContent, currentFile, saveFile, isDirty } = useEditorStore()
 
   // Handle content changes
   const handleChange = useCallback(

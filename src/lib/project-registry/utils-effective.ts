@@ -2,7 +2,7 @@
  * Utilities for getting effective project settings
  */
 
-import { useAppStore } from '../../store'
+import { useProjectStore } from '../../store/projectStore'
 import { ProjectSettings } from './types'
 
 /**
@@ -10,7 +10,7 @@ import { ProjectSettings } from './types'
  * Returns default values if no project is loaded or no overrides exist
  */
 export const useEffectiveSettings = () => {
-  const { currentProjectSettings, globalSettings } = useAppStore()
+  const { currentProjectSettings, globalSettings } = useProjectStore()
 
   const getEffectivePathOverrides = () => {
     const defaults = {

@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/core'
 import { ProcessedFile } from './types'
-import { useAppStore } from '../../../store'
+import { useProjectStore } from '../../../store/projectStore'
 
 /**
  * Image file extensions that should be treated as images
@@ -82,7 +82,7 @@ export const processDroppedFile = async (
 
   try {
     // Get assets directory override from store
-    const { currentProjectSettings } = useAppStore.getState()
+    const { currentProjectSettings } = useProjectStore.getState()
     const assetsDirectory =
       currentProjectSettings?.pathOverrides?.assetsDirectory
 

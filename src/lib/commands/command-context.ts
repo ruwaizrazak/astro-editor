@@ -1,4 +1,6 @@
-import { useAppStore } from '../../store'
+import { useEditorStore } from '../../store/editorStore'
+import { useProjectStore } from '../../store/projectStore'
+import { useUIStore } from '../../store/uiStore'
 import { CommandContext } from './types'
 
 /**
@@ -8,18 +10,23 @@ import { CommandContext } from './types'
 export function useCommandContext(): CommandContext {
   const {
     currentFile,
-    selectedCollection,
-    projectPath,
     isDirty,
-    globalSettings,
-    createNewFile,
-    setSelectedCollection,
-    setProject,
-    toggleSidebar,
-    toggleFrontmatterPanel,
     saveFile,
     closeCurrentFile,
-  } = useAppStore()
+  } = useEditorStore()
+  
+  const {
+    selectedCollection,
+    projectPath,
+    globalSettings,
+    setSelectedCollection,
+    setProject,
+  } = useProjectStore()
+  
+  const {
+    toggleSidebar,
+    toggleFrontmatterPanel,
+  } = useUIStore()
 
   return {
     currentFile,
@@ -28,7 +35,10 @@ export function useCommandContext(): CommandContext {
     projectPath,
     isDirty,
     globalSettings,
-    createNewFile,
+    createNewFile: () => {
+      // Dispatch a custom event that Layout can listen to
+      window.dispatchEvent(new CustomEvent('create-new-file'))
+    },
     setSelectedCollection,
     setProject,
     toggleSidebar,

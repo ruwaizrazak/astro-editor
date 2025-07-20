@@ -1,11 +1,12 @@
 import { useCallback } from 'react'
 import { invoke } from '@tauri-apps/api/core'
-import { useAppStore } from '../store'
+import { useEditorStore, type FileEntry } from '../store/editorStore'
+import { useProjectStore } from '../store/projectStore'
+import { useUIStore } from '../store/uiStore'
 import { useCollectionsQuery } from './queries/useCollectionsQuery'
 import { useCreateFileMutation } from './mutations/useCreateFileMutation'
 import { parseSchemaJson, getDefaultValueForField } from '../lib/schema'
 import { toast } from '../lib/toast'
-import { FileEntry } from '../store'
 
 // Helper function to singularize collection name
 const singularize = (word: string): string => {
@@ -24,14 +25,18 @@ const singularize = (word: string): string => {
 }
 
 export const useCreateFile = () => {
+  const { openFile } = useEditorStore()
+  
   const {
     selectedCollection,
     projectPath,
     currentProjectSettings,
-    openFile,
+  } = useProjectStore()
+  
+  const {
     frontmatterPanelVisible,
     toggleFrontmatterPanel,
-  } = useAppStore()
+  } = useUIStore()
 
   const { data: collections = [] } = useCollectionsQuery(
     projectPath,

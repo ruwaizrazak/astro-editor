@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import { invoke } from '@tauri-apps/api/core'
-import { useAppStore, type Collection, type FileEntry } from '../../store'
+import { useEditorStore, type FileEntry } from '../../store/editorStore'
+import { useProjectStore } from '../../store/projectStore'
 import { useCollectionsQuery } from '../../hooks/queries/useCollectionsQuery'
+
+interface Collection {
+  name: string
+  path: string
+  schema?: string
+}
 import { useCollectionFilesQuery } from '../../hooks/queries/useCollectionFilesQuery'
 import { useRenameFileMutation } from '../../hooks/mutations/useRenameFileMutation'
 import { Button } from '../ui/button'
@@ -65,15 +72,18 @@ function getTitle(file: FileEntry, titleField: string): string {
 
 export const Sidebar: React.FC = () => {
   const {
-    selectedCollection,
     currentFile,
+    openFile,
+    updateCurrentFilePath,
+  } = useEditorStore()
+  
+  const {
+    selectedCollection,
     projectPath,
     currentProjectSettings,
     setProject,
     setSelectedCollection,
-    openFile,
-    updateCurrentFilePath,
-  } = useAppStore()
+  } = useProjectStore()
 
   const [fileCounts, setFileCounts] = useState<Record<string, number>>({})
 

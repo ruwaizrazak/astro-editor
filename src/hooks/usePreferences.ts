@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { useAppStore } from '../store'
+import { useProjectStore } from '../store/projectStore'
 import { GlobalSettings, ProjectSettings } from '../lib/project-registry'
 
 /**
@@ -13,7 +13,7 @@ export const usePreferences = () => {
     updateProjectSettings,
     currentProjectId,
     projectPath,
-  } = useAppStore()
+  } = useProjectStore()
 
   const updateGlobal = useCallback(
     (settings: Partial<GlobalSettings>) => {
