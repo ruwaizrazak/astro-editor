@@ -24,6 +24,7 @@ export const EditorViewComponent: React.FC = () => {
   const viewRef = useRef<EditorView | null>(null)
   const initialContentRef = useRef<string>(editorContent)
   const [isAltPressed, setIsAltPressed] = useState(false)
+  const isProgrammaticUpdate = useRef(false)
 
   // Initialize global focus flag (menu state managed in Layout)
   useEffect(() => {
@@ -117,7 +118,7 @@ export const EditorViewComponent: React.FC = () => {
       extensions: [
         ...extensions,
         EditorView.updateListener.of(update => {
-          if (update.docChanged) {
+          if (update.docChanged && !isProgrammaticUpdate.current) {
             const newContent = update.state.doc.toString()
             // Use captured handler to avoid infinite loops
             currentHandleChange(newContent)
@@ -151,6 +152,9 @@ export const EditorViewComponent: React.FC = () => {
       viewRef.current &&
       viewRef.current.state.doc.toString() !== editorContent
     ) {
+      // Mark this as a programmatic update to prevent triggering the update listener
+      isProgrammaticUpdate.current = true
+
       viewRef.current.dispatch({
         changes: {
           from: 0,
@@ -158,6 +162,12 @@ export const EditorViewComponent: React.FC = () => {
           insert: editorContent,
         },
       })
+
+      // Reset the flag after the update is complete
+      // Use a timeout to ensure the update has been processed
+      setTimeout(() => {
+        isProgrammaticUpdate.current = false
+      }, 0)
     }
     // Update the initial content ref for future editor recreations
     initialContentRef.current = editorContent

@@ -278,93 +278,95 @@ export const Layout: React.FC = () => {
     // Store all unlisten functions for cleanup
     const unlistenFunctions: Array<() => void> = []
 
-    // Set up all listeners and collect their unlisten functions
-    void listen('menu-open-project', () => {
-      void handleOpenProject()
-    }).then(unlisten => unlistenFunctions.push(unlisten))
+    // Set up all listeners asynchronously
+    const setupListeners = async () => {
+      const unlisteners = await Promise.all([
+        listen('menu-open-project', () => {
+          void handleOpenProject()
+        }),
+        listen('menu-save', () => {
+          const { currentFile, isDirty, saveFile } = useEditorStore.getState()
+          if (currentFile && isDirty) {
+            void saveFile()
+          }
+        }),
+        listen('menu-toggle-sidebar', () => {
+          useUIStore.getState().toggleSidebar()
+        }),
+        listen('menu-toggle-frontmatter', () => {
+          useUIStore.getState().toggleFrontmatterPanel()
+        }),
+        listen('menu-new-file', () => {
+          const { selectedCollection } = useProjectStore.getState()
+          if (selectedCollection) {
+            void createNewFileWithQuery()
+          }
+        }),
+        // Text formatting menu listeners
+        listen('menu-format-bold', () => {
+          const { currentFile } = useEditorStore.getState()
+          if (currentFile) {
+            globalCommandRegistry.execute('toggleBold')
+          }
+        }),
+        listen('menu-format-italic', () => {
+          const { currentFile } = useEditorStore.getState()
+          if (currentFile) {
+            globalCommandRegistry.execute('toggleItalic')
+          }
+        }),
+        listen('menu-format-link', () => {
+          const { currentFile } = useEditorStore.getState()
+          if (currentFile) {
+            globalCommandRegistry.execute('createLink')
+          }
+        }),
+        listen('menu-format-h1', () => {
+          const { currentFile } = useEditorStore.getState()
+          if (currentFile) {
+            globalCommandRegistry.execute('formatHeading', 1)
+          }
+        }),
+        listen('menu-format-h2', () => {
+          const { currentFile } = useEditorStore.getState()
+          if (currentFile) {
+            globalCommandRegistry.execute('formatHeading', 2)
+          }
+        }),
+        listen('menu-format-h3', () => {
+          const { currentFile } = useEditorStore.getState()
+          if (currentFile) {
+            globalCommandRegistry.execute('formatHeading', 3)
+          }
+        }),
+        listen('menu-format-h4', () => {
+          const { currentFile } = useEditorStore.getState()
+          if (currentFile) {
+            globalCommandRegistry.execute('formatHeading', 4)
+          }
+        }),
+        listen('menu-format-paragraph', () => {
+          const { currentFile } = useEditorStore.getState()
+          if (currentFile) {
+            globalCommandRegistry.execute('formatHeading', 0)
+          }
+        }),
+      ])
 
-    void listen('menu-save', () => {
-      const { currentFile, isDirty, saveFile } = useEditorStore.getState()
-      if (currentFile && isDirty) {
-        void saveFile()
-      }
-    }).then(unlisten => unlistenFunctions.push(unlisten))
+      // Add all unlisteners to the array
+      unlistenFunctions.push(...unlisteners)
+    }
 
-    void listen('menu-toggle-sidebar', () => {
-      useUIStore.getState().toggleSidebar()
-    }).then(unlisten => unlistenFunctions.push(unlisten))
-
-    void listen('menu-toggle-frontmatter', () => {
-      useUIStore.getState().toggleFrontmatterPanel()
-    }).then(unlisten => unlistenFunctions.push(unlisten))
-
-    void listen('menu-new-file', () => {
-      const { selectedCollection } = useProjectStore.getState()
-      if (selectedCollection) {
-        void createNewFileWithQuery()
-      }
-    }).then(unlisten => unlistenFunctions.push(unlisten))
-
-    // Text formatting menu listeners
-    void listen('menu-format-bold', () => {
-      const { currentFile } = useEditorStore.getState()
-      if (currentFile) {
-        globalCommandRegistry.execute('toggleBold')
-      }
-    }).then(unlisten => unlistenFunctions.push(unlisten))
-
-    void listen('menu-format-italic', () => {
-      const { currentFile } = useEditorStore.getState()
-      if (currentFile) {
-        globalCommandRegistry.execute('toggleItalic')
-      }
-    }).then(unlisten => unlistenFunctions.push(unlisten))
-
-    void listen('menu-format-link', () => {
-      const { currentFile } = useEditorStore.getState()
-      if (currentFile) {
-        globalCommandRegistry.execute('createLink')
-      }
-    }).then(unlisten => unlistenFunctions.push(unlisten))
-
-    void listen('menu-format-h1', () => {
-      const { currentFile } = useEditorStore.getState()
-      if (currentFile) {
-        globalCommandRegistry.execute('formatHeading', 1)
-      }
-    }).then(unlisten => unlistenFunctions.push(unlisten))
-
-    void listen('menu-format-h2', () => {
-      const { currentFile } = useEditorStore.getState()
-      if (currentFile) {
-        globalCommandRegistry.execute('formatHeading', 2)
-      }
-    }).then(unlisten => unlistenFunctions.push(unlisten))
-
-    void listen('menu-format-h3', () => {
-      const { currentFile } = useEditorStore.getState()
-      if (currentFile) {
-        globalCommandRegistry.execute('formatHeading', 3)
-      }
-    }).then(unlisten => unlistenFunctions.push(unlisten))
-
-    void listen('menu-format-h4', () => {
-      const { currentFile } = useEditorStore.getState()
-      if (currentFile) {
-        globalCommandRegistry.execute('formatHeading', 4)
-      }
-    }).then(unlisten => unlistenFunctions.push(unlisten))
-
-    void listen('menu-format-paragraph', () => {
-      const { currentFile } = useEditorStore.getState()
-      if (currentFile) {
-        globalCommandRegistry.execute('formatHeading', 0)
-      }
-    }).then(unlisten => unlistenFunctions.push(unlisten))
+    // Set up listeners
+    void setupListeners()
 
     return () => {
       // Call all unlisten functions
-      unlistenFunctions.forEach(unlisten => unlisten())
+      unlistenFunctions.forEach(unlisten => {
+        if (unlisten && typeof unlisten === 'function') {
+          unlisten()
+        }
+      })
     }
   }, [createNewFileWithQuery])
 
