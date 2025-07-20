@@ -4,16 +4,9 @@ import { useUIStore } from '../../store/uiStore'
 import { cn } from '../../lib/utils'
 
 export const StatusBar: React.FC = () => {
-  const {
-    currentFile,
-    editorContent,
-    isDirty,
-  } = useEditorStore()
-  
-  const {
-    sidebarVisible,
-    frontmatterPanelVisible,
-  } = useUIStore()
+  const { currentFile, editorContent, isDirty } = useEditorStore()
+
+  const { sidebarVisible, frontmatterPanelVisible } = useUIStore()
 
   const wordCount = editorContent
     .split(/\s+/)

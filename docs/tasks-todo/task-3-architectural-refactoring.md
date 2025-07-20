@@ -520,11 +520,6 @@ FrontmatterFields extraction establishes patterns for:
 
 ### 8.1. Pre-Implementation
 
-- [ ] Review current test suite (ensure passing)
-- [ ] Backup current working state
-- [ ] Set up performance monitoring
-- [ ] Create migration branch
-
 ### 8.2. Component Organization ✅ COMPLETE
 
 - [x] Remove unused `use-mobile.ts` hook
@@ -540,7 +535,7 @@ FrontmatterFields extraction establishes patterns for:
 ### 8.3. Store Migration ✅ COMPLETE
 
 - [x] Create `editorStore.ts` with complete interface
-- [x] Create `projectStore.ts` with complete interface  
+- [x] Create `projectStore.ts` with complete interface
 - [x] Create `uiStore.ts` with complete interface
 - [x] Verify TypeScript compilation
 - [x] Test store creation and basic actions
@@ -553,6 +548,9 @@ FrontmatterFields extraction establishes patterns for:
 - [x] Update drag-and-drop handlers
 - [x] Remove original monolithic useAppStore
 - [ ] Fix test files to use new stores (test files only)
+- [ ] BugFixes
+  - [ ] Open Project in IDE and Open Collection in IDE don't work in the command palette. (Open File does)
+  - [ ] (unrelated to our current work) The .resizable-panel which wraps the editor (and maybe `.cm-content` too) have their min-heigh as 100vh. Because we have the unified tab bar at the top, this means the main editor will always scroll, even if the documents contents are too short for it. We should use `calc` to subtract the height of the titlebar and status bar from the min-hight so it's correct. Look for both CSS declarations and Tailwind declarations for 100vh When identifying the files that need editing here.
 
 ### 8.5. Field Component Extraction
 

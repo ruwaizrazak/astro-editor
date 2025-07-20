@@ -97,15 +97,23 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       }
 
       // Listen for file change events
-      void listen('file-changed', (event: { payload: unknown }) => {
-        // File refresh is now handled by TanStack Query invalidation
-        // This event is kept for future use
-        
-        // Dispatch custom event for editor store to handle recently saved file logic
-        window.dispatchEvent(new CustomEvent('file-changed', {
-          detail: event.payload
-        }))
-      })
+      const unlistenFileChanged = listen(
+        'file-changed',
+        (event: { payload: unknown }) => {
+          // File refresh is now handled by TanStack Query invalidation
+          // This event is kept for future use
+
+          // Dispatch custom event for editor store to handle recently saved file logic
+          window.dispatchEvent(
+            new CustomEvent('file-changed', {
+              detail: event.payload,
+            })
+          )
+        }
+      )
+
+      // Store the unlisten function for cleanup (though we don't currently clean it up)
+      void unlistenFileChanged
     } catch (error) {
       toast.warning('File watcher failed to start', {
         description: 'Changes to files may not be automatically detected.',
@@ -256,11 +264,5 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   },
 }))
 
-// Export specific selectors for performance optimization
-export const useProjectSelectors = {
-  projectPath: () => useProjectStore(state => state.projectPath),
-  selectedCollection: () => useProjectStore(state => state.selectedCollection),
-  currentProjectId: () => useProjectStore(state => state.currentProjectId),
-  globalSettings: () => useProjectStore(state => state.globalSettings),
-  currentProjectSettings: () => useProjectStore(state => state.currentProjectSettings),
-}
+// Components can use direct selectors like:
+// const projectPath = useProjectStore(state => state.projectPath)

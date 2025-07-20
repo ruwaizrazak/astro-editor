@@ -2,11 +2,11 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { render } from '@testing-library/react'
 import { screen } from '@testing-library/dom'
 import { StatusBar } from './StatusBar'
-import { useAppStore } from '../../store'
+import { useEditorStore } from '../../store/editorStore'
 
 describe('StatusBar Component', () => {
   beforeEach(() => {
-    useAppStore.setState({
+    useEditorStore.setState({
       currentFile: null,
       editorContent: '',
       isDirty: false,
@@ -22,7 +22,7 @@ describe('StatusBar Component', () => {
   })
 
   it('should display file name and extension when file is selected', () => {
-    useAppStore.setState({
+    useEditorStore.setState({
       currentFile: {
         id: 'test/example',
         path: '/test/example.md',
@@ -41,7 +41,7 @@ describe('StatusBar Component', () => {
   })
 
   it('should show dirty indicator when file has unsaved changes', () => {
-    useAppStore.setState({
+    useEditorStore.setState({
       currentFile: {
         id: 'test/example',
         path: '/test/example.md',
@@ -60,7 +60,7 @@ describe('StatusBar Component', () => {
   })
 
   it('should display correct word and character counts', () => {
-    useAppStore.setState({
+    useEditorStore.setState({
       currentFile: {
         id: 'test/example',
         path: '/test/example.md',
@@ -80,7 +80,7 @@ describe('StatusBar Component', () => {
   })
 
   it('should handle empty content correctly', () => {
-    useAppStore.setState({
+    useEditorStore.setState({
       currentFile: {
         id: 'test/example',
         path: '/test/example.md',

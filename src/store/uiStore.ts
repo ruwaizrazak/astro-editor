@@ -10,7 +10,7 @@ interface UIState {
   toggleFrontmatterPanel: () => void
 }
 
-export const useUIStore = create<UIState>((set) => ({
+export const useUIStore = create<UIState>(set => ({
   // Initial state
   sidebarVisible: true,
   frontmatterPanelVisible: true,
@@ -25,8 +25,5 @@ export const useUIStore = create<UIState>((set) => ({
   },
 }))
 
-// Export specific selectors for performance optimization
-export const useUISelectors = {
-  sidebarVisible: () => useUIStore(state => state.sidebarVisible),
-  frontmatterPanelVisible: () => useUIStore(state => state.frontmatterPanelVisible),
-}
+// Components can use direct selectors like:
+// const sidebarVisible = useUIStore(state => state.sidebarVisible)

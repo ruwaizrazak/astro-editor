@@ -3,11 +3,13 @@ import { renderHook, act } from '@testing-library/react'
 import { useEditorHandlers } from './useEditorHandlers'
 
 // Mock the store
-vi.mock('../../store', () => ({
-  useAppStore: vi.fn(),
+vi.mock('../../store/editorStore', () => ({
+  useEditorStore: vi.fn(),
 }))
 
-const mockUseAppStore = vi.mocked(await import('../../store')).useAppStore
+const mockUseEditorStore = vi.mocked(
+  await import('../../store/editorStore')
+).useEditorStore
 
 describe('useEditorHandlers', () => {
   let mockStore: {
@@ -27,7 +29,7 @@ describe('useEditorHandlers', () => {
       isDirty: false,
     }
 
-    mockUseAppStore.mockReturnValue(mockStore)
+    mockUseEditorStore.mockReturnValue(mockStore)
 
     // Mock window global
     Object.defineProperty(window, 'isEditorFocused', {
@@ -161,7 +163,7 @@ describe('useEditorHandlers', () => {
 
       // Change currentFile
       mockStore.currentFile = { id: 'new', name: 'new.md' }
-      mockUseAppStore.mockReturnValue(mockStore)
+      mockUseEditorStore.mockReturnValue(mockStore)
 
       rerender()
 
@@ -174,7 +176,7 @@ describe('useEditorHandlers', () => {
 
       // Change isDirty
       mockStore.isDirty = true
-      mockUseAppStore.mockReturnValue(mockStore)
+      mockUseEditorStore.mockReturnValue(mockStore)
 
       rerender()
 
@@ -187,7 +189,7 @@ describe('useEditorHandlers', () => {
 
       // Change saveFile
       mockStore.saveFile = vi.fn()
-      mockUseAppStore.mockReturnValue(mockStore)
+      mockUseEditorStore.mockReturnValue(mockStore)
 
       rerender()
 
@@ -236,7 +238,7 @@ describe('useEditorHandlers', () => {
 
       // Change currentFile
       mockStore.currentFile = { id: 'new', name: 'new.md' }
-      mockUseAppStore.mockReturnValue(mockStore)
+      mockUseEditorStore.mockReturnValue(mockStore)
 
       rerender()
 
@@ -249,7 +251,7 @@ describe('useEditorHandlers', () => {
 
       // Change isDirty
       mockStore.isDirty = true
-      mockUseAppStore.mockReturnValue(mockStore)
+      mockUseEditorStore.mockReturnValue(mockStore)
 
       rerender()
 
@@ -262,7 +264,7 @@ describe('useEditorHandlers', () => {
 
       // Change saveFile
       mockStore.saveFile = vi.fn()
-      mockUseAppStore.mockReturnValue(mockStore)
+      mockUseEditorStore.mockReturnValue(mockStore)
 
       rerender()
 

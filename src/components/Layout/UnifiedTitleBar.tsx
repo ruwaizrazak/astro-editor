@@ -16,17 +16,10 @@ import {
 import { cn } from '../../lib/utils'
 
 export const UnifiedTitleBar: React.FC = () => {
-  const { 
-    saveFile,
-    isDirty,
-    currentFile,
-  } = useEditorStore()
-  
-  const {
-    projectPath,
-    selectedCollection,
-  } = useProjectStore()
-  
+  const { saveFile, isDirty, currentFile } = useEditorStore()
+
+  const { projectPath, selectedCollection } = useProjectStore()
+
   const {
     toggleFrontmatterPanel,
     frontmatterPanelVisible,

@@ -8,13 +8,8 @@ import { CommandContext } from './types'
  * This provides all the information and actions commands need
  */
 export function useCommandContext(): CommandContext {
-  const {
-    currentFile,
-    isDirty,
-    saveFile,
-    closeCurrentFile,
-  } = useEditorStore()
-  
+  const { currentFile, isDirty, saveFile, closeCurrentFile } = useEditorStore()
+
   const {
     selectedCollection,
     projectPath,
@@ -22,11 +17,8 @@ export function useCommandContext(): CommandContext {
     setSelectedCollection,
     setProject,
   } = useProjectStore()
-  
-  const {
-    toggleSidebar,
-    toggleFrontmatterPanel,
-  } = useUIStore()
+
+  const { toggleSidebar, toggleFrontmatterPanel } = useUIStore()
 
   return {
     currentFile,

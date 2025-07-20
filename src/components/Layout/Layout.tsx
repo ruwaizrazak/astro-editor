@@ -80,19 +80,10 @@ const EditorAreaWithFrontmatter: React.FC<{
 
 export const Layout: React.FC = () => {
   // Editor store
-  const {
-    currentFile,
-    isDirty,
-    saveFile,
-    closeCurrentFile,
-  } = useEditorStore()
+  const { currentFile, isDirty, saveFile, closeCurrentFile } = useEditorStore()
 
   // Project store
-  const {
-    setProject,
-    loadPersistedProject,
-    selectedCollection,
-  } = useProjectStore()
+  const { loadPersistedProject, selectedCollection } = useProjectStore()
 
   // UI store
   const {
@@ -263,13 +254,13 @@ export const Layout: React.FC = () => {
     }
   }, [])
 
-  // Menu event listeners
+  // Menu event listeners - use empty dependency array to avoid cleanup issues
   useEffect(() => {
     const handleOpenProject = async () => {
       try {
         const projectPath = await invoke<string>('select_project_folder')
         if (projectPath) {
-          setProject(projectPath)
+          useProjectStore.getState().setProject(projectPath)
           toast.success('Project opened successfully')
         }
       } catch (error) {
@@ -284,92 +275,98 @@ export const Layout: React.FC = () => {
       }
     }
 
-    const unlistenOpenProject = listen('menu-open-project', () => {
+    // Store all unlisten functions for cleanup
+    const unlistenFunctions: Array<() => void> = []
+
+    // Set up all listeners and collect their unlisten functions
+    void listen('menu-open-project', () => {
       void handleOpenProject()
-    })
-    const unlistenSave = listen('menu-save', () => {
+    }).then(unlisten => unlistenFunctions.push(unlisten))
+
+    void listen('menu-save', () => {
+      const { currentFile, isDirty, saveFile } = useEditorStore.getState()
       if (currentFile && isDirty) {
         void saveFile()
       }
-    })
-    const unlistenToggleSidebar = listen('menu-toggle-sidebar', toggleSidebar)
-    const unlistenToggleFrontmatter = listen(
-      'menu-toggle-frontmatter',
-      toggleFrontmatterPanel
-    )
-    const unlistenNewFile = listen('menu-new-file', () => {
+    }).then(unlisten => unlistenFunctions.push(unlisten))
+
+    void listen('menu-toggle-sidebar', () => {
+      useUIStore.getState().toggleSidebar()
+    }).then(unlisten => unlistenFunctions.push(unlisten))
+
+    void listen('menu-toggle-frontmatter', () => {
+      useUIStore.getState().toggleFrontmatterPanel()
+    }).then(unlisten => unlistenFunctions.push(unlisten))
+
+    void listen('menu-new-file', () => {
+      const { selectedCollection } = useProjectStore.getState()
       if (selectedCollection) {
         void createNewFileWithQuery()
       }
-    })
+    }).then(unlisten => unlistenFunctions.push(unlisten))
 
     // Text formatting menu listeners
-    const unlistenFormatBold = listen('menu-format-bold', () => {
+    void listen('menu-format-bold', () => {
+      const { currentFile } = useEditorStore.getState()
       if (currentFile) {
         globalCommandRegistry.execute('toggleBold')
       }
-    })
-    const unlistenFormatItalic = listen('menu-format-italic', () => {
+    }).then(unlisten => unlistenFunctions.push(unlisten))
+
+    void listen('menu-format-italic', () => {
+      const { currentFile } = useEditorStore.getState()
       if (currentFile) {
         globalCommandRegistry.execute('toggleItalic')
       }
-    })
-    const unlistenFormatLink = listen('menu-format-link', () => {
+    }).then(unlisten => unlistenFunctions.push(unlisten))
+
+    void listen('menu-format-link', () => {
+      const { currentFile } = useEditorStore.getState()
       if (currentFile) {
         globalCommandRegistry.execute('createLink')
       }
-    })
-    const unlistenFormatH1 = listen('menu-format-h1', () => {
+    }).then(unlisten => unlistenFunctions.push(unlisten))
+
+    void listen('menu-format-h1', () => {
+      const { currentFile } = useEditorStore.getState()
       if (currentFile) {
         globalCommandRegistry.execute('formatHeading', 1)
       }
-    })
-    const unlistenFormatH2 = listen('menu-format-h2', () => {
+    }).then(unlisten => unlistenFunctions.push(unlisten))
+
+    void listen('menu-format-h2', () => {
+      const { currentFile } = useEditorStore.getState()
       if (currentFile) {
         globalCommandRegistry.execute('formatHeading', 2)
       }
-    })
-    const unlistenFormatH3 = listen('menu-format-h3', () => {
+    }).then(unlisten => unlistenFunctions.push(unlisten))
+
+    void listen('menu-format-h3', () => {
+      const { currentFile } = useEditorStore.getState()
       if (currentFile) {
         globalCommandRegistry.execute('formatHeading', 3)
       }
-    })
-    const unlistenFormatH4 = listen('menu-format-h4', () => {
+    }).then(unlisten => unlistenFunctions.push(unlisten))
+
+    void listen('menu-format-h4', () => {
+      const { currentFile } = useEditorStore.getState()
       if (currentFile) {
         globalCommandRegistry.execute('formatHeading', 4)
       }
-    })
-    const unlistenFormatParagraph = listen('menu-format-paragraph', () => {
+    }).then(unlisten => unlistenFunctions.push(unlisten))
+
+    void listen('menu-format-paragraph', () => {
+      const { currentFile } = useEditorStore.getState()
       if (currentFile) {
         globalCommandRegistry.execute('formatHeading', 0)
       }
-    })
+    }).then(unlisten => unlistenFunctions.push(unlisten))
 
     return () => {
-      void unlistenOpenProject.then(fn => fn())
-      void unlistenSave.then(fn => fn())
-      void unlistenToggleSidebar.then(fn => fn())
-      void unlistenToggleFrontmatter.then(fn => fn())
-      void unlistenNewFile.then(fn => fn())
-      void unlistenFormatBold.then(fn => fn())
-      void unlistenFormatItalic.then(fn => fn())
-      void unlistenFormatLink.then(fn => fn())
-      void unlistenFormatH1.then(fn => fn())
-      void unlistenFormatH2.then(fn => fn())
-      void unlistenFormatH3.then(fn => fn())
-      void unlistenFormatH4.then(fn => fn())
-      void unlistenFormatParagraph.then(fn => fn())
+      // Call all unlisten functions
+      unlistenFunctions.forEach(unlisten => unlisten())
     }
-  }, [
-    currentFile,
-    isDirty,
-    saveFile,
-    setProject,
-    toggleSidebar,
-    toggleFrontmatterPanel,
-    selectedCollection,
-    createNewFileWithQuery,
-  ])
+  }, [createNewFileWithQuery])
 
   return (
     <div className="h-screen w-screen bg-background font-sans flex flex-col rounded-xl overflow-hidden">

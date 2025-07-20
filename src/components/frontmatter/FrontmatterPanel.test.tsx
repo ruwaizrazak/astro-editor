@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { screen, fireEvent } from '@testing-library/dom'
 import { FrontmatterPanel } from './FrontmatterPanel'
-import { useAppStore, type Collection } from '../../store'
+import { useEditorStore } from '../../store/editorStore'
+import { type Collection } from '../../store'
 import { renderWithProviders } from '../../test/test-utils'
 
 // Mock the query hook - will be configured per test
@@ -26,14 +27,14 @@ describe('FrontmatterPanel Component', () => {
     // Default mock - no collections
     mockCollectionsQuery([])
 
-    useAppStore.setState({
+    useEditorStore.setState({
       currentFile: null,
       frontmatter: {},
       updateFrontmatter: (frontmatter: Record<string, unknown>) => {
-        useAppStore.setState({ frontmatter })
+        useEditorStore.setState({ frontmatter })
       },
       updateFrontmatterField: (key: string, value: unknown) => {
-        const { frontmatter } = useAppStore.getState()
+        const { frontmatter } = useEditorStore.getState()
         const newFrontmatter = { ...frontmatter }
 
         if (
@@ -47,7 +48,7 @@ describe('FrontmatterPanel Component', () => {
           newFrontmatter[key] = value
         }
 
-        useAppStore.setState({ frontmatter: newFrontmatter })
+        useEditorStore.setState({ frontmatter: newFrontmatter })
       },
     })
   })
@@ -96,7 +97,7 @@ describe('FrontmatterPanel Component', () => {
     // Update mock to return collection
     mockCollectionsQuery([mockCollection])
 
-    useAppStore.setState({
+    useEditorStore.setState({
       currentFile: mockFile,
       frontmatter: mockFrontmatter,
     })
@@ -119,7 +120,7 @@ describe('FrontmatterPanel Component', () => {
       collection: 'posts',
     }
 
-    useAppStore.setState({
+    useEditorStore.setState({
       currentFile: mockFile,
       frontmatter: { title: 'Original Title' },
     })
@@ -129,7 +130,7 @@ describe('FrontmatterPanel Component', () => {
     const titleInput = screen.getByDisplayValue('Original Title')
     fireEvent.change(titleInput, { target: { value: 'New Title' } })
 
-    expect(useAppStore.getState().frontmatter.title).toBe('New Title')
+    expect(useEditorStore.getState().frontmatter.title).toBe('New Title')
   })
 
   it('should handle boolean input changes', () => {
@@ -153,7 +154,7 @@ describe('FrontmatterPanel Component', () => {
 
     mockCollectionsQuery([mockCollection])
 
-    useAppStore.setState({
+    useEditorStore.setState({
       currentFile: mockFile,
       frontmatter: { draft: false },
     })
@@ -165,7 +166,7 @@ describe('FrontmatterPanel Component', () => {
 
     fireEvent.click(draftSwitch)
 
-    expect(useAppStore.getState().frontmatter.draft).toBe(true)
+    expect(useEditorStore.getState().frontmatter.draft).toBe(true)
   })
 
   it('should handle number input changes', () => {
@@ -189,7 +190,7 @@ describe('FrontmatterPanel Component', () => {
 
     mockCollectionsQuery([mockCollection])
 
-    useAppStore.setState({
+    useEditorStore.setState({
       currentFile: mockFile,
       frontmatter: { rating: 3 },
     })
@@ -199,7 +200,7 @@ describe('FrontmatterPanel Component', () => {
     const ratingInput = screen.getByDisplayValue('3')
     fireEvent.change(ratingInput, { target: { value: '5' } })
 
-    expect(useAppStore.getState().frontmatter.rating).toBe(5)
+    expect(useEditorStore.getState().frontmatter.rating).toBe(5)
   })
 
   it('should show message when no frontmatter fields exist', () => {
@@ -212,7 +213,7 @@ describe('FrontmatterPanel Component', () => {
       collection: 'posts',
     }
 
-    useAppStore.setState({
+    useEditorStore.setState({
       currentFile: mockFile,
       frontmatter: {},
     })
@@ -248,7 +249,7 @@ describe('FrontmatterPanel Component', () => {
 
     mockCollectionsQuery([mockCollection])
 
-    useAppStore.setState({
+    useEditorStore.setState({
       currentFile: mockFile,
       frontmatter: { title: 'Test Post' },
     })
@@ -289,7 +290,7 @@ describe('FrontmatterPanel Component', () => {
 
     mockCollectionsQuery([mockCollection])
 
-    useAppStore.setState({
+    useEditorStore.setState({
       currentFile: mockFile,
       frontmatter: { title: 'Test Post' }, // Only has title, missing description and publishDate
     })
@@ -303,7 +304,9 @@ describe('FrontmatterPanel Component', () => {
     ).toBeInTheDocument() // description (empty)
 
     // Verify the key business logic: missing fields are shown with empty values
-    expect(useAppStore.getState().frontmatter).toEqual({ title: 'Test Post' })
+    expect(useEditorStore.getState().frontmatter).toEqual({
+      title: 'Test Post',
+    })
   })
 
   it('should remove field from frontmatter when emptied', () => {
@@ -316,7 +319,7 @@ describe('FrontmatterPanel Component', () => {
       collection: 'posts',
     }
 
-    useAppStore.setState({
+    useEditorStore.setState({
       currentFile: mockFile,
       frontmatter: { title: 'Test Post', description: 'Some description' },
     })
@@ -327,7 +330,7 @@ describe('FrontmatterPanel Component', () => {
     fireEvent.change(descriptionInput, { target: { value: '' } })
 
     // Field should be removed from frontmatter when emptied
-    const state = useAppStore.getState()
+    const state = useEditorStore.getState()
     expect(state.frontmatter).toEqual({ title: 'Test Post' })
     expect(state.frontmatter.description).toBeUndefined()
   })
@@ -353,7 +356,7 @@ describe('FrontmatterPanel Component', () => {
 
     mockCollectionsQuery([mockCollection])
 
-    useAppStore.setState({
+    useEditorStore.setState({
       currentFile: mockFile,
       frontmatter: { tags: ['react', 'typescript'] },
     })
@@ -390,7 +393,7 @@ describe('FrontmatterPanel Component', () => {
 
     mockCollectionsQuery([mockCollection])
 
-    useAppStore.setState({
+    useEditorStore.setState({
       currentFile: mockFile,
       frontmatter: {
         title: 'Test Post',
@@ -420,7 +423,7 @@ describe('FrontmatterPanel Component', () => {
       collection: 'posts',
     }
 
-    useAppStore.setState({
+    useEditorStore.setState({
       currentFile: mockFile,
       frontmatter: {
         numbers: [1, 2, 3], // Array but not strings
@@ -448,7 +451,7 @@ describe('FrontmatterPanel Component', () => {
       collection: 'posts',
     }
 
-    useAppStore.setState({
+    useEditorStore.setState({
       currentFile: mockFile,
       frontmatter: {
         title: 'Test Post',

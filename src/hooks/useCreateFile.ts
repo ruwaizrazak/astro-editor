@@ -26,17 +26,11 @@ const singularize = (word: string): string => {
 
 export const useCreateFile = () => {
   const { openFile } = useEditorStore()
-  
-  const {
-    selectedCollection,
-    projectPath,
-    currentProjectSettings,
-  } = useProjectStore()
-  
-  const {
-    frontmatterPanelVisible,
-    toggleFrontmatterPanel,
-  } = useUIStore()
+
+  const { selectedCollection, projectPath, currentProjectSettings } =
+    useProjectStore()
+
+  const { frontmatterPanelVisible, toggleFrontmatterPanel } = useUIStore()
 
   const { data: collections = [] } = useCollectionsQuery(
     projectPath,

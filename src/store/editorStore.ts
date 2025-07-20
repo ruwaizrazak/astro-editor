@@ -265,10 +265,5 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
 }))
 
-// Export specific selectors for performance optimization
-export const useEditorSelectors = {
-  currentFile: () => useEditorStore(state => state.currentFile),
-  isDirty: () => useEditorStore(state => state.isDirty),
-  editorContent: () => useEditorStore(state => state.editorContent),
-  frontmatter: () => useEditorStore(state => state.frontmatter),
-}
+// Components can use direct selectors like:
+// const currentFile = useEditorStore(state => state.currentFile)

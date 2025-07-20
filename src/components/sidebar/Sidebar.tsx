@@ -71,12 +71,8 @@ function getTitle(file: FileEntry, titleField: string): string {
 }
 
 export const Sidebar: React.FC = () => {
-  const {
-    currentFile,
-    openFile,
-    updateCurrentFilePath,
-  } = useEditorStore()
-  
+  const { currentFile, openFile, updateCurrentFilePath } = useEditorStore()
+
   const {
     selectedCollection,
     projectPath,
