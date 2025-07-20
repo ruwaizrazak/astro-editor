@@ -44,7 +44,16 @@ export const useUIStore = create<UIState>(set => ({
   },
 
   toggleTypewriterMode: () => {
-    set(state => ({ typewriterModeEnabled: !state.typewriterModeEnabled }))
+    set(state => {
+      const newState = !state.typewriterModeEnabled
+      // eslint-disable-next-line no-console
+      console.log('[UIStore] toggleTypewriterMode called')
+      // eslint-disable-next-line no-console
+      console.log('[UIStore] Current state:', state.typewriterModeEnabled)
+      // eslint-disable-next-line no-console
+      console.log('[UIStore] New state:', newState)
+      return { typewriterModeEnabled: newState }
+    })
   },
 }))
 

@@ -7,12 +7,26 @@ export const toggleTypewriterMode = StateEffect.define<boolean>()
 // State field to track typewriter mode
 export const typewriterModeState = StateField.define<boolean>({
   create() {
+    // eslint-disable-next-line no-console
+    console.log('[TypewriterModeState] Creating initial state: false')
     return false
   },
 
   update(value, tr) {
     for (const effect of tr.effects) {
       if (effect.is(toggleTypewriterMode)) {
+        // eslint-disable-next-line no-console
+        console.log(
+          '[TypewriterModeState] Received toggleTypewriterMode effect:',
+          effect.value
+        )
+        // eslint-disable-next-line no-console
+        console.log(
+          '[TypewriterModeState] Previous state:',
+          value,
+          '-> New state:',
+          effect.value
+        )
         return effect.value
       }
     }
@@ -20,82 +34,55 @@ export const typewriterModeState = StateField.define<boolean>({
   },
 })
 
-// Optimized debounced scroll utility with performance improvements
-class DebouncedScroller {
-  private timeoutId: number | null = null
-  private rafId: number | null = null
-  private readonly delay = 150 // ms
+// Simple, performant typewriter scrolling utility
+class TypewriterScroller {
   private lastLineNumber = -1
 
-  scheduleScroll(view: EditorView, lineNumber: number) {
-    // Performance: Skip if same line
+  scrollToCenter(view: EditorView, lineNumber: number) {
+    // eslint-disable-next-line no-console
+    console.log(
+      '[TypewriterScroller] scrollToCenter called for line:',
+      lineNumber
+    )
+
+    // Skip if same line
     if (lineNumber === this.lastLineNumber) {
+      // eslint-disable-next-line no-console
+      console.log('[TypewriterScroller] Skipping - same line number')
       return
     }
 
-    // Clear existing timeouts
-    if (this.timeoutId !== null) {
-      clearTimeout(this.timeoutId)
-    }
-    if (this.rafId !== null) {
-      cancelAnimationFrame(this.rafId)
-    }
+    // Get the line position
+    const line = view.state.doc.line(lineNumber)
+    const linePos = line.from
 
-    this.timeoutId = window.setTimeout(() => {
-      this.rafId = requestAnimationFrame(() => {
-        this.scrollToCenter(view, lineNumber)
-        this.timeoutId = null
-        this.rafId = null
-        this.lastLineNumber = lineNumber
-      })
-    }, this.delay)
-  }
+    // eslint-disable-next-line no-console
+    console.log(
+      '[TypewriterScroller] Scheduling scroll for line',
+      lineNumber,
+      'at position',
+      linePos,
+      'to center'
+    )
 
-  private scrollToCenter(view: EditorView, lineNumber: number) {
-    try {
-      // Performance: Only scroll if line is different from last
-      if (lineNumber === this.lastLineNumber) {
-        return
-      }
-
-      const line = view.state.doc.line(lineNumber)
-      const linePos = line.from
-
-      // Performance: Check if line is already roughly centered
-      const viewport = view.viewport
-      const lineTop = view.lineBlockAt(linePos).top
-      const viewportHeight = viewport.to - viewport.from
-      const center = viewport.from + viewportHeight / 2
-
-      // Skip scrolling if already roughly centered (within 100px)
-      if (Math.abs(lineTop - center) < 100) {
-        this.lastLineNumber = lineNumber
-        return
-      }
-
-      // Scroll to center the current line
+    // Schedule the scroll to happen after the current update completes
+    // This avoids the "update in progress" error
+    setTimeout(() => {
+      // eslint-disable-next-line no-console
+      console.log('[TypewriterScroller] Executing scheduled scroll')
       view.dispatch({
         effects: EditorView.scrollIntoView(linePos, {
           y: 'center',
-          yMargin: 0,
         }),
       })
-    } catch (error) {
-      // Handle edge cases silently
-      // eslint-disable-next-line no-console
-      console.debug('Typewriter mode scroll error:', error)
-    }
+    }, 0)
+
+    this.lastLineNumber = lineNumber
+    // eslint-disable-next-line no-console
+    console.log('[TypewriterScroller] Scroll scheduled successfully')
   }
 
   clear() {
-    if (this.timeoutId !== null) {
-      clearTimeout(this.timeoutId)
-      this.timeoutId = null
-    }
-    if (this.rafId !== null) {
-      cancelAnimationFrame(this.rafId)
-      this.rafId = null
-    }
     this.lastLineNumber = -1
   }
 }
@@ -103,43 +90,41 @@ class DebouncedScroller {
 // Typewriter mode plugin
 export const typewriterModePlugin = ViewPlugin.fromClass(
   class {
-    private scroller = new DebouncedScroller()
-    private lastLineNumber = 0
+    private scroller = new TypewriterScroller()
 
     constructor(public view: EditorView) {
-      this.updateLastLine()
+      // eslint-disable-next-line no-console
+      console.log('[TypewriterModePlugin] Plugin initialized')
     }
 
     update(update: ViewUpdate) {
       const typewriterEnabled = update.state.field(typewriterModeState)
+
+      // eslint-disable-next-line no-console
+      console.log(
+        '[TypewriterModePlugin] Update - enabled:',
+        typewriterEnabled,
+        'selectionSet:',
+        update.selectionSet
+      )
 
       if (!typewriterEnabled) {
         this.scroller.clear()
         return
       }
 
-      // Only scroll when cursor moves to a different line
+      // Scroll when cursor moves to a different line
       if (update.selectionSet) {
         const currentLineNumber = update.state.doc.lineAt(
           update.state.selection.main.head
         ).number
 
-        if (currentLineNumber !== this.lastLineNumber) {
-          this.scroller.scheduleScroll(this.view, currentLineNumber)
-          this.lastLineNumber = currentLineNumber
-        }
-      }
+        // eslint-disable-next-line no-console
+        console.log('[TypewriterModePlugin] Cursor on line:', currentLineNumber)
 
-      // Also handle document changes that might affect line numbering
-      if (update.docChanged) {
-        this.updateLastLine()
+        // Always try to scroll - let the scroller decide if it's needed
+        this.scroller.scrollToCenter(this.view, currentLineNumber)
       }
-    }
-
-    private updateLastLine() {
-      this.lastLineNumber = this.view.state.doc.lineAt(
-        this.view.state.selection.main.head
-      ).number
     }
 
     destroy() {

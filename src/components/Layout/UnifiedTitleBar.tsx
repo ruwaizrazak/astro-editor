@@ -14,6 +14,8 @@ import {
   Plus,
   Eye,
   EyeOff,
+  AlignCenter,
+  AlignLeft,
 } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { Toggle } from '../ui/toggle'
@@ -30,6 +32,8 @@ export const UnifiedTitleBar: React.FC = () => {
     sidebarVisible,
     focusModeEnabled,
     toggleFocusMode,
+    typewriterModeEnabled,
+    toggleTypewriterMode,
   } = useUIStore()
 
   const { createNewFile } = useCreateFile()
@@ -60,6 +64,31 @@ export const UnifiedTitleBar: React.FC = () => {
       const newState = useUIStore.getState().focusModeEnabled
       // eslint-disable-next-line no-console
       console.log('[UnifiedTitleBar] Verified new focus mode state:', newState)
+    }, 100)
+  }
+
+  const handleToggleTypewriterMode = () => {
+    // eslint-disable-next-line no-console
+    console.log('[UnifiedTitleBar] Typewriter mode toggle clicked')
+    // eslint-disable-next-line no-console
+    console.log(
+      '[UnifiedTitleBar] Current typewriter mode state:',
+      typewriterModeEnabled
+    )
+    toggleTypewriterMode()
+    // eslint-disable-next-line no-console
+    console.log(
+      '[UnifiedTitleBar] Typewriter mode toggled, new state should be:',
+      !typewriterModeEnabled
+    )
+    // Verify the state actually changed
+    setTimeout(() => {
+      const newState = useUIStore.getState().typewriterModeEnabled
+      // eslint-disable-next-line no-console
+      console.log(
+        '[UnifiedTitleBar] Verified new typewriter mode state:',
+        newState
+      )
     }, 100)
   }
 
@@ -173,6 +202,31 @@ export const UnifiedTitleBar: React.FC = () => {
             <EyeOff className="size-4" />
           ) : (
             <Eye className="size-4" />
+          )}
+        </Toggle>
+
+        {/* Typewriter mode toggle */}
+        <Toggle
+          pressed={typewriterModeEnabled}
+          onPressedChange={handleToggleTypewriterMode}
+          size="sm"
+          variant="outline"
+          className="size-7 p-0"
+          title={
+            typewriterModeEnabled
+              ? 'Disable Typewriter Mode'
+              : 'Enable Typewriter Mode'
+          }
+          aria-label={
+            typewriterModeEnabled
+              ? 'Disable Typewriter Mode'
+              : 'Enable Typewriter Mode'
+          }
+        >
+          {typewriterModeEnabled ? (
+            <AlignLeft className="size-4" />
+          ) : (
+            <AlignCenter className="size-4" />
           )}
         </Toggle>
 
