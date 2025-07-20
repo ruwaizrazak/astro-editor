@@ -252,19 +252,18 @@ src/
 │   ├── layout/              # App shell/layout only
 │   │   ├── Layout.tsx       # Main orchestrator (UI state)
 │   │   ├── UnifiedTitleBar.tsx # Window title bar
-│   │   ├── EditorView.tsx   # CodeMirror wrapper component
+│   │   ├── MainEditor.tsx   # Editor Wrapper (ie the main central panel)
 │   │   └── StatusBar.tsx    # Editor status bar
 │   ├── editor/              # Editor domain (components + styles)
-│   │   ├── MainEditor.tsx   # Editor main component
-│   │   ├── EditorView.css   # Editor styling
-│   │   └── EditorTheme.css  # Editor theme variables
+│   │   ├── Editor.tsx       # Editor main component
+│   │   └── Editor.css       # Editor styling and theme variables
 │   ├── sidebar/             # File navigation domain
 │   │   └── Sidebar.tsx      # File/collection navigation
 │   ├── frontmatter/         # Frontmatter editing domain
 │   │   └── FrontmatterPanel.tsx # Dynamic frontmatter forms
-│   ├── command-palette/     # Command palette (kebab-case)
+│   ├── command-palette/     # Command palette
 │   │   └── CommandPalette.tsx
-│   ├── component-builder/   # MDX component builder (kebab-case)
+│   ├── component-builder/   # MDX component builder
 │   │   └── ComponentBuilderDialog.tsx
 │   ├── preferences/         # Settings and preferences
 │   │   └── PreferencesDialog.tsx
@@ -430,7 +429,8 @@ npm run reset:testdata   # Reset test project
 
 - Directories: `kebab-case` (e.g., `command-palette/`, `component-builder/`)
 - Components: `PascalCase` (e.g., `CommandPalette.tsx`, `ComponentBuilderDialog.tsx`)
-- CSS files: Co-located with components they style (e.g., `EditorView.css` in `editor/`)
+- UI "Primative" Components (mostly shadcn): `kebab-case`
+- CSS files: Co-located with components they style (e.g., `Editor.css` in `editor/`)
 - Tests: Co-located with components (e.g., `FrontmatterPanel.test.tsx`)
 
 ### Import Patterns
@@ -443,7 +443,7 @@ npm run reset:testdata   # Reset test project
 
 **layout/** - App shell and window chrome components only
 **editor/** - Editor functionality and styling
-**sidebar/** - File/collection navigation 
+**sidebar/** - File/collection navigation
 **frontmatter/** - Frontmatter editing forms
 **command-palette/** - Command palette functionality
 **component-builder/** - MDX component insertion
@@ -847,7 +847,7 @@ export const markdownTags = {
 - `tags.tagName`, `tags.attributeName` - HTML elements
 - `tags.keyword`, `tags.string`, `tags.comment` - Programming constructs
 
-#### Comprehensive Highlight Style
+#### Highlight Style
 
 **Single source of truth** for all syntax highlighting:
 
@@ -864,23 +864,13 @@ const comprehensiveHighlightStyle = HighlightStyle.define([
 ])
 ```
 
-**Color Families:**
-
-- **Purple family:** Headings (H1-H6)
-- **Orange/Red family:** Emphasis, strong text
-- **Green family:** Code elements
-- **Blue family:** Links, images, programming constructs
-- **Red/Pink family:** HTML tags
-- **Gray family:** Comments, utility elements
-
 ### CSS Styling System
 
 The editor uses a **CSS variable-based theming system** that separates concerns between CodeMirror syntax highlighting and visual styling.
 
 **Key Files:**
 
-- `src/components/Layout/EditorTheme.css` - Color variables and typography
-- `src/components/Layout/EditorView.css` - Container setup and integration
+- `src/components/Layout/Editor.css` - Color variables and typography
 
 #### Core Patterns
 
@@ -903,7 +893,6 @@ The editor uses a **CSS variable-based theming system** that separates concerns 
 - ✅ **Markdown:** Headings, bold, italic, ~~strikethrough~~, links, lists, blockquotes, tables
 - ✅ **Code:** Inline `code`, `code blocks`, syntax highlighting
 - ✅ **HTML:** `<tags>`, attributes, mixed content
-- ✅ **Programming:** Keywords, strings, comments, operators
 - ✅ **URL Handling:** Alt+click to open URLs
 - ✅ **Drag & Drop:** Files with auto-copy to assets
 - ✅ **Paste Enhancement:** URL detection and link creation
@@ -976,6 +965,7 @@ vi.mock('../hooks/queries/useCollectionsQuery', () => ({
     isLoading: false,
   })),
 }))
+```
 
 ### Backend (Cargo)
 
@@ -1099,7 +1089,7 @@ vi.mock('../hooks/queries/useCollectionsQuery', () => ({
 - `src/lib/editor/` - Extracted editor modules
 - `src/hooks/editor/` - Editor-specific hooks
 - `src/components/Layout/Layout.tsx` - Main UI orchestrator
-- `src/components/Layout/EditorView.tsx` - Refactored editor component
+- `src/components/editor/Editor.tsx` - Main Editor
 - `src/lib/schema.ts` - Zod schema parsing and validation
 - `src/types/common.ts` - Shared TypeScript interfaces
 
@@ -1111,10 +1101,8 @@ vi.mock('../hooks/queries/useCollectionsQuery', () => ({
 
 ### Documentation
 
-- `docs/architecture-guide.md` - Comprehensive architecture patterns
+- `docs/developer` - Developer documentation
 - `docs/tasks.md` - Current roadmap and status
-- `docs/ia-writer-ui.md` - UI design specifications
-- `docs/toast-system.md` - Complete toast notification system documentation
 
 ## Troubleshooting
 
@@ -1174,4 +1162,3 @@ The architecture supports:
 ---
 
 _This document reflects the current architecture as of Phase 3.1. Update as the project evolves and new patterns emerge._
-```
