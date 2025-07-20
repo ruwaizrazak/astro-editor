@@ -6,6 +6,8 @@ Current Task: `/docs/tasks-todo/task-3-architectural-refactoring.md`
 
 **Recently Completed:**
 
+- **Phase 1: Store Decomposition** - Decomposed monolithic `useAppStore` (540+ lines) into three focused stores: `editorStore` (file editing state), `projectStore` (project-level state), and `uiStore` (UI layout state). Fixed event listener cleanup issues and improved performance.
+- **Phase 2: Frontmatter Component Extraction** - Extracted 7 field components from `FrontmatterPanel.tsx`: `StringField`, `TextareaField`, `NumberField`, `BooleanField`, `DateField`, `EnumField`, `ArrayField`, plus `FrontmatterField` orchestrator. Implemented comprehensive unit testing with 115 new tests covering complex validation logic, schema default handling, and edge cases.
 - TanStack Query v5 integration for server state management. Collections, files, and file content are now managed by TanStack Query with automatic caching and invalidation. Client state (editing state, UI preferences) remains in Zustand.
 - MDX Component Inserter with snippet field support and dynamic component building.
 
@@ -188,6 +190,7 @@ useFileContentQuery(projectPath, fileId)
 We use **three focused stores** instead of a monolithic store for better performance and maintainability:
 
 **1. Editor Store (`useEditorStore`)** - File editing state (most volatile):
+
 ```typescript
 // src/store/editorStore.ts
 currentFile: FileEntry | null
@@ -198,6 +201,7 @@ isDirty: boolean
 ```
 
 **2. Project Store (`useProjectStore`)** - Project-level state:
+
 ```typescript
 // src/store/projectStore.ts
 projectPath: string | null
@@ -208,6 +212,7 @@ globalSettings: GlobalSettings | null
 ```
 
 **3. UI Store (`useUIStore`)** - UI layout state:
+
 ```typescript
 // src/store/uiStore.ts
 sidebarVisible: boolean
@@ -272,7 +277,23 @@ src/
 │   ├── sidebar/             # File navigation domain
 │   │   └── Sidebar.tsx      # File/collection navigation
 │   ├── frontmatter/         # Frontmatter editing domain
-│   │   └── FrontmatterPanel.tsx # Dynamic frontmatter forms
+│   │   ├── fields/          # Extracted field components
+│   │   │   ├── __tests__/   # Unit tests for complex field logic
+│   │   │   │   ├── ArrayField.test.tsx
+│   │   │   │   ├── BooleanField.test.tsx
+│   │   │   │   ├── FrontmatterField.test.tsx
+│   │   │   │   └── utils.test.tsx
+│   │   │   ├── StringField.tsx      # Simple text input
+│   │   │   ├── TextareaField.tsx    # Multi-line text input
+│   │   │   ├── NumberField.tsx      # Numeric input with validation
+│   │   │   ├── BooleanField.tsx     # Switch with schema defaults
+│   │   │   ├── DateField.tsx        # Date picker integration
+│   │   │   ├── EnumField.tsx        # Select dropdown
+│   │   │   ├── ArrayField.tsx       # Tag input with validation
+│   │   │   ├── FrontmatterField.tsx # Orchestrator component
+│   │   │   └── index.ts             # Barrel exports
+│   │   ├── FrontmatterPanel.tsx     # Main frontmatter panel
+│   │   └── utils.ts                 # Shared utilities
 │   ├── command-palette/     # Command palette
 │   │   └── CommandPalette.tsx
 │   ├── component-builder/   # MDX component builder
@@ -954,12 +975,32 @@ scheduleAutoSave: () => {
 
 ### Frontend (Vitest + React Testing Library)
 
-- **Unit Tests**: Extracted modules in `lib/editor/`
-- **Integration Tests**: Custom hooks
-- **Component Tests**: UI interactions
-- **Store Tests**: Zustand actions and state
+- **Unit Tests**: Extracted modules in `lib/editor/` and complex field components in `components/frontmatter/fields/__tests__/`
+- **Integration Tests**: Custom hooks and complete component workflows
+- **Component Tests**: UI interactions and user flows
+- **Store Tests**: Zustand actions and state management
 - **Query Tests**: Mock TanStack Query with test utilities
 - Mock Tauri with `globalThis.mockTauri`
+
+#### Field Component Testing Strategy
+
+**Unit Tests for Complex Logic:**
+
+- **ArrayField**: Array validation logic, tag management, edge cases
+- **BooleanField**: Schema default handling, value resolution logic
+- **FrontmatterField**: Orchestration logic, type selection, branching
+- **Utils**: Type conversion functions and edge cases
+
+**Integration Tests for User Workflows:**
+
+- **FrontmatterPanel**: Complete editing workflows, schema integration, user interactions
+
+**Focus Areas:**
+
+- Business logic rather than UI rendering
+- Edge cases difficult to reproduce in integration tests
+- Schema integration and default value handling
+- Complex validation and type conversion logic
 
 #### Testing with TanStack Query
 

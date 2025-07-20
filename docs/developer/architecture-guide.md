@@ -21,13 +21,16 @@ The codebase follows a clear separation between different types of concerns:
 We use a hybrid approach with TanStack Query and Zustand:
 
 #### Server State (TanStack Query)
+
 Use TanStack Query for state that:
+
 - Comes from the server/filesystem (collections, files, file content)
 - Benefits from caching and automatic refetching
 - Needs to be synchronized across components
 - Has loading, error, and success states
 
 Examples:
+
 ```typescript
 // Server state managed by TanStack Query
 const { data: collections } = useCollectionsQuery(projectPath)
@@ -36,19 +39,22 @@ const { data: content } = useFileContentQuery(projectPath, fileId)
 ```
 
 #### Client State (Zustand)
+
 We use a **decomposed store architecture** with three focused stores:
 
 **1. Editor Store (`useEditorStore`)** - File editing state (most volatile):
+
 ```typescript
 // src/store/editorStore.ts
 currentFile: FileEntry | null
-editorContent: string        // Current editing content
-frontmatter: Record<string, unknown>  // Current frontmatter being edited
-isDirty: boolean            // Tracks unsaved changes
+editorContent: string // Current editing content
+frontmatter: Record<string, unknown> // Current frontmatter being edited
+isDirty: boolean // Tracks unsaved changes
 // Actions: openFile, saveFile, setEditorContent, updateFrontmatterField
 ```
 
 **2. Project Store (`useProjectStore`)** - Project-level state:
+
 ```typescript
 // src/store/projectStore.ts
 projectPath: string | null
@@ -59,6 +65,7 @@ globalSettings: GlobalSettings | null
 ```
 
 **3. UI Store (`useUIStore`)** - UI layout state:
+
 ```typescript
 // src/store/uiStore.ts
 sidebarVisible: boolean
@@ -67,19 +74,23 @@ frontmatterPanelVisible: boolean
 ```
 
 **Why This Decomposition?**
+
 - **Performance**: Only relevant components re-render when specific state changes
-- **Clarity**: Each store has a single, focused responsibility  
+- **Clarity**: Each store has a single, focused responsibility
 - **Maintainability**: Easier to reason about and modify individual concerns
 - **Testability**: Each store can be tested independently
 
 #### Local State (React Components)
+
 Keep state local when it:
+
 - Only affects UI presentation
 - Is derived from props or global state
 - Doesn't need persistence
 - Is tightly coupled to component lifecycle
 
 Examples:
+
 ```typescript
 // UI state in Layout.tsx
 const [windowWidth, setWindowWidth] = useState(window.innerWidth)
@@ -87,6 +98,7 @@ window.isEditorFocused = false // Global flag for menu coordination
 ```
 
 #### Why This Split?
+
 - **Performance**: Local state changes don't trigger global re-renders
 - **Clarity**: Clear ownership of different concerns
 - **Testability**: Business logic can be tested independently of UI
@@ -97,12 +109,14 @@ window.isEditorFocused = false // Global flag for menu coordination
 #### Feature Modules (`src/lib/editor/`)
 
 Each feature is a self-contained module with:
+
 - `index.ts` - Public API exports
 - `types.ts` - TypeScript interfaces
 - Implementation files with descriptive names
 - Tests alongside implementation
 
 Example structure:
+
 ```
 commands/
 ├── index.ts           # Public exports
@@ -115,6 +129,7 @@ commands/
 #### When to Create a Module
 
 Extract code into `lib/` when:
+
 1. It's a distinct feature with 3+ functions
 2. It's used by multiple components
 3. It has complex logic that benefits from isolation
@@ -126,12 +141,14 @@ Extract code into `lib/` when:
 #### Custom Hooks (`src/hooks/`)
 
 Create custom hooks for:
+
 - Encapsulating stateful logic
 - Sharing behavior between components
 - Managing side effects
 - Integrating with external systems
 
 Example patterns:
+
 ```typescript
 // Setup hook - initialization and configuration
 export const useEditorSetup = (
@@ -154,6 +171,7 @@ export const useTauriListeners = (editorView: EditorView | null) => {
 ```
 
 #### Hook Best Practices
+
 1. Prefix with `use` for clarity
 2. Return stable references (use `useCallback`, `useMemo`)
 3. Handle cleanup in effect returns
@@ -176,6 +194,7 @@ globalCommandRegistry.execute('formatHeading', 1)
 ```
 
 Benefits:
+
 - Decouples command definition from UI triggers
 - Enables keyboard shortcuts, menus, and buttons to share logic
 - Provides central place for command state management
@@ -207,6 +226,7 @@ const view = new EditorView({
 ```
 
 This allows:
+
 - Feature isolation through extensions
 - Easy enable/disable of features
 - Performance optimization
@@ -250,7 +270,7 @@ export const useCollectionsQuery = (projectPath: string | null) => {
 // hooks/mutations/useSaveFileMutation.ts
 export const useSaveFileMutation = () => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: saveFile,
     onSuccess: (_, variables) => {
@@ -286,7 +306,8 @@ const handleCreateNewFile = useCallback(() => {
 
 useEffect(() => {
   window.addEventListener('create-new-file', handleCreateNewFile)
-  return () => window.removeEventListener('create-new-file', handleCreateNewFile)
+  return () =>
+    window.removeEventListener('create-new-file', handleCreateNewFile)
 }, [handleCreateNewFile])
 ```
 
@@ -300,6 +321,7 @@ The app uses multiple event systems:
 4. **Zustand Subscriptions**: For store changes
 
 Example:
+
 ```typescript
 // Custom event for focus tracking
 window.dispatchEvent(new CustomEvent('editor-focus-changed'))
@@ -320,9 +342,13 @@ The app uses `react-hotkeys-hook` for standardized, cross-platform keyboard shor
 import { useHotkeys } from 'react-hotkeys-hook'
 
 // Cross-platform shortcut (Cmd on macOS, Ctrl on Windows/Linux)
-useHotkeys('mod+s', () => {
-  // Save file action
-}, { preventDefault: true })
+useHotkeys(
+  'mod+s',
+  () => {
+    // Save file action
+  },
+  { preventDefault: true }
+)
 ```
 
 ### Key Benefits
@@ -337,12 +363,17 @@ useHotkeys('mod+s', () => {
 Keyboard shortcuts work seamlessly with the command registry:
 
 ```typescript
-useHotkeys('mod+b', () => {
-  globalCommandRegistry.execute('toggleBold')
-}, { preventDefault: true })
+useHotkeys(
+  'mod+b',
+  () => {
+    globalCommandRegistry.execute('toggleBold')
+  },
+  { preventDefault: true }
+)
 ```
 
 This allows the same actions to be triggered from:
+
 - Keyboard shortcuts
 - Menu items
 - Command palette
@@ -378,17 +409,21 @@ This allows the same actions to be triggered from:
 ### 1. Memoization
 
 Use memoization strategically:
+
 ```typescript
 // Memoize expensive computations
-const sortedFiles = useMemo(() => 
-  files.sort((a, b) => compareDates(a, b)),
+const sortedFiles = useMemo(
+  () => files.sort((a, b) => compareDates(a, b)),
   [files]
 )
 
 // Stable callbacks for child components
-const handleChange = useCallback((value: string) => {
-  setEditorContent(value)
-}, [setEditorContent])
+const handleChange = useCallback(
+  (value: string) => {
+    setEditorContent(value)
+  },
+  [setEditorContent]
+)
 ```
 
 ### 2. Lazy Loading
@@ -400,6 +435,7 @@ const handleChange = useCallback((value: string) => {
 ### 3. Debouncing
 
 Critical for editor performance:
+
 ```typescript
 // Auto-save debouncing
 scheduleAutoSave: () => {
@@ -413,6 +449,7 @@ scheduleAutoSave: () => {
 ### Unit Tests (Modules)
 
 Test extracted modules thoroughly:
+
 ```typescript
 // lib/editor/markdown/formatting.test.ts
 describe('toggleMarkdown', () => {
@@ -425,6 +462,7 @@ describe('toggleMarkdown', () => {
 ### Integration Tests (Hooks)
 
 Test hooks with React Testing Library:
+
 ```typescript
 // hooks/editor/useEditorHandlers.test.tsx
 describe('useEditorHandlers', () => {
@@ -437,6 +475,7 @@ describe('useEditorHandlers', () => {
 ### Component Tests
 
 Focus on user interactions:
+
 ```typescript
 // components/Layout/EditorView.test.tsx
 describe('EditorView', () => {
@@ -445,6 +484,85 @@ describe('EditorView', () => {
   })
 })
 ```
+
+### Frontmatter Field Component Tests
+
+For complex field components with business logic, use focused unit tests:
+
+```typescript
+// components/frontmatter/fields/__tests__/ArrayField.test.tsx
+describe('ArrayField Component', () => {
+  describe('Array Validation Logic', () => {
+    it('should handle proper string arrays', () => {
+      // Test complex array validation logic
+    })
+
+    it('should handle arrays with non-string values', () => {
+      // Test edge cases that are hard to reproduce in integration tests
+    })
+  })
+})
+```
+
+**When to Unit Test Field Components:**
+
+- Complex validation logic (e.g., ArrayField string-only validation)
+- Schema default handling (e.g., BooleanField's getBooleanValue)
+- Orchestration logic (e.g., FrontmatterField's type selection)
+
+**Testing Strategy:**
+
+- **Integration Tests**: Cover happy path and user interactions (FrontmatterPanel.test.tsx)
+- **Unit Tests**: Cover complex logic and edge cases in individual components
+- **Focus on Business Logic**: Test logic, not UI rendering
+
+## Component Extraction Patterns
+
+### Frontmatter Field Components
+
+When extracting form field components, follow the **Direct Store Pattern**:
+
+```typescript
+// ✅ CORRECT: Direct store access
+const StringField: React.FC<FieldProps> = ({ name, label, required }) => {
+  const { frontmatter, updateFrontmatterField } = useEditorStore()
+
+  return (
+    <Input
+      value={valueToString(frontmatter[name])}
+      onChange={e => updateFrontmatterField(name, e.target.value)}
+    />
+  )
+}
+```
+
+**Component Structure:**
+
+```
+src/components/frontmatter/fields/
+├── __tests__/           # Unit tests for complex logic
+│   ├── ArrayField.test.tsx
+│   ├── BooleanField.test.tsx
+│   ├── FrontmatterField.test.tsx
+│   └── utils.test.tsx
+├── StringField.tsx      # Simple text input
+├── TextareaField.tsx    # Multi-line text input
+├── NumberField.tsx      # Numeric input with validation
+├── BooleanField.tsx     # Switch with schema defaults
+├── DateField.tsx        # Date picker integration
+├── EnumField.tsx        # Select dropdown
+├── ArrayField.tsx       # Tag input with validation
+├── FrontmatterField.tsx # Orchestrator component
+└── index.ts             # Barrel exports
+```
+
+**Key Patterns:**
+
+1. **Single Responsibility**: Each field component handles one data type
+2. **Direct Store Access**: No callback props, direct store updates
+3. **Type Safety**: Proper TypeScript interfaces and validation
+4. **Schema Integration**: Leverage Zod schema information for defaults
+5. **Utility Separation**: Shared logic in utils.ts
 
 ## Future Extensibility
 
@@ -476,17 +594,20 @@ The architecture is designed to support future plugins:
 ## Decision Log
 
 ### Why Not React Hook Form?
+
 - Causes infinite loops with Zustand
 - Direct store pattern is simpler and more performant
 - Better real-time sync with auto-save
 
 ### Why CodeMirror over Monaco?
+
 - Better markdown support
 - Lighter weight
 - More extensible for our use case
 - Better mobile support (future)
 
 ### Why Tauri over Electron?
+
 - Smaller bundle size
 - Better performance
 - Native feel on macOS
@@ -529,6 +650,7 @@ App
 ```
 
 This architecture ensures:
+
 - Clear data flow with focused responsibilities
 - Testable modules with single concerns
 - Extensible design with clean separation

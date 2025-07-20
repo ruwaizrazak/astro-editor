@@ -558,8 +558,8 @@ FrontmatterFields extraction establishes patterns for:
 - [x] Extract each field component
 - [x] Create barrel exports
 - [x] Update FrontmatterPanel imports
-- [ ] Write unit tests for extracted components
-- [ ] Update CLAUDE.md and documentation
+- [x] Write unit tests for extracted components
+- [x] Update CLAUDE.md and documentation
 
 ### 8.6. Final Cleanup
 
