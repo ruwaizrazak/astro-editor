@@ -26,7 +26,9 @@
       "Bash(node:*)",
       "Bash(npm add:*)",
       "WebFetch(domain:medium.com)",
-      "WebFetch(domain:codemirror.net)"
+      "WebFetch(domain:codemirror.net)",
+      "Bash(mv:*)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }

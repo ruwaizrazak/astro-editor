@@ -1,7 +1,7 @@
 import React from 'react'
 import { useAppStore, type FileEntry } from '../../store'
-import { EditorView } from './index'
-import { StatusBar } from './StatusBar'
+import { Editor } from '../editor'
+import { StatusBar } from '.'
 
 // Welcome screen component for better organization
 const WelcomeScreen: React.FC = () => (
@@ -21,7 +21,7 @@ export const MainEditor: React.FC = () => {
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-x-hidden overflow-y-auto bg-[var(--editor-color-background)]">
-        {currentFile ? <EditorView /> : <WelcomeScreen />}
+        {currentFile ? <Editor /> : <WelcomeScreen />}
       </div>
       <StatusBar />
     </div>

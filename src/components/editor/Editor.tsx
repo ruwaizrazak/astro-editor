@@ -9,8 +9,7 @@ import {
   useTauriListeners,
 } from '../../hooks/editor'
 import { altKeyEffect } from '../../lib/editor/urls'
-import './EditorView.css'
-import './EditorTheme.css'
+import './Editor.css'
 
 // Extend window to include editor focus tracking
 declare global {
@@ -19,20 +18,6 @@ declare global {
   }
 }
 
-/**
- * Refactored EditorView component - much simpler and more focused
- *
- * This component has been reduced from 1200+ lines to ~100 lines by
- * extracting functionality into focused modules:
- * - Syntax highlighting -> lib/editor/syntax
- * - Markdown utilities -> lib/editor/markdown
- * - URL handling -> lib/editor/urls
- * - Drag & drop -> lib/editor/dragdrop
- * - Paste handling -> lib/editor/paste
- * - Commands -> lib/editor/commands
- * - Extensions -> lib/editor/extensions
- * - Hooks -> hooks/editor
- */
 export const EditorViewComponent: React.FC = () => {
   const { editorContent } = useAppStore()
   const editorRef = useRef<HTMLDivElement>(null)

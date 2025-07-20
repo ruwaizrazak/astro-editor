@@ -249,11 +249,25 @@ queryClient.invalidateQueries({
 ```
 src/
 ├── components/
-│   ├── Layout/              # Main app components
+│   ├── layout/              # App shell/layout only
 │   │   ├── Layout.tsx       # Main orchestrator (UI state)
-│   │   ├── EditorView.tsx   # Editor component (refactored)
-│   │   ├── Sidebar.tsx      # File navigation
-│   │   └── FrontmatterPanel.tsx
+│   │   ├── UnifiedTitleBar.tsx # Window title bar
+│   │   ├── EditorView.tsx   # CodeMirror wrapper component
+│   │   └── StatusBar.tsx    # Editor status bar
+│   ├── editor/              # Editor domain (components + styles)
+│   │   ├── MainEditor.tsx   # Editor main component
+│   │   ├── EditorView.css   # Editor styling
+│   │   └── EditorTheme.css  # Editor theme variables
+│   ├── sidebar/             # File navigation domain
+│   │   └── Sidebar.tsx      # File/collection navigation
+│   ├── frontmatter/         # Frontmatter editing domain
+│   │   └── FrontmatterPanel.tsx # Dynamic frontmatter forms
+│   ├── command-palette/     # Command palette (kebab-case)
+│   │   └── CommandPalette.tsx
+│   ├── component-builder/   # MDX component builder (kebab-case)
+│   │   └── ComponentBuilderDialog.tsx
+│   ├── preferences/         # Settings and preferences
+│   │   └── PreferencesDialog.tsx
 │   └── ui/                  # shadcn/ui components (30+)
 ├── lib/
 │   ├── editor/              # Extracted editor modules
@@ -402,6 +416,39 @@ npm run test:coverage    # Coverage report
 ```bash
 npm run reset:testdata   # Reset test project
 ```
+
+## Component Organization
+
+### Directory Structure
+
+- **kebab-case naming** for all component directories
+- **Barrel exports** (index.ts) for clean imports
+- **Domain-based organization** rather than technical grouping
+- **Co-location** of related files (components, styles, tests)
+
+### Naming Conventions
+
+- Directories: `kebab-case` (e.g., `command-palette/`, `component-builder/`)
+- Components: `PascalCase` (e.g., `CommandPalette.tsx`, `ComponentBuilderDialog.tsx`)
+- CSS files: Co-located with components they style (e.g., `EditorView.css` in `editor/`)
+- Tests: Co-located with components (e.g., `FrontmatterPanel.test.tsx`)
+
+### Import Patterns
+
+- Use barrel exports: `import { CommandPalette } from '@/components/command-palette'`
+- Avoid deep imports: `import CommandPalette from '@/components/command-palette/CommandPalette'`
+- CSS imports: Use relative paths from component directory
+
+### Domain Organization
+
+**layout/** - App shell and window chrome components only
+**editor/** - Editor functionality and styling
+**sidebar/** - File/collection navigation 
+**frontmatter/** - Frontmatter editing forms
+**command-palette/** - Command palette functionality
+**component-builder/** - MDX component insertion
+**preferences/** - Settings and configuration
+**ui/** - Reusable shadcn/ui components
 
 ## Key Patterns
 

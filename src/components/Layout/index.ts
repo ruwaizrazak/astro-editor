@@ -1,6 +1,4 @@
 export { Layout } from './Layout'
-export { Sidebar } from './Sidebar'
-export { MainEditor } from './MainEditor'
-export { FrontmatterPanel } from './FrontmatterPanel'
-export { EditorViewComponent as EditorView } from './EditorView'
+export { UnifiedTitleBar } from './UnifiedTitleBar'
 export { StatusBar } from './StatusBar'
+export { MainEditor } from './MainEditor'
