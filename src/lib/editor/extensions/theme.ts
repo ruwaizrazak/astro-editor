@@ -24,7 +24,7 @@ export const createEditorTheme = () => {
     },
     '.cm-content': {
       lineHeight: 'var(--editor-line-height)',
-      minHeight: '100vh',
+      minHeight: 'calc(100vh - 68px)', // Subtract titlebar (44px) + statusbar (24px)
       maxWidth: 'var(--editor-content-max-width)',
       margin: '0 auto',
       padding: '40px 0',
