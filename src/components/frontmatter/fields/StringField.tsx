@@ -1,0 +1,36 @@
+import React from 'react'
+import { useEditorStore } from '../../../store/editorStore'
+import { Input } from '../../ui/input'
+import { valueToString } from '../utils'
+import type { FieldProps } from '../../../types/common'
+
+interface StringFieldProps extends FieldProps {
+  placeholder?: string
+}
+
+export const StringField: React.FC<StringFieldProps> = ({
+  name,
+  label,
+  placeholder,
+  className,
+  required,
+}) => {
+  const { frontmatter, updateFrontmatterField } = useEditorStore()
+
+  return (
+    <div className="space-y-2">
+      <label className="text-sm font-medium">
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+      </label>
+      <Input
+        type="text"
+        name={name}
+        placeholder={placeholder || `Enter ${label.toLowerCase()}...`}
+        className={className}
+        value={valueToString(frontmatter[name])}
+        onChange={e => updateFrontmatterField(name, e.target.value)}
+      />
+    </div>
+  )
+}

@@ -554,19 +554,18 @@ FrontmatterFields extraction establishes patterns for:
 
 ### 8.5. Field Component Extraction
 
-- [ ] Create `frontmatter/fields/` directory structure
-- [ ] Extract each field component
-- [ ] Create barrel exports
-- [ ] Update FrontmatterPanel imports
+- [x] Create `frontmatter/fields/` directory structure
+- [x] Extract each field component
+- [x] Create barrel exports
+- [x] Update FrontmatterPanel imports
 - [ ] Write unit tests for extracted components
+- [ ] Update CLAUDE.md and documentation
 
 ### 8.6. Final Cleanup
 
-- [ ] Remove original `useAppStore`
-- [ ] Update CLAUDE.md documentation
+- [ ] Remove original `useAppStore` if not removed
+- [ ] Remove any old stuff for backwards compatibility or comments saying "Removed X because" etc. Clean up.
 - [ ] Run full test suite
-- [ ] Performance benchmarking
-- [ ] Update architecture documentation
 
 ---
 

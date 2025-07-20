@@ -130,8 +130,52 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     }
 
     try {
-      // Schema field order is not available without collections
-      const schemaFieldOrder = null
+      // Get schema field order from collections data via custom event
+      let schemaFieldOrder: string[] | null = null
+      if (currentFile) {
+        try {
+          // Dispatch event to get schema field order for current collection
+          const schemaEvent = new CustomEvent('get-schema-field-order', {
+            detail: { collectionName: currentFile.collection },
+          })
+
+          // Set up a listener for the response
+          let responseReceived = false
+          const handleSchemaResponse = (event: Event) => {
+            const customEvent = event as CustomEvent<{
+              fieldOrder: string[] | null
+            }>
+            schemaFieldOrder = customEvent.detail.fieldOrder || null
+            responseReceived = true
+          }
+
+          window.addEventListener(
+            'schema-field-order-response',
+            handleSchemaResponse
+          )
+          window.dispatchEvent(schemaEvent)
+
+          // Wait a short time for the response (synchronous-style with events)
+          await new Promise(resolve => {
+            const checkResponse = () => {
+              if (responseReceived) {
+                resolve(null)
+              } else {
+                setTimeout(checkResponse, 10)
+              }
+            }
+            checkResponse()
+          })
+
+          window.removeEventListener(
+            'schema-field-order-response',
+            handleSchemaResponse
+          )
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.warn('Could not get schema field order:', error)
+        }
+      }
 
       // Track this file as recently saved to ignore file watcher events
       set({ recentlySavedFile: currentFile.path })
