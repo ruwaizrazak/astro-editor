@@ -34,56 +34,55 @@ export const typewriterModeState = StateField.define<boolean>({
   },
 })
 
-// Simple, performant typewriter scrolling utility
+// Simple, performant typewriter scrolling utility using Y coordinates
 class TypewriterScroller {
-  private lastLineNumber = -1
+  private lastCursorY = -1
 
-  scrollToCenter(view: EditorView, lineNumber: number) {
+  scrollToCenter(view: EditorView, cursorPos: number) {
     // eslint-disable-next-line no-console
-    console.log(
-      '[TypewriterScroller] scrollToCenter called for line:',
-      lineNumber
-    )
+    console.log('[TypewriterScroller] scrollToCenter called for position:', cursorPos)
 
-    // Skip if same line
-    if (lineNumber === this.lastLineNumber) {
-      // eslint-disable-next-line no-console
-      console.log('[TypewriterScroller] Skipping - same line number')
-      return
-    }
-
-    // Get the line position
-    const line = view.state.doc.line(lineNumber)
-    const linePos = line.from
-
-    // eslint-disable-next-line no-console
-    console.log(
-      '[TypewriterScroller] Scheduling scroll for line',
-      lineNumber,
-      'at position',
-      linePos,
-      'to center'
-    )
-
-    // Schedule the scroll to happen after the current update completes
-    // This avoids the "update in progress" error
+    // Schedule both coordinate reading AND scrolling to happen after the current update completes
+    // This avoids the "reading layout during update" error
     setTimeout(() => {
+      // Now we can safely read coordinates
+      const coords = view.coordsAtPos(cursorPos)
+      if (!coords) {
+        // eslint-disable-next-line no-console
+        console.log('[TypewriterScroller] No coordinates found for position')
+        return
+      }
+
+      const cursorY = coords.top
       // eslint-disable-next-line no-console
-      console.log('[TypewriterScroller] Executing scheduled scroll')
+      console.log('[TypewriterScroller] Cursor Y coordinate:', cursorY, 'Previous Y:', this.lastCursorY)
+
+      // Only scroll if cursor moved vertically by more than 20px
+      // This handles both line changes and wrapped line movement
+      const yDifference = Math.abs(cursorY - this.lastCursorY)
+      if (this.lastCursorY !== -1 && yDifference < 20) {
+        // eslint-disable-next-line no-console
+        console.log('[TypewriterScroller] Skipping - cursor Y movement too small:', yDifference + 'px')
+        return
+      }
+
+      // eslint-disable-next-line no-console
+      console.log('[TypewriterScroller] Executing scroll for Y coordinate change:', yDifference + 'px')
+
       view.dispatch({
-        effects: EditorView.scrollIntoView(linePos, {
+        effects: EditorView.scrollIntoView(cursorPos, {
           y: 'center',
         }),
       })
-    }, 0)
 
-    this.lastLineNumber = lineNumber
-    // eslint-disable-next-line no-console
-    console.log('[TypewriterScroller] Scroll scheduled successfully')
+      this.lastCursorY = cursorY
+      // eslint-disable-next-line no-console
+      console.log('[TypewriterScroller] Scroll executed successfully')
+    }, 0)
   }
 
   clear() {
-    this.lastLineNumber = -1
+    this.lastCursorY = -1
   }
 }
 
@@ -113,17 +112,15 @@ export const typewriterModePlugin = ViewPlugin.fromClass(
         return
       }
 
-      // Scroll when cursor moves to a different line
+      // Scroll when cursor moves (including within wrapped lines)
       if (update.selectionSet) {
-        const currentLineNumber = update.state.doc.lineAt(
-          update.state.selection.main.head
-        ).number
+        const cursorPos = update.state.selection.main.head
 
         // eslint-disable-next-line no-console
-        console.log('[TypewriterModePlugin] Cursor on line:', currentLineNumber)
+        console.log('[TypewriterModePlugin] Cursor at position:', cursorPos)
 
-        // Always try to scroll - let the scroller decide if it's needed
-        this.scroller.scrollToCenter(this.view, currentLineNumber)
+        // Try to scroll based on cursor position (handles wrapped lines)
+        this.scroller.scrollToCenter(this.view, cursorPos)
       }
     }
 
