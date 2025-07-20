@@ -241,17 +241,23 @@ export const Layout: React.FC = () => {
     const handleToggleFocusMode = () => {
       useUIStore.getState().toggleFocusMode()
     }
-    
+
     const handleToggleTypewriterMode = () => {
       useUIStore.getState().toggleTypewriterMode()
     }
-    
+
     window.addEventListener('toggle-focus-mode', handleToggleFocusMode)
-    window.addEventListener('toggle-typewriter-mode', handleToggleTypewriterMode)
-    
+    window.addEventListener(
+      'toggle-typewriter-mode',
+      handleToggleTypewriterMode
+    )
+
     return () => {
       window.removeEventListener('toggle-focus-mode', handleToggleFocusMode)
-      window.removeEventListener('toggle-typewriter-mode', handleToggleTypewriterMode)
+      window.removeEventListener(
+        'toggle-typewriter-mode',
+        handleToggleTypewriterMode
+      )
     }
   }, [])
 

@@ -25,29 +25,29 @@ describe('Focus and Typewriter Modes Integration', () => {
   describe('UI Store Integration', () => {
     test('toggles focus mode state correctly', () => {
       const { toggleFocusMode } = useUIStore.getState()
-      
+
       // Initial state should be false
       expect(useUIStore.getState().focusModeEnabled).toBe(false)
-      
+
       // Toggle on
       toggleFocusMode()
       expect(useUIStore.getState().focusModeEnabled).toBe(true)
-      
+
       // Toggle off
       toggleFocusMode()
       expect(useUIStore.getState().focusModeEnabled).toBe(false)
     })
-    
+
     test('toggles typewriter mode state correctly', () => {
       const { toggleTypewriterMode } = useUIStore.getState()
-      
+
       // Initial state should be false
       expect(useUIStore.getState().typewriterModeEnabled).toBe(false)
-      
+
       // Toggle on
       toggleTypewriterMode()
       expect(useUIStore.getState().typewriterModeEnabled).toBe(true)
-      
+
       // Toggle off
       toggleTypewriterMode()
       expect(useUIStore.getState().typewriterModeEnabled).toBe(false)
@@ -55,11 +55,11 @@ describe('Focus and Typewriter Modes Integration', () => {
 
     test('both modes can be enabled simultaneously', () => {
       const { toggleFocusMode, toggleTypewriterMode } = useUIStore.getState()
-      
+
       // Enable both modes
       toggleFocusMode()
       toggleTypewriterMode()
-      
+
       const state = useUIStore.getState()
       expect(state.focusModeEnabled).toBe(true)
       expect(state.typewriterModeEnabled).toBe(true)
@@ -67,24 +67,24 @@ describe('Focus and Typewriter Modes Integration', () => {
 
     test('modes can be toggled independently', () => {
       const { toggleFocusMode, toggleTypewriterMode } = useUIStore.getState()
-      
+
       // Enable focus mode only
       toggleFocusMode()
-      
+
       let state = useUIStore.getState()
       expect(state.focusModeEnabled).toBe(true)
       expect(state.typewriterModeEnabled).toBe(false)
-      
+
       // Enable typewriter mode (focus mode still on)
       toggleTypewriterMode()
-      
+
       state = useUIStore.getState()
       expect(state.focusModeEnabled).toBe(true)
       expect(state.typewriterModeEnabled).toBe(true)
-      
+
       // Disable focus mode (typewriter mode still on)
       toggleFocusMode()
-      
+
       state = useUIStore.getState()
       expect(state.focusModeEnabled).toBe(false)
       expect(state.typewriterModeEnabled).toBe(true)
@@ -93,14 +93,15 @@ describe('Focus and Typewriter Modes Integration', () => {
 
   describe('State Persistence', () => {
     test('maintains state across multiple operations', () => {
-      const { toggleFocusMode, toggleTypewriterMode, toggleSidebar } = useUIStore.getState()
-      
+      const { toggleFocusMode, toggleTypewriterMode, toggleSidebar } =
+        useUIStore.getState()
+
       // Perform multiple operations
       toggleFocusMode() // Enable focus mode
       toggleSidebar() // Toggle sidebar (unrelated)
       toggleTypewriterMode() // Enable typewriter mode
       toggleSidebar() // Toggle sidebar again
-      
+
       // Verify writing modes are still enabled
       const state = useUIStore.getState()
       expect(state.focusModeEnabled).toBe(true)
@@ -114,29 +115,35 @@ describe('Focus and Typewriter Modes Integration', () => {
       const handleToggleFocusMode = () => {
         useUIStore.getState().toggleFocusMode()
       }
-      
+
       const handleToggleTypewriterMode = () => {
         useUIStore.getState().toggleTypewriterMode()
       }
-      
+
       // Attach listeners
       window.addEventListener('toggle-focus-mode', handleToggleFocusMode)
-      window.addEventListener('toggle-typewriter-mode', handleToggleTypewriterMode)
-      
+      window.addEventListener(
+        'toggle-typewriter-mode',
+        handleToggleTypewriterMode
+      )
+
       // Initial state
       expect(useUIStore.getState().focusModeEnabled).toBe(false)
       expect(useUIStore.getState().typewriterModeEnabled).toBe(false)
-      
+
       // Trigger events
       window.dispatchEvent(new CustomEvent('toggle-focus-mode'))
       expect(useUIStore.getState().focusModeEnabled).toBe(true)
-      
+
       window.dispatchEvent(new CustomEvent('toggle-typewriter-mode'))
       expect(useUIStore.getState().typewriterModeEnabled).toBe(true)
-      
+
       // Cleanup
       window.removeEventListener('toggle-focus-mode', handleToggleFocusMode)
-      window.removeEventListener('toggle-typewriter-mode', handleToggleTypewriterMode)
+      window.removeEventListener(
+        'toggle-typewriter-mode',
+        handleToggleTypewriterMode
+      )
     })
   })
 
@@ -144,13 +151,13 @@ describe('Focus and Typewriter Modes Integration', () => {
     test('individual selectors work correctly', () => {
       // Test that individual state selectors work
       const initialState = useUIStore.getState()
-      
+
       expect(initialState.focusModeEnabled).toBe(false)
       expect(initialState.typewriterModeEnabled).toBe(false)
-      
+
       // Toggle and test again
       useUIStore.getState().toggleFocusMode()
-      
+
       const newState = useUIStore.getState()
       expect(newState.focusModeEnabled).toBe(true)
     })
@@ -158,7 +165,7 @@ describe('Focus and Typewriter Modes Integration', () => {
     test('combined selectors work correctly', () => {
       // Test combined state selector
       const { focusModeEnabled, typewriterModeEnabled } = useUIStore.getState()
-      
+
       expect(focusModeEnabled).toBe(false)
       expect(typewriterModeEnabled).toBe(false)
     })
@@ -167,13 +174,13 @@ describe('Focus and Typewriter Modes Integration', () => {
   describe('Error Handling', () => {
     test('handles rapid toggle calls gracefully', () => {
       const { toggleFocusMode, toggleTypewriterMode } = useUIStore.getState()
-      
+
       // Rapid toggling should not cause issues
       for (let i = 0; i < 10; i++) {
         toggleFocusMode()
         toggleTypewriterMode()
       }
-      
+
       // Final state should be consistent (even number of toggles = false)
       const state = useUIStore.getState()
       expect(state.focusModeEnabled).toBe(false)
@@ -182,7 +189,7 @@ describe('Focus and Typewriter Modes Integration', () => {
 
     test('store methods are always available', () => {
       const store = useUIStore.getState()
-      
+
       // All required methods should exist
       expect(typeof store.toggleFocusMode).toBe('function')
       expect(typeof store.toggleTypewriterMode).toBe('function')

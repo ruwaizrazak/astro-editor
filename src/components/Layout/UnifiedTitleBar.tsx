@@ -45,13 +45,20 @@ export const UnifiedTitleBar: React.FC = () => {
   }
 
   const handleToggleFocusMode = () => {
+    // eslint-disable-next-line no-console
     console.log('[UnifiedTitleBar] Focus mode toggle clicked')
+    // eslint-disable-next-line no-console
     console.log('[UnifiedTitleBar] Current focus mode state:', focusModeEnabled)
     toggleFocusMode()
-    console.log('[UnifiedTitleBar] Focus mode toggled, new state should be:', !focusModeEnabled)
+    // eslint-disable-next-line no-console
+    console.log(
+      '[UnifiedTitleBar] Focus mode toggled, new state should be:',
+      !focusModeEnabled
+    )
     // Verify the state actually changed
     setTimeout(() => {
       const newState = useUIStore.getState().focusModeEnabled
+      // eslint-disable-next-line no-console
       console.log('[UnifiedTitleBar] Verified new focus mode state:', newState)
     }, 100)
   }
@@ -158,7 +165,9 @@ export const UnifiedTitleBar: React.FC = () => {
           variant="outline"
           className="size-7 p-0"
           title={focusModeEnabled ? 'Disable Focus Mode' : 'Enable Focus Mode'}
-          aria-label={focusModeEnabled ? 'Disable Focus Mode' : 'Enable Focus Mode'}
+          aria-label={
+            focusModeEnabled ? 'Disable Focus Mode' : 'Enable Focus Mode'
+          }
         >
           {focusModeEnabled ? (
             <EyeOff className="size-4" />

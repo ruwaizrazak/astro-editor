@@ -33,8 +33,11 @@ export const useUIStore = create<UIState>(set => ({
   toggleFocusMode: () => {
     set(state => {
       const newState = !state.focusModeEnabled
+      // eslint-disable-next-line no-console
       console.log('[UIStore] toggleFocusMode called')
+      // eslint-disable-next-line no-console
       console.log('[UIStore] Current state:', state.focusModeEnabled)
+      // eslint-disable-next-line no-console
       console.log('[UIStore] New state:', newState)
       return { focusModeEnabled: newState }
     })

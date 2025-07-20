@@ -63,21 +63,28 @@ export const EditorViewComponent: React.FC = () => {
 
   // Update editor effects when writing modes change
   useEffect(() => {
+    // eslint-disable-next-line no-console
     console.log('[Editor] Focus mode effect triggered')
+    // eslint-disable-next-line no-console
     console.log('[Editor] focusModeEnabled:', focusModeEnabled)
+    // eslint-disable-next-line no-console
     console.log('[Editor] typewriterModeEnabled:', typewriterModeEnabled)
+    // eslint-disable-next-line no-console
     console.log('[Editor] viewRef.current exists:', !!viewRef.current)
-    
+
     if (viewRef.current) {
+      // eslint-disable-next-line no-console
       console.log('[Editor] Dispatching focus mode effect to CodeMirror')
       viewRef.current.dispatch({
         effects: [
           toggleFocusMode.of(focusModeEnabled),
-          toggleTypewriterMode.of(typewriterModeEnabled)
-        ]
+          toggleTypewriterMode.of(typewriterModeEnabled),
+        ],
       })
+      // eslint-disable-next-line no-console
       console.log('[Editor] Effect dispatched successfully')
     } else {
+      // eslint-disable-next-line no-console
       console.log('[Editor] No editor view available to dispatch effect')
     }
   }, [focusModeEnabled, typewriterModeEnabled])
