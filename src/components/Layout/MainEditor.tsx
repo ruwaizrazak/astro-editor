@@ -16,12 +16,21 @@ const WelcomeScreen: React.FC = () => (
 )
 
 export const MainEditor: React.FC = () => {
-  const { currentFile }: { currentFile: FileEntry | null } = useEditorStore()
+  // PERFORMANCE FIX: Use specific selector instead of currentFile object to avoid cascade
+  const hasCurrentFile = useEditorStore(state => !!state.currentFile)
+
+  // DEBUG: Track MainEditor renders
+  const renderCountRef = React.useRef(0)
+  renderCountRef.current++
+  // eslint-disable-next-line no-console
+  console.log(`[MainEditor] RENDER #${renderCountRef.current}`, { 
+    hasCurrentFile
+  })
 
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-x-hidden overflow-y-auto bg-[var(--editor-color-background)]">
-        {currentFile ? <Editor /> : <WelcomeScreen />}
+        {hasCurrentFile ? <Editor /> : <WelcomeScreen />}
       </div>
       <StatusBar />
     </div>

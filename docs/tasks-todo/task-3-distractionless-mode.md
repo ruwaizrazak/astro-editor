@@ -272,18 +272,371 @@ This feature should be completely isolated:
 ### Next Investigation Steps
 
 1. ✅ **Test 90% opacity** - Save buttons still don't work, confirms not visibility issue
-2. 🔄 **CURRENTLY TESTING: Typing detection disabled entirely** - If problems disappear, confirms re-render cascade theory
-3. **If typing detection is the culprit, solutions**:
-   - Add React.memo to Editor component to prevent unnecessary re-renders
-   - Move distraction-free state to isolated store/context
-   - Use CSS custom properties instead of React state
-   - Debounce state updates significantly
-4. **If problems persist even without typing detection** - Investigate other sources of re-renders
+2. ✅ **Typing detection disabled entirely** - Problems persist, so typing detection is NOT the root cause
+3. 🚨 **ACTUAL ROOT CAUSE: Layout Component Conditional Rendering**:
+   - **Infinite Loop**: Fixed by switching from object selector to individual selectors
+   - **Real Problem**: Layout component conditionally renders different component trees
+   - **Bad Layout Structure**: 
+     ```tsx
+     // Destroys Editor on sidebar toggle
+     {sidebarVisible ? <ResizablePanelGroup><MainEditor /></ResizablePanelGroup> : <div><MainEditor /></div>}
+     
+     // Destroys Editor on panel toggle  
+     {frontmatterVisible ? <ResizablePanelGroup><MainEditor /></> : <div><MainEditor /></div>}
+     ```
+   - **Fix Applied**: Consistent component tree structure using conditional rendering inside stable containers
+   - **Progress**: Editor no longer being destroyed/recreated, but still excessive re-renders
+   - **New Issue**: Complete render cascade on every keystroke - Layout → EditorArea → MainEditor → Editor
+4. **CRITICAL: Complete Render Cascade Identified**:
+   - **Every keystroke triggers**: `Layout → EditorAreaWithFrontmatter → MainEditor → Editor` 
+   - **The smoking gun**: `EditorAreaWithFrontmatter` should NEVER re-render on editor content changes
+   - **EditorAreaWithFrontmatter only cares about**: `frontmatterPanelVisible` (not editor content)
+   - **But it's re-rendering**: On every single character typed
+   - **Root cause**: Something in Layout is subscribing to editor content and causing full tree re-render
+
+### Architectural Issues with Current Layout
+
+Current problematic nesting:
+```
+Layout
+├── Sidebar (conditional)
+└── EditorArea
+    ├── MainEditor  
+    └── FrontmatterPanel (conditional)
+```
+
+Better flat structure you suggested:
+```
+Layout
+├── Sidebar (conditional)
+├── MainEditor (always stable)
+├── FrontmatterPanel (conditional)  
+└── StatusBar (always stable)
+```
+
+This would eliminate nested conditional rendering and make each component independently stable.
+
+### FINAL ROOT CAUSE IDENTIFIED ✅
+
+**The Problem**: Layout component subscribing to `isDirty` from editor store causes render cascade:
+
+```typescript
+// In Layout.tsx - THIS IS THE CULPRIT
+const { currentFile, isDirty, saveFile, closeCurrentFile } = useEditorStore()
+```
+
+**The Evidence**: 
+- Layout RENDER #10: `isDirty: false` → `isDirty: true` (first keystroke)
+- Layout RENDER #11-21: `isDirty: true` (stays true, but Layout keeps re-rendering)
+- Every keystroke: `Layout → EditorAreaWithFrontmatter → MainEditor → Editor`
+
+**Why This Happens**:
+1. User types → `isDirty` changes to `true` → Layout re-renders
+2. Layout re-renders → `EditorAreaWithFrontmatter` re-renders (even though it doesn't need `isDirty`)
+3. `EditorAreaWithFrontmatter` re-renders → `MainEditor` re-renders → `Editor` re-renders
+4. This cascade happens on EVERY keystroke, breaking auto-save and performance
+
+**The Fix**: Remove problematic subscriptions from Layout:
+
+1. **isDirty subscription** - Layout doesn't need to know about dirty state for rendering
+2. **currentFile object subscription** - `currentFile` object gets recreated on content changes
+
+**Applied Fix**:
+```typescript
+// BEFORE (caused cascade):
+const { currentFile, isDirty, saveFile, closeCurrentFile } = useEditorStore()
+
+// AFTER (no cascade):
+const hasCurrentFile = useEditorStore(state => !!state.currentFile)
+const currentFileName = useEditorStore(state => state.currentFile?.name)  
+const { saveFile, closeCurrentFile } = useEditorStore()
+// Get currentFile/isDirty directly when needed: useEditorStore.getState()
+```
+
+**FINAL ROOT CAUSE DISCOVERED**: Layout was subscribing to `useCreateFile` hook.
+
+**The Real Culprit**: `const { createNewFile: createNewFileWithQuery } = useCreateFile()` in Layout
+
+**Why This Caused Cascade**:
+1. `useCreateFile` depends on `openFile` from editor store (line 28 in useCreateFile.ts)
+2. `openFile` function gets recreated when editor state changes (every keystroke)
+3. `useCreateFile` dependencies change → returns new `createNewFile` function
+4. Layout receives new `createNewFile` → Layout re-renders → entire cascade continues
+
+**Applied Fix**: Removed `useCreateFile` subscription from Layout entirely:
+```typescript
+// BEFORE (caused cascade):
+const { createNewFile: createNewFileWithQuery } = useCreateFile()
+
+// AFTER (no cascade):  
+// Use event-based system: window.dispatchEvent(new CustomEvent('menu-new-file'))
+// Temporarily disabled menu handler to test render cascade fix
+```
+
+**Status**: STILL NOT FIXED - Render cascade persists even after removing useCreateFile.
+
+**Latest Test Results**:
+- ✅ Keyboard shortcuts work (Cmd+1, Cmd+2) 
+- ⚠️ Auto-save worked initially but stopped after sidebar toggling
+- ❌ Complete render cascade still happening: Layout #7-18 on every keystroke
+- ❌ Layout shows no changed props but continues re-rendering
+
+**Conclusion**: There's still another hidden subscription/dependency in Layout causing re-renders.
+
+## SYSTEMATIC DEBUGGING SESSION - RENDER CASCADE ELIMINATION
+
+### Breakthrough: Systematic Hook Elimination Strategy
+
+**Date**: Session continued after conversation compaction
+
+**Discovery Method**: Systematically disabled ALL hooks in Layout → render cascade completely STOPPED. This proved one of the Layout hooks was the culprit.
+
+**Strategy**: Re-enable hooks one by one to find the specific problematic hook.
+
+### Step-by-Step Debugging Results
+
+#### Phase 1: Layout Hook Elimination ✅
+
+**Fixed Issues**:
+
+1. **`loadPersistedProject` Function Dependency** ✅
+   ```typescript
+   // BEFORE (caused cascade):
+   useEffect(() => {
+     void loadPersistedProject()
+   }, [loadPersistedProject])
+   
+   // AFTER (no cascade):
+   useEffect(() => {
+     void useProjectStore.getState().loadPersistedProject()
+   }, [])
+   ```
+   **Result**: Layout renders reduced, but MainEditor still cascading
+
+2. **MainEditor `currentFile` Object Subscription** ✅
+   ```typescript
+   // BEFORE (caused cascade):
+   const { currentFile } = useEditorStore()
+   
+   // AFTER (no cascade):
+   const hasCurrentFile = useEditorStore(state => !!state.currentFile)
+   ```
+   **Result**: MainEditor cascade eliminated, but Editor still cascading
+
+#### Phase 2: Editor Component Investigation ❌
+
+**Current Issue**: Editor still re-renders on every keystroke (RENDER #1-22+)
+
+**Failed Approach: React.memo Defense**
+```typescript
+// ATTEMPTED FIX (didn't work):
+const MemoizedEditor = React.memo(EditorViewComponent, () => true)
+```
+**Why It Failed**: React.memo only prevents re-renders from parent props changes, but Editor has **internal store subscriptions** that trigger re-renders regardless of memo.
+
+**Root Cause**: Editor subscribes to `editorContent` which updates on every keystroke:
+```typescript
+const editorContent = useEditorStore(state => state.editorContent)
+// This triggers re-render on every character typed: 14530 → 14531 → 14532...
+```
+
+### Current Architecture Problem
+
+**The Fundamental Issue**: Editor component subscribes to the content it's editing, creating circular dependency:
+
+1. User types → `editorContent` in store updates
+2. `editorContent` changes → Editor re-renders
+3. Editor re-renders → CodeMirror updates
+4. Potential for update loops and performance issues
+
+**Expected vs Actual**:
+- ✅ **Expected**: Editor writes TO store, reads content only on file load
+- ❌ **Actual**: Editor subscribes FROM store for real-time content changes
+
+### Investigation Status
+
+**Successfully Eliminated**:
+- ✅ Layout cascade (loadPersistedProject dependency)
+- ✅ MainEditor cascade (currentFile object subscription)
+
+**Current Problem**:
+- ❌ Editor cascade (editorContent subscription)
+
+**Evidence**:
+```
+Layout: RENDER #1 only ✅
+MainEditor: RENDER #1-2 only ✅  
+Editor: RENDER #1-22+ on keystroke ❌
+```
+
+### Next Debugging Steps
+
+1. **Investigate Editor Content Architecture**:
+   - How should content loading work vs real-time editing?
+   - Can we separate "content loading" from "content editing"?
+
+2. **Alternative Editor Approaches**:
+   - Content-agnostic Editor that doesn't subscribe to editorContent
+   - Event-driven content loading instead of reactive subscription
+   - Separate "content loader" from "editor renderer"
+
+3. **Store Architecture Review**:
+   - Should `editorContent` updates trigger React re-renders?
+   - Can content updates be handled entirely within CodeMirror?
+
+### Lessons Learned
+
+**Successful Patterns**:
+- **Specific selectors** instead of object destructuring (`!!state.currentFile` vs `currentFile`)
+- **Direct getState()** calls instead of hook dependencies (`useStore.getState().fn()`)
+- **React.memo** for breaking parent cascade (worked for EditorAreaWithFrontmatter)
+
+**Failed Patterns**:
+- **React.memo for components with store subscriptions** (doesn't prevent internal re-renders)
+- **Subscribing to frequently-changing data** (editorContent changes every keystroke)
+
+**Key Insight**: The render cascade has **multiple sources** that must be eliminated individually. We've successfully eliminated 2 of 3 sources.
 
 ### Alternative Approaches If Current Fails
 
 1. **CSS-Only Solution**: Use CSS custom properties updated via direct style manipulation
-2. **Debounced Updates**: Reduce frequency of state changes
+2. **Debounced Updates**: Reduce frequency of state changes  
 3. **Event-driven CSS**: Use CSS animations triggered by data attributes instead of React state
+4. **CodeMirror-Native Content Management**: Handle content entirely within CodeMirror, bypass React store for editing
+5. **Separate Content Loading from Editing**: Only subscribe to content for file loading, not real-time editing
+
+## FINAL BREAKTHROUGH - EDITOR HOOK ISOLATION ✅
+
+### Complete Systematic Elimination Results
+
+**Phase 1: Layout/MainEditor Fixes**
+1. ✅ **Fixed Layout cascade**: `loadPersistedProject` function dependency → use `getState()` 
+2. ✅ **Fixed MainEditor cascade**: `currentFile` object subscription → use `!!state.currentFile`
+3. ✅ **Applied React.memo**: `EditorAreaWithFrontmatter` to break parent cascade
+
+**Phase 2: Editor Component Deep Dive**
+1. ❌ **Store subscriptions**: Removed ALL Editor store subscriptions → cascade persisted
+2. ❌ **React.memo**: Applied to Editor component → cascade persisted  
+3. ✅ **BREAKTHROUGH**: Removed ALL editor hooks → **cascade completely STOPPED**
+
+**Phase 3: Systematic Hook Re-enabling (COMPLETE)**
+- ✅ **`useTauriListeners`**: Safe, no cascade return
+- ✅ **`useEditorSetup`**: Safe, no cascade return  
+- 🚨 **`useEditorHandlers`**: **CONFIRMED CULPRIT** - cascade returns immediately
+
+### Key Discovery
+
+**The render cascade is caused by the `useEditorHandlers` hook, NOT store subscriptions or React component architecture.**
+
+**SPECIFIC CULPRIT**: `useEditorHandlers` hook triggers React re-renders on every keystroke, causing complete cascade through the component tree.
+
+This finding completely shifts our debugging focus from state management to the specific implementation of the `useEditorHandlers` hook.
+
+### Evidence Summary
+
+```
+ALL HOOKS DISABLED:
+Layout: RENDER #1 only ✅
+MainEditor: RENDER #1-2 only ✅  
+Editor: RENDER #1 only ✅ ← PERFECT!
+
+WITH useTauriListeners RE-ENABLED:
+Layout: RENDER #1 only ✅
+MainEditor: RENDER #1-2 only ✅  
+Editor: RENDER #1-2 only ✅ ← STILL GOOD!
+```
+
+### Next Steps
+
+1. **Continue systematic hook re-enabling** to isolate the specific problematic hook
+2. **Analyze the problematic hook** to understand why it causes React re-renders
+3. **Fix the hook implementation** while maintaining functionality
+4. **Restore all editor functionality** 
+5. **Re-implement distraction-free mode** with performance-optimized architecture
 
 The goal is to find why a simple opacity toggle is affecting core editor functionality - this shouldn't happen in a well-architected system.
+
+**UPDATE**: We've now proven the issue is architectural coupling between editor hooks and React rendering, not state management.
+
+## COMPLETE ROOT CAUSE ANALYSIS ✅
+
+### Final Culprit: useEditorHandlers Hook
+
+**File**: `src/hooks/editor/useEditorHandlers.ts`
+
+**Problematic Pattern (Line 8)**:
+```typescript
+const { setEditorContent, currentFile, isDirty, saveFile } = useEditorStore()
+```
+
+**The Exact Problems**:
+1. **`currentFile`** - Object gets recreated on every content change
+2. **`isDirty`** - Boolean changes on every keystroke  
+3. **`saveFile`** - Function gets recreated when store state changes
+
+**Cascade Trigger (Lines 33, 40)**:
+```typescript
+// These dependencies cause function recreation on every keystroke:
+const handleBlur = useCallback(() => {
+  // ...
+}, [currentFile, isDirty, saveFile]) // ← PROBLEM!
+
+const handleSave = useCallback(() => {
+  // ...
+}, [currentFile, isDirty, saveFile]) // ← PROBLEM!
+```
+
+**Cascade Mechanism**:
+1. User types → `isDirty` changes
+2. `useEditorHandlers` gets new dependencies → returns new function references  
+3. Editor receives new handlers → re-renders
+4. Repeat on every keystroke = complete render cascade
+
+### Resolution Strategy
+
+**Apply Same Patterns Used for Layout/MainEditor**:
+- Use `getState()` calls instead of reactive subscriptions
+- Remove problematic dependencies from useCallback arrays
+- Only subscribe to data that should trigger component re-renders
+
+### Implementation Plan
+
+**Step 1**: Fix `useEditorHandlers`
+```typescript
+// BEFORE (causes cascade):
+const { setEditorContent, currentFile, isDirty, saveFile } = useEditorStore()
+
+// AFTER (no cascade):
+const { setEditorContent } = useEditorStore()
+// Get other values via getState() when needed
+```
+
+**Step 2**: Clean up dependency arrays
+```typescript
+// BEFORE:
+}, [currentFile, isDirty, saveFile])
+
+// AFTER:  
+}, []) // Or only include truly stable dependencies
+```
+
+**Step 3**: Test and restore functionality
+
+## Changes Made During Debugging - Cleanup Required
+
+### Keep These Changes (Architectural Improvements)
+1. **Layout**: `loadPersistedProject` dependency fix → prevents function re-render loops
+2. **MainEditor**: `currentFile` → `hasCurrentFile` selector → prevents object recreation
+3. **EditorAreaWithFrontmatter**: React.memo → breaks cascade at boundaries
+
+### Revert These Changes (Debugging Only)
+1. **Editor**: All hardcoded store values (restore real subscriptions)
+2. **Editor**: Disabled editor hooks (restore functionality)  
+3. **All files**: Extensive debug logging (clean up)
+4. **Layout**: Any accidentally disabled functionality
+
+### Review These Changes (Unclear)
+- Any Layout functionality that may have been disabled during debugging
+- Ensure all keyboard shortcuts and features work after cleanup
+
+The goal is to apply the **minimal necessary fixes** while **reverting debugging complexity** and **maintaining all original functionality**.

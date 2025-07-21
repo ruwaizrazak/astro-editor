@@ -45,97 +45,147 @@ const useResponsiveFrontmatterSize = () => {
 // Helper component to reduce duplication in Layout
 const EditorAreaWithFrontmatter: React.FC<{
   frontmatterPanelVisible: boolean
-}> = ({ frontmatterPanelVisible }) => {
-  const responsiveDefaultSize = useResponsiveFrontmatterSize()
-  if (frontmatterPanelVisible) {
-    return (
-      <ResizablePanelGroup direction="horizontal" className="h-full">
-        <ResizablePanel
-          defaultSize={70}
-          minSize={40}
-          maxSize={80}
-          className="flex flex-col min-w-96"
-        >
-          <MainEditor />
-        </ResizablePanel>
-        <ResizableHandle className="!cursor-col-resize" />
-        <ResizablePanel
-          defaultSize={responsiveDefaultSize}
-          minSize={20}
-          maxSize={60}
-          className="bg-muted/10 border-l border-border overflow-hidden"
-        >
-          <FrontmatterPanel />
-        </ResizablePanel>
-      </ResizablePanelGroup>
-    )
-  }
-
+}> = React.memo(({ frontmatterPanelVisible }) => {
+  // PERFORMANCE TEST: Use fixed size to eliminate useResponsiveFrontmatterSize dependency
+  const responsiveDefaultSize = 25
+  
+  // DEBUG: Track EditorAreaWithFrontmatter renders
+  const renderCountRef = React.useRef(0)
+  renderCountRef.current++
+  // eslint-disable-next-line no-console
+  console.log(`[EditorAreaWithFrontmatter] RENDER #${renderCountRef.current}`, { 
+    frontmatterPanelVisible,
+    responsiveDefaultSize
+  })
+  
   return (
-    <div className="h-full flex flex-col min-w-96">
-      <MainEditor />
-    </div>
+    <ResizablePanelGroup direction="horizontal" className="h-full">
+      <ResizablePanel
+        defaultSize={frontmatterPanelVisible ? 70 : 100}
+        minSize={40}
+        maxSize={frontmatterPanelVisible ? 80 : 100}
+        className="flex flex-col min-w-96"
+      >
+        <MainEditor />
+      </ResizablePanel>
+      {frontmatterPanelVisible && (
+        <>
+          <ResizableHandle className="!cursor-col-resize" />
+          <ResizablePanel
+            defaultSize={responsiveDefaultSize}
+            minSize={20}
+            maxSize={60}
+            className="bg-muted/10 border-l border-border overflow-hidden"
+          >
+            <FrontmatterPanel />
+          </ResizablePanel>
+        </>
+      )}
+    </ResizablePanelGroup>
   )
-}
+})
 
 export const Layout: React.FC = () => {
-  // Editor store
-  const { currentFile, isDirty, saveFile, closeCurrentFile } = useEditorStore()
-
-  // Project store
-  const { loadPersistedProject, selectedCollection } = useProjectStore()
-
-  // UI store
+  // RE-ENABLE TEST: Start with UI store only (most critical for functionality)
   const {
     sidebarVisible,
     frontmatterPanelVisible,
     toggleSidebar,
     toggleFrontmatterPanel,
   } = useUIStore()
+  
+  // Keep editor store disabled for render cascade testing
+  // const hasCurrentFile = useEditorStore(state => !!state.currentFile)
+  // const currentFileName = useEditorStore(state => state.currentFile?.name)
+  // const { saveFile, closeCurrentFile } = useEditorStore()
+  
+  // PROJECT STORE: All subscriptions disabled to avoid cascade
+  
+  // Temporary hardcoded values for remaining stores
+  const hasCurrentFile = true
+  const currentFileName = "test"
+  const selectedCollection = "articles"
+
+  // DEBUG: Track Layout renders and what's causing them
+  const renderCountRef = React.useRef(0)
+  renderCountRef.current++
+  
+  const prevPropsRef = React.useRef({
+    hasCurrentFile,
+    fileName: currentFileName,
+    sidebarVisible,
+    frontmatterPanelVisible,
+    selectedCollection,
+  })
+  
+  const currentProps = {
+    hasCurrentFile,
+    fileName: currentFileName,
+    sidebarVisible,
+    frontmatterPanelVisible,
+    selectedCollection,
+  }
+  
+  const changedProps = Object.keys(currentProps).filter(key => 
+    prevPropsRef.current[key as keyof typeof currentProps] !== currentProps[key as keyof typeof currentProps]
+  )
+  
+  // eslint-disable-next-line no-console
+  console.log(`[Layout] RENDER #${renderCountRef.current}`, {
+    ...currentProps,
+    changedProps: changedProps.length > 0 ? changedProps : 'none',
+  })
+  
+  if (changedProps.length > 0) {
+    // eslint-disable-next-line no-console
+    console.log(`[Layout] CHANGED PROPS:`, changedProps)
+  }
+  
+  prevPropsRef.current = currentProps
 
   // Preferences dialog state
   const [preferencesOpen, setPreferencesOpen] = useState(false)
 
-  // Get the createNewFile function from our custom hook
-  const { createNewFile: createNewFileWithQuery } = useCreateFile()
+  // PERFORMANCE FIX: Don't subscribe to useCreateFile, get it only when needed
+  // Use existing event system instead
 
-  // Centralized menu state management - this is where file state lives
-  useEffect(() => {
-    const shouldEnableMenu = Boolean(currentFile && window.isEditorFocused)
-    void invoke('update_format_menu_state', { enabled: shouldEnableMenu })
-  }, [currentFile])
+  // TEMPORARILY DISABLED: Menu state management
+  // useEffect(() => {
+  //   const shouldEnableMenu = Boolean(hasCurrentFile && window.isEditorFocused)
+  //   void invoke('update_format_menu_state', { enabled: shouldEnableMenu })
+  // }, [hasCurrentFile])
 
-  // Initialize menu as disabled and set up focus tracking
-  useEffect(() => {
-    window.isEditorFocused = false
-    void invoke('update_format_menu_state', { enabled: false })
+  // useEffect(() => {
+  //   window.isEditorFocused = false
+  //   void invoke('update_format_menu_state', { enabled: false })
 
-    // Listen for editor focus changes
-    const handleEditorFocusChange = () => {
-      const shouldEnableMenu = Boolean(currentFile && window.isEditorFocused)
-      void invoke('update_format_menu_state', { enabled: shouldEnableMenu })
-    }
+  //   const handleEditorFocusChange = () => {
+  //     const shouldEnableMenu = Boolean(hasCurrentFile && window.isEditorFocused)
+  //     void invoke('update_format_menu_state', { enabled: shouldEnableMenu })
+  //   }
 
-    window.addEventListener('editor-focus-changed', handleEditorFocusChange)
-    return () =>
-      window.removeEventListener(
-        'editor-focus-changed',
-        handleEditorFocusChange
-      )
-  }, [currentFile])
+  //   window.addEventListener('editor-focus-changed', handleEditorFocusChange)
+  //   return () =>
+  //     window.removeEventListener(
+  //       'editor-focus-changed',
+  //       handleEditorFocusChange
+  //     )
+  // }, [hasCurrentFile])
 
-  // Keyboard shortcuts using react-hotkeys-hook
-  useHotkeys(
-    'mod+s',
-    () => {
-      // Cmd+S: Save File
-      if (currentFile && isDirty) {
-        void saveFile()
-      }
-    },
-    { preventDefault: true }
-  )
+  // TEMPORARILY DISABLED: Keyboard shortcuts
+  // useHotkeys(
+  //   'mod+s',
+  //   () => {
+  //     // Cmd+S: Save File - get isDirty and currentFile directly to avoid subscription
+  //     const { currentFile, isDirty } = useEditorStore.getState()
+  //     if (currentFile && isDirty) {
+  //       void saveFile()
+  //     }
+  //   },
+  //   { preventDefault: true }
+  // )
 
+  // RE-ENABLE TEST: Basic sidebar shortcuts
   useHotkeys(
     'mod+1',
     () => {
@@ -154,67 +204,70 @@ export const Layout: React.FC = () => {
     { preventDefault: true }
   )
 
-  useHotkeys(
-    'mod+n',
-    () => {
-      // Cmd+N: Create New File (only if a collection is selected)
-      if (selectedCollection) {
-        void createNewFileWithQuery()
-        // Fix for cursor disappearing - ensure cursor is visible
-        document.body.style.cursor = 'auto'
-        // Force a reflow to ensure the cursor change is applied
-        void document.body.offsetHeight
-      }
-    },
-    { preventDefault: true }
-  )
+  // TEMPORARILY DISABLED: All remaining shortcuts
+  // useHotkeys(
+  //   'mod+n',
+  //   () => {
+  //     // Cmd+N: Create New File (only if a collection is selected)  
+  //     if (selectedCollection) {
+  //       // Use existing menu event system to avoid createNewFile dependency
+  //       window.dispatchEvent(new CustomEvent('menu-new-file'))
+  //       // Fix for cursor disappearing - ensure cursor is visible
+  //       document.body.style.cursor = 'auto'
+  //       // Force a reflow to ensure the cursor change is applied
+  //       void document.body.offsetHeight
+  //     }
+  //   },
+  //   { preventDefault: true }
+  // )
 
-  useHotkeys(
-    'mod+w',
-    () => {
-      // Cmd+W: Close Current File (only if a file is open)
-      if (currentFile) {
-        closeCurrentFile()
-      }
-    },
-    {
-      preventDefault: true,
-      enableOnFormTags: ['input', 'textarea', 'select'],
-      enableOnContentEditable: true, // Enable in contenteditable elements like CodeMirror
-    }
-  )
+  // useHotkeys(
+  //   'mod+w',
+  //   () => {
+  //     // Cmd+W: Close Current File (only if a file is open)
+  //     if (hasCurrentFile) {
+  //       closeCurrentFile()
+  //     }
+  //   },
+  //   {
+  //     preventDefault: true,
+  //     enableOnFormTags: ['input', 'textarea', 'select'],
+  //     enableOnContentEditable: true, // Enable in contenteditable elements like CodeMirror
+  //   }
+  // )
 
-  useHotkeys(
-    'mod+comma',
-    () => {
-      // Cmd+,: Open Preferences
-      setPreferencesOpen(true)
-    },
-    {
-      preventDefault: true,
-      enableOnFormTags: ['input', 'textarea', 'select'],
-      enableOnContentEditable: true, // Enable in contenteditable elements like CodeMirror
-    }
-  )
+  // useHotkeys(
+  //   'mod+comma',
+  //   () => {
+  //     // Cmd+,: Open Preferences
+  //     setPreferencesOpen(true)
+  //   },
+  //   {
+  //     preventDefault: true,
+  //     enableOnFormTags: ['input', 'textarea', 'select'],
+  //     enableOnContentEditable: true, // Enable in contenteditable elements like CodeMirror
+  //   }
+  // )
 
-  useHotkeys(
-    'mod+/',
-    () => {
-      // Cmd+/: Open MDX Component Builder (only for .mdx files)
-      if (currentFile?.path.endsWith('.mdx')) {
-        const editorView = globalCommandRegistry.getEditorView()
-        if (editorView) {
-          useComponentBuilderStore.getState().open(editorView)
-        }
-      }
-    },
-    {
-      preventDefault: true,
-      enableOnContentEditable: true,
-    }
-  )
+  // useHotkeys(
+  //   'mod+/',
+  //   () => {
+  //     // Cmd+/: Open MDX Component Builder (only for .mdx files)
+  //     const { currentFile } = useEditorStore.getState()
+  //     if (currentFile?.path.endsWith('.mdx')) {
+  //       const editorView = globalCommandRegistry.getEditorView()
+  //       if (editorView) {
+  //         useComponentBuilderStore.getState().open(editorView)
+  //       }
+  //     }
+  //   },
+  //   {
+  //     preventDefault: true,
+  //     enableOnContentEditable: true,
+  //   }
+  // )
 
-  // Listen for open preferences events from command palette
+  // RE-ENABLE TEST: Preferences event listener
   useEffect(() => {
     const handleOpenPreferences = () => {
       setPreferencesOpen(true)
@@ -225,48 +278,41 @@ export const Layout: React.FC = () => {
       window.removeEventListener('open-preferences', handleOpenPreferences)
   }, [])
 
-  // Listen for create new file events
+  // PERFORMANCE FIX: Removed create-new-file event listener to avoid useCreateFile dependency
+  // This is now handled by the menu system via 'menu-new-file' event
+
+  // TEMPORARILY DISABLED: More event listeners and project loading
+  // useEffect(() => {
+  //   const handleToggleFocusMode = () => {
+  //     useUIStore.getState().toggleFocusMode()
+  //   }
+
+  //   const handleToggleTypewriterMode = () => {
+  //     useUIStore.getState().toggleTypewriterMode()
+  //   }
+
+  //   window.addEventListener('toggle-focus-mode', handleToggleFocusMode)
+  //   window.addEventListener(
+  //     'toggle-typewriter-mode',
+  //     handleToggleTypewriterMode
+  //   )
+
+  //   return () => {
+  //     window.removeEventListener('toggle-focus-mode', handleToggleFocusMode)
+  //     window.removeEventListener(
+  //       'toggle-typewriter-mode',
+  //       handleToggleTypewriterMode
+  //     )
+  //   }
+  // }, [])
+
+  // MINIMAL PROJECT INITIALIZATION: Enable project loading for basic functionality
+  // Remove loadPersistedProject dependency to avoid cascade - call once on mount
   useEffect(() => {
-    const handleCreateNewFile = () => {
-      void createNewFileWithQuery()
-    }
-
-    window.addEventListener('create-new-file', handleCreateNewFile)
-    return () =>
-      window.removeEventListener('create-new-file', handleCreateNewFile)
-  }, [createNewFileWithQuery])
-
-  // Listen for focus and typewriter mode toggle events
-  useEffect(() => {
-    const handleToggleFocusMode = () => {
-      useUIStore.getState().toggleFocusMode()
-    }
-
-    const handleToggleTypewriterMode = () => {
-      useUIStore.getState().toggleTypewriterMode()
-    }
-
-    window.addEventListener('toggle-focus-mode', handleToggleFocusMode)
-    window.addEventListener(
-      'toggle-typewriter-mode',
-      handleToggleTypewriterMode
-    )
-
-    return () => {
-      window.removeEventListener('toggle-focus-mode', handleToggleFocusMode)
-      window.removeEventListener(
-        'toggle-typewriter-mode',
-        handleToggleTypewriterMode
-      )
-    }
+    void useProjectStore.getState().loadPersistedProject()
   }, [])
 
-  // Load persisted project on app start
-  useEffect(() => {
-    void loadPersistedProject()
-  }, [loadPersistedProject])
-
-  // Initialize Rust toast bridge
+  // RE-ENABLE TEST: Rust toast bridge
   useEffect(() => {
     let cleanup: (() => void) | undefined
 
@@ -279,7 +325,8 @@ export const Layout: React.FC = () => {
     }
   }, [])
 
-  // Menu event listeners - use empty dependency array to avoid cleanup issues
+  // TEMPORARILY DISABLED: Menu event listeners
+  /* 
   useEffect(() => {
     const handleOpenProject = async () => {
       try {
@@ -321,12 +368,13 @@ export const Layout: React.FC = () => {
         listen('menu-toggle-frontmatter', () => {
           useUIStore.getState().toggleFrontmatterPanel()
         }),
-        listen('menu-new-file', () => {
-          const { selectedCollection } = useProjectStore.getState()
-          if (selectedCollection) {
-            void createNewFileWithQuery()
-          }
-        }),
+        // TEMPORARILY DISABLED: Fix render cascade by removing useCreateFile dependency
+        // listen('menu-new-file', () => {
+        //   const { selectedCollection } = useProjectStore.getState()
+        //   if (selectedCollection) {
+        //     void createNewFileWithQuery()
+        //   }
+        // }),
         // Text formatting menu listeners
         listen('menu-format-bold', () => {
           const { currentFile } = useEditorStore.getState()
@@ -393,7 +441,8 @@ export const Layout: React.FC = () => {
         }
       })
     }
-  }, [createNewFileWithQuery])
+  }, []) // PERFORMANCE FIX: Removed createNewFileWithQuery dependency
+  */
 
   return (
     <div className="h-screen w-screen bg-[var(--editor-color-background)] font-sans flex flex-col rounded-xl overflow-hidden">
@@ -402,30 +451,26 @@ export const Layout: React.FC = () => {
 
       {/* Main content area with integrated sidebar */}
       <div className="flex flex-1 overflow-hidden">
-        {sidebarVisible ? (
-          <ResizablePanelGroup direction="horizontal" className="flex-1">
-            <ResizablePanel
-              defaultSize={20}
-              minSize={15}
-              maxSize={35}
-              className="min-w-[200px]"
-            >
-              <Sidebar />
-            </ResizablePanel>
-            <ResizableHandle className="!cursor-col-resize" />
-            <ResizablePanel defaultSize={80} minSize={65}>
-              <EditorAreaWithFrontmatter
-                frontmatterPanelVisible={frontmatterPanelVisible}
-              />
-            </ResizablePanel>
-          </ResizablePanelGroup>
-        ) : (
-          <div className="flex-1">
+        <ResizablePanelGroup direction="horizontal" className="flex-1">
+          {sidebarVisible && (
+            <>
+              <ResizablePanel
+                defaultSize={20}
+                minSize={15}
+                maxSize={35}
+                className="min-w-[200px]"
+              >
+                <Sidebar />
+              </ResizablePanel>
+              <ResizableHandle className="!cursor-col-resize" />
+            </>
+          )}
+          <ResizablePanel defaultSize={sidebarVisible ? 80 : 100} minSize={65}>
             <EditorAreaWithFrontmatter
               frontmatterPanelVisible={frontmatterPanelVisible}
             />
-          </div>
-        )}
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
 
       {/* Command Palette */}

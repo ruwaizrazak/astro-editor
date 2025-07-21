@@ -21,13 +21,25 @@ declare global {
   }
 }
 
-export const EditorViewComponent: React.FC = () => {
-  const { editorContent } = useEditorStore()
-  const focusModeEnabled = useUIStore(state => state.focusModeEnabled)
-  const typewriterModeEnabled = useUIStore(state => state.typewriterModeEnabled)
+const EditorViewComponent: React.FC = () => {
+  // DEBUGGING: Remove ALL store subscriptions to test if they're causing cascade
+  // const currentFileId = useEditorStore(state => state.currentFile?.id)
+  // const focusModeEnabled = useUIStore(state => state.focusModeEnabled)
+  // const typewriterModeEnabled = useUIStore(state => state.typewriterModeEnabled)
+  // const sidebarVisible = useUIStore(state => state.sidebarVisible)
+  // const frontmatterPanelVisible = useUIStore(state => state.frontmatterPanelVisible)
+  // const distractionFreeBarsHidden = useUIStore(state => state.distractionFreeBarsHidden)
+  
+  // Hardcoded values for testing
+  const currentFileId = "test-file"
+  const focusModeEnabled = false
+  const typewriterModeEnabled = false
+  const sidebarVisible = true
+  const frontmatterPanelVisible = true
+  const distractionFreeBarsHidden = false
   const editorRef = useRef<HTMLDivElement>(null)
   const viewRef = useRef<EditorView | null>(null)
-  const initialContentRef = useRef<string>(editorContent)
+  // Content initialization handled in useEffect, not via subscription
   const [isAltPressed, setIsAltPressed] = useState(false)
   const isProgrammaticUpdate = useRef(false)
 
@@ -35,26 +47,74 @@ export const EditorViewComponent: React.FC = () => {
   const typingCharCount = useRef(0)
   const typingResetTimeout = useRef<number | null>(null)
 
+  // DEBUG: Add comprehensive logging to track component lifecycle
+  const renderCountRef = useRef(0)
+  renderCountRef.current++
+  
+  // Track what changed to cause this render
+  const prevPropsRef = useRef({
+    currentFileId,
+    sidebarVisible,
+    frontmatterPanelVisible,
+    focusModeEnabled,
+    typewriterModeEnabled,
+    distractionFreeBarsHidden,
+  })
+  
+  const currentProps = {
+    currentFileId,
+    sidebarVisible,
+    frontmatterPanelVisible,
+    focusModeEnabled,
+    typewriterModeEnabled,
+    distractionFreeBarsHidden,
+  }
+  
+  const changedProps = Object.keys(currentProps).filter(key => 
+    prevPropsRef.current[key as keyof typeof currentProps] !== currentProps[key as keyof typeof currentProps]
+  )
+  
+  // eslint-disable-next-line no-console
+  console.log(`[Editor] RENDER #${renderCountRef.current}`, {
+    ...currentProps,
+    hasEditorRef: !!editorRef.current,
+    hasViewRef: !!viewRef.current,
+    changedProps: changedProps.length > 0 ? changedProps : 'none',
+  })
+  
+  prevPropsRef.current = currentProps
+
+  // DEBUG: Track individual state changes
+  useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log('[Editor] Sidebar visibility changed:', sidebarVisible)
+  }, [sidebarVisible])
+
+  useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log('[Editor] Frontmatter panel visibility changed:', frontmatterPanelVisible)
+  }, [frontmatterPanelVisible])
+
+  useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log('[Editor] Distraction-free bars hidden changed:', distractionFreeBarsHidden)
+  }, [distractionFreeBarsHidden])
+
   // Initialize global focus flag (menu state managed in Layout)
   useEffect(() => {
     window.isEditorFocused = false
   }, [])
 
-  // Set up event handlers
-  const { handleChange, handleFocus, handleBlur, handleSave } =
-    useEditorHandlers()
-
-  // Component builder handler for Cmd+/ shortcut
+  // FINAL TEST: Re-enable useEditorHandlers (suspected culprit)
+  const { handleChange, handleFocus, handleBlur, handleSave } = useEditorHandlers()
+  
+  // Remove temporary handlers - using real ones now
+  
   const componentBuilderHandler = useCallback((view: EditorView) => {
-    const { currentFile } = useEditorStore.getState()
-    if (currentFile?.extension === 'mdx') {
-      useComponentBuilderStore.getState().open(view)
-      return true
-    }
     return false
   }, [])
-
-  // Set up editor extensions and commands
+  
+  // RE-ENABLE TEST: useEditorSetup (extensions and commands)
   const { extensions, setupCommands, cleanupCommands } = useEditorSetup(
     handleSave,
     handleFocus,
@@ -62,7 +122,7 @@ export const EditorViewComponent: React.FC = () => {
     componentBuilderHandler
   )
 
-  // Set up Tauri listeners
+  // RE-ENABLE TEST: Tauri listeners (least likely to cause React re-renders)
   useTauriListeners(viewRef.current)
 
   // Update editor effects when writing modes change
@@ -143,6 +203,13 @@ export const EditorViewComponent: React.FC = () => {
 
   // Initialize the CodeMirror editor once - EXACTLY like DebugScreen
   useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log('[Editor] CodeMirror useEffect triggered', {
+      hasEditorRef: !!editorRef.current,
+      hasViewRef: !!viewRef.current,
+      shouldCreateEditor: !(!editorRef.current || viewRef.current)
+    })
+    
     if (!editorRef.current || viewRef.current) return
 
     // Get current handlers - capture them at effect creation time
@@ -150,8 +217,11 @@ export const EditorViewComponent: React.FC = () => {
     const currentSetupCommands = setupCommands
     const currentCleanupCommands = cleanupCommands
 
+    // Get initial content directly from store, not from subscription
+    const { editorContent } = useEditorStore.getState()
+    
     const startState = EditorState.create({
-      doc: initialContentRef.current,
+      doc: editorContent,
       extensions: [
         ...extensions,
         EditorView.updateListener.of(update => {
@@ -202,11 +272,15 @@ export const EditorViewComponent: React.FC = () => {
     })
 
     viewRef.current = view
+    // eslint-disable-next-line no-console
+    console.log('[Editor] CodeMirror view created successfully')
 
     // Set up commands once the view is ready
     currentSetupCommands(view)
 
     return () => {
+      // eslint-disable-next-line no-console
+      console.log('[Editor] CodeMirror view being destroyed')
       view.destroy()
       viewRef.current = null
       currentCleanupCommands()
@@ -215,12 +289,14 @@ export const EditorViewComponent: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Update editor content when store content changes
+  // Load content when file changes (not on every content update)
   useEffect(() => {
-    if (
-      viewRef.current &&
-      viewRef.current.state.doc.toString() !== editorContent
-    ) {
+    if (!viewRef.current || !currentFileId) return
+    
+    // Get content directly from store when file changes
+    const { editorContent } = useEditorStore.getState()
+    
+    if (viewRef.current.state.doc.toString() !== editorContent) {
       // Mark this as a programmatic update to prevent triggering the update listener
       isProgrammaticUpdate.current = true
 
@@ -233,14 +309,11 @@ export const EditorViewComponent: React.FC = () => {
       })
 
       // Reset the flag after the update is complete
-      // Use a timeout to ensure the update has been processed
       setTimeout(() => {
         isProgrammaticUpdate.current = false
       }, 0)
     }
-    // Update the initial content ref for future editor recreations
-    initialContentRef.current = editorContent
-  }, [editorContent])
+  }, [currentFileId]) // Only trigger when file changes, not on content changes
 
   // Cleanup on unmount
   useEffect(() => {
@@ -263,3 +336,12 @@ export const EditorViewComponent: React.FC = () => {
     </div>
   )
 }
+
+// PERFORMANCE FIX: Memoize Editor to prevent re-renders when editorContent changes  
+// Only re-render when UI state actually changes, not on every keystroke
+const MemoizedEditor = React.memo(EditorViewComponent, (prevProps, nextProps) => {
+  // Custom comparison - Editor has no props, so always equal unless React forces update
+  return true
+})
+
+export { MemoizedEditor as EditorViewComponent }
