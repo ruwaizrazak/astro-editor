@@ -38,17 +38,15 @@
     "active": true,
     "targets": "all",
     "icon": [
-      "icons/32x32.png",
-      "icons/128x128.png",
-      "icons/128x128@2x.png",
-      "icons/icon.icns",
-      "icons/icon.ico"
+      "icons/dark_32x32.png",
+      "icons/dark_128x128.png",
+      "icons/dark_128x128@2x.png"
     ],
     "publisher": "Astro Editor",
     "category": "DeveloperTool",
     "shortDescription": "A beautiful markdown editor for Astro content collections",
     "longDescription": "Astro Editor is a native macOS application designed specifically for editing Astro content collections. It provides a distraction-free writing environment with seamless frontmatter editing and live preview capabilities.",
-    "copyright": "Copyright © 2025 Astro Editor. All rights reserved.",
+    "copyright": "Copyright © 2025 Danny Smith. All rights reserved.",
     "fileAssociations": [
       {
         "ext": ["md"],
@@ -58,7 +56,7 @@
       },
       {
         "ext": ["mdx"],
-        "name": "MDX Document", 
+        "name": "MDX Document",
         "description": "MDX document with React components",
         "role": "Editor"
       }

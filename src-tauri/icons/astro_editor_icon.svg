@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+<defs>
+<linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0%" stop-color="#0a0e1f"/>
+<stop offset="100%" stop-color="#0d1a35"/>
+</linearGradient>
+<linearGradient id="caretGrad" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0%" stop-color="#0ecafe"/>
+<stop offset="100%" stop-color="#0094ff"/>
+</linearGradient>
+</defs>
+<rect x="0" y="0" width="1024" height="1024" rx="170" ry="170" fill="url(#bgGrad)" />
+<rect x="770" y="140" width="110" height="744" rx="20" ry="20" fill="url(#caretGrad)" />
+<path d="M 360 200.0 L 390.0 260 L 360 320.0 L 330.0 260 Z" fill="#ffffff" />
+<path d="M 295 385.0 L 322.5 440 L 295 495.0 L 267.5 440 Z" fill="#ffffff" />
+<path d="M 370 545.0 L 397.5 600 L 370 655.0 L 342.5 600 Z" fill="#ffffff" />
+<path d="M 500 680.0 L 530.0 740 L 500 800.0 L 470.0 740 Z" fill="#ffffff" />
+</svg>

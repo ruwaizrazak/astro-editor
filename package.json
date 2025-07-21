@@ -3,6 +3,12 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "author": "Danny Smith",
+  "homepage": "https://github.com/dannysmith/astro-editor",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dannysmith/astro-editor.git"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",

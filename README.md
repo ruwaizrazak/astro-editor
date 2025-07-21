@@ -108,6 +108,23 @@ See the [GitHub Project]()
 
 ### Installation
 
+Ensure you have the Xcode command line tools, node and rust installed (see [here](https://v2.tauri.app/start/prerequisites) for more)
+
+```
+xcode-select --install # Command line tools
+curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh # install rust
+node -v # Check you have node installed
+```
+
+The clone the repo and run
+
+```
+npm install # Install node deps
+npm reset:testdata # Create a local astro project for manual testing
+npm run tauri:dev # Start the development app (which will install any missing rust dependencies)
+```
+
+
 ### Basic Workflow
 
 ## Developer Docs
