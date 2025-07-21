@@ -6,7 +6,12 @@ import { cn } from '../../lib/utils'
 export const StatusBar: React.FC = () => {
   const { currentFile, editorContent, isDirty } = useEditorStore()
 
-  const { sidebarVisible, frontmatterPanelVisible } = useUIStore()
+  const {
+    sidebarVisible,
+    frontmatterPanelVisible,
+    distractionFreeBarsHidden,
+    setDistractionFreeBarsHidden,
+  } = useUIStore()
 
   const wordCount = editorContent
     .split(/\s+/)
@@ -14,14 +19,24 @@ export const StatusBar: React.FC = () => {
   const charCount = editorContent.length
   const bothPanelsHidden = !sidebarVisible && !frontmatterPanelVisible
 
+  const handleMouseEnter = () => {
+    if (distractionFreeBarsHidden) {
+      setDistractionFreeBarsHidden(false)
+    }
+  }
+
   return (
     <div
       className={cn(
         'flex justify-between items-center px-4 py-1 text-xs h-6 border-t',
         bothPanelsHidden
           ? 'bg-[var(--editor-color-background)] border-transparent text-muted-foreground/40'
-          : 'bg-muted/50 border-border text-muted-foreground'
+          : 'bg-muted/50 border-border text-muted-foreground',
+        distractionFreeBarsHidden &&
+          bothPanelsHidden &&
+          'opacity-0 transition-opacity duration-300'
       )}
+      onMouseEnter={handleMouseEnter}
     >
       <div className="flex items-center">
         {currentFile && (

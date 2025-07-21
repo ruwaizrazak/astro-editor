@@ -23,7 +23,9 @@ In terms of animation, I think it is suitable for the first effort here to simpl
 ## Technical Implementation Plan
 
 ### Overview
+
 We'll implement distraction-free mode by adding opacity-based hiding for the UnifiedTitleBar and StatusBar when:
+
 1. Both sidebars are closed
 2. User types in the editor (after 3-4 characters)
 3. Bars reappear on mouse hover and remain visible until typing resumes
@@ -31,7 +33,9 @@ We'll implement distraction-free mode by adding opacity-based hiding for the Uni
 ### Step-by-Step Implementation
 
 #### 1. Add UI Store State and Logic
+
 **File:** `src/store/uiStore.ts`
+
 - Add new state: `distractionFreeBarsHidden: boolean` (default: false)
 - Add action: `handleTypingInEditor: () => void`
   - This action checks if both panels are hidden internally
@@ -40,7 +44,9 @@ We'll implement distraction-free mode by adding opacity-based hiding for the Uni
   - Direct setter for mouse hover events
 
 #### 2. Add Typing Detection to Editor
+
 **File:** `src/components/editor/Editor.tsx`
+
 - Create a character counter that tracks consecutive characters typed
 - In the existing `EditorView.updateListener`:
   - Increment counter on each character typed
@@ -49,14 +55,18 @@ We'll implement distraction-free mode by adding opacity-based hiding for the Uni
 - The editor simply reports "user is typing" - it doesn't know about sidebars
 
 #### 3. Add Mouse Hover Detection
+
 **Files:** `src/components/layout/UnifiedTitleBar.tsx` and `src/components/layout/StatusBar.tsx`
+
 - Add `onMouseEnter` handlers to the root elements
 - When hovered and `distractionFreeBarsHidden` is true:
   - Call `setDistractionFreeBarsHidden(false)`
   - This reveals both bars simultaneously
 
 #### 4. Apply Opacity-Based Hiding
+
 **Files:** `src/components/layout/UnifiedTitleBar.tsx` and `src/components/layout/StatusBar.tsx`
+
 - Add conditional styling based on `distractionFreeBarsHidden` state:
   ```tsx
   className={cn(
@@ -67,12 +77,15 @@ We'll implement distraction-free mode by adding opacity-based hiding for the Uni
 - The `transition-opacity duration-300` provides smooth fade in/out
 
 #### 5. Handle Sidebar State Changes
+
 **File:** `src/store/uiStore.ts`
+
 - When either sidebar is toggled to visible:
   - Automatically set `distractionFreeBarsHidden: false`
 - This ensures bars always show when sidebars are open
 
 #### 6. Handle Edge Cases
+
 - **Window Dragging:** The title bar remains functional even when opacity is 0
 - **Auto-save:** Continues working as opacity doesn't affect functionality
 - **Command Palette:** Can still toggle focus mode as the button remains clickable
@@ -81,6 +94,7 @@ We'll implement distraction-free mode by adding opacity-based hiding for the Uni
 ### Implementation Details
 
 #### Character Counting Logic (Editor)
+
 ```typescript
 let typingCharCount = 0
 let typingResetTimeout: number | null = null
@@ -88,15 +102,15 @@ let typingResetTimeout: number | null = null
 // In updateListener
 if (update.docChanged && !isProgrammaticUpdate.current) {
   typingCharCount++
-  
+
   // Clear existing timeout
   if (typingResetTimeout) clearTimeout(typingResetTimeout)
-  
+
   // Reset counter after 500ms of no typing
   typingResetTimeout = window.setTimeout(() => {
     typingCharCount = 0
   }, 500)
-  
+
   // Hide bars after 4 characters
   if (typingCharCount >= 4) {
     useUIStore.getState().handleTypingInEditor()
@@ -106,6 +120,7 @@ if (update.docChanged && !isProgrammaticUpdate.current) {
 ```
 
 #### UI Store Logic
+
 ```typescript
 // In uiStore.ts
 handleTypingInEditor: () => {
@@ -117,11 +132,14 @@ handleTypingInEditor: () => {
 ```
 
 #### CSS Transition
+
 The opacity transition ensures smooth visual feedback:
+
 - Fade out: 300ms when hiding
 - Fade in: 300ms when showing on hover
 
 ### Testing Checklist
+
 1. Close both sidebars
 2. Type 4+ characters quickly → bars should fade out
 3. Move mouse over title bar area → bars should fade in
@@ -135,6 +153,7 @@ The opacity transition ensures smooth visual feedback:
 ### Potential Problems and Considerations
 
 #### React-Specific Concerns
+
 1. **Mouse Events on Opacity-0 Elements**: Elements with `opacity: 0` still receive mouse events, which is what we want. However, we need to ensure the hover detection works reliably across all browsers.
 
 2. **Re-render Performance**: Every character typed will trigger a state update in the UI store. We should monitor if this causes performance issues, though it should be minimal since only the bars re-render.
@@ -142,6 +161,7 @@ The opacity transition ensures smooth visual feedback:
 3. **Event Listener Cleanup**: The typing detection timeout needs proper cleanup when the editor unmounts to avoid memory leaks.
 
 #### UX Edge Cases
+
 1. **Simultaneous Actions**: If user types and immediately moves mouse to title bar, there might be a brief flicker. The 300ms transition should minimize this.
 
 2. **Command Palette Interaction**: When command palette opens (Cmd+K), bars should probably reappear. We may need to add: `distractionFreeBarsHidden: false` when command palette opens.
@@ -151,6 +171,7 @@ The opacity transition ensures smooth visual feedback:
 4. **Rapid Sidebar Toggling**: If user rapidly toggles sidebars while typing, the state management should handle this gracefully (current design should work).
 
 #### Technical Considerations
+
 1. **Character vs Change Detection**: We're counting characters, but CodeMirror's `docChanged` fires for any change (including deletions). This means backspacing counts toward the 4-character threshold, which might be unexpected.
 
 2. **Programmatic Updates**: The `isProgrammaticUpdate` check prevents auto-save from triggering bar hiding, but we should verify this works for all programmatic changes (e.g., format commands).
@@ -158,7 +179,16 @@ The opacity transition ensures smooth visual feedback:
 3. **Window Dragging Discovery**: Users might not discover they can still drag the window when the title bar is invisible. This is acceptable for v1 as mouse hover reveals it.
 
 #### Implementation Notes
+
 - Start with the simplest implementation and add complexity only if needed
 - The opacity approach is correct - maintains all functionality while hiding UI
 - State is minimal and contained within UI store
 - No need for complex event systems or listeners beyond what's proposed
+
+## Bugs after initial attempt
+
+- [ ] Background **behind** both bars is white, should be `--editor-color-background`. This can maybe just be set on one of the high-level containers, Since all of the sidebars and other stuff will have their own background set.
+- [ ] Keyboard shortcuts for showing and opening the sidebar no longer work reliably when the editor is focussed.
+- [ ] Opening the command palette or Component builder now triggers a "File Saved Successfully" toast. Making an edit in the document autosaves correctly, but then later when clicking out of the editor we get a "File Saved Successfully" toast. I assume this is because the toasts are somehow being saved up and appearing later. But it may be something different to that.
+- [ ] Open Project in IDE no longer works from the command panel
+- [ ] MOST IMPORTANTLY: When the title bar is hidden, auto-save no longer works. When I mouse over it for it to reappear, I can see that it hasn't saved changes, and crucially, I can no longer save changes to the document by clicking it.

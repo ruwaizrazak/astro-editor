@@ -31,6 +31,10 @@ export const EditorViewComponent: React.FC = () => {
   const [isAltPressed, setIsAltPressed] = useState(false)
   const isProgrammaticUpdate = useRef(false)
 
+  // Typing detection for distraction-free mode
+  const typingCharCount = useRef(0)
+  const typingResetTimeout = useRef<number | null>(null)
+
   // Initialize global focus flag (menu state managed in Layout)
   useEffect(() => {
     window.isEditorFocused = false
@@ -155,6 +159,25 @@ export const EditorViewComponent: React.FC = () => {
             const newContent = update.state.doc.toString()
             // Use captured handler to avoid infinite loops
             currentHandleChange(newContent)
+
+            // Typing detection for distraction-free mode
+            typingCharCount.current++
+
+            // Clear existing timeout
+            if (typingResetTimeout.current) {
+              clearTimeout(typingResetTimeout.current)
+            }
+
+            // Reset counter after 500ms of no typing
+            typingResetTimeout.current = window.setTimeout(() => {
+              typingCharCount.current = 0
+            }, 500)
+
+            // Hide bars after 4 characters
+            if (typingCharCount.current >= 4) {
+              useUIStore.getState().handleTypingInEditor()
+              typingCharCount.current = 0
+            }
           }
         }),
       ],

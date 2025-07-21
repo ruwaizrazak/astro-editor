@@ -29,6 +29,8 @@ export const UnifiedTitleBar: React.FC = () => {
     sidebarVisible,
     focusModeEnabled,
     toggleFocusMode,
+    distractionFreeBarsHidden,
+    setDistractionFreeBarsHidden,
   } = useUIStore()
 
   const { createNewFile } = useCreateFile()
@@ -80,15 +82,25 @@ export const UnifiedTitleBar: React.FC = () => {
 
   const bothPanelsHidden = !sidebarVisible && !frontmatterPanelVisible
 
+  const handleMouseEnter = () => {
+    if (distractionFreeBarsHidden) {
+      setDistractionFreeBarsHidden(false)
+    }
+  }
+
   return (
     <div
       className={cn(
         'h-11 w-full flex items-center justify-between px-3 select-none border-b',
         bothPanelsHidden
           ? 'bg-[var(--editor-color-background)] border-transparent'
-          : 'bg-background border-border'
+          : 'bg-background border-border',
+        distractionFreeBarsHidden &&
+          bothPanelsHidden &&
+          'opacity-0 transition-opacity duration-300'
       )}
       data-tauri-drag-region
+      onMouseEnter={handleMouseEnter}
     >
       {/* Left: Traffic lights + sidebar toggle + project name */}
       <div className="flex items-center gap-2 flex-1" data-tauri-drag-region>

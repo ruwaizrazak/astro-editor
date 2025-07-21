@@ -6,28 +6,40 @@ interface UIState {
   frontmatterPanelVisible: boolean
   focusModeEnabled: boolean
   typewriterModeEnabled: boolean
+  distractionFreeBarsHidden: boolean
 
   // Actions
   toggleSidebar: () => void
   toggleFrontmatterPanel: () => void
   toggleFocusMode: () => void
   toggleTypewriterMode: () => void
+  setDistractionFreeBarsHidden: (hidden: boolean) => void
+  handleTypingInEditor: () => void
 }
 
-export const useUIStore = create<UIState>(set => ({
+export const useUIStore = create<UIState>((set, get) => ({
   // Initial state
   sidebarVisible: true,
   frontmatterPanelVisible: true,
   focusModeEnabled: false,
   typewriterModeEnabled: false,
+  distractionFreeBarsHidden: false,
 
   // Actions
   toggleSidebar: () => {
-    set(state => ({ sidebarVisible: !state.sidebarVisible }))
+    set(state => ({
+      sidebarVisible: !state.sidebarVisible,
+      // Show bars when opening sidebar
+      distractionFreeBarsHidden: false,
+    }))
   },
 
   toggleFrontmatterPanel: () => {
-    set(state => ({ frontmatterPanelVisible: !state.frontmatterPanelVisible }))
+    set(state => ({
+      frontmatterPanelVisible: !state.frontmatterPanelVisible,
+      // Show bars when opening frontmatter panel
+      distractionFreeBarsHidden: false,
+    }))
   },
 
   toggleFocusMode: () => {
@@ -54,6 +66,17 @@ export const useUIStore = create<UIState>(set => ({
       console.log('[UIStore] New state:', newState)
       return { typewriterModeEnabled: newState }
     })
+  },
+
+  setDistractionFreeBarsHidden: (hidden: boolean) => {
+    set({ distractionFreeBarsHidden: hidden })
+  },
+
+  handleTypingInEditor: () => {
+    const { sidebarVisible, frontmatterPanelVisible } = get()
+    if (!sidebarVisible && !frontmatterPanelVisible) {
+      set({ distractionFreeBarsHidden: true })
+    }
   },
 }))
 
