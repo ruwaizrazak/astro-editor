@@ -16,7 +16,6 @@ import {
   EyeOff,
 } from 'lucide-react'
 import { cn } from '../../lib/utils'
-import { Toggle } from '../ui/toggle'
 
 export const UnifiedTitleBar: React.FC = () => {
   const { saveFile, isDirty, currentFile } = useEditorStore()
@@ -62,7 +61,6 @@ export const UnifiedTitleBar: React.FC = () => {
       console.log('[UnifiedTitleBar] Verified new focus mode state:', newState)
     }, 100)
   }
-
 
   const handleMinimize = async () => {
     const window = getCurrentWindow()
@@ -120,7 +118,8 @@ export const UnifiedTitleBar: React.FC = () => {
         <Button
           onClick={toggleSidebar}
           variant="ghost"
-          size="icon"
+          size="sm"
+          className="size-7 p-0 [&_svg]:transform-gpu [&_svg]:scale-100"
           title={sidebarVisible ? 'Close Sidebar' : 'Open Sidebar'}
         >
           {sidebarVisible ? (
@@ -149,7 +148,8 @@ export const UnifiedTitleBar: React.FC = () => {
           <Button
             onClick={handleNewFile}
             variant="ghost"
-            size="icon"
+            size="sm"
+            className="size-7 p-0 [&_svg]:transform-gpu [&_svg]:scale-100"
             title={`New ${selectedCollection} file`}
           >
             <Plus className="size-4" />
@@ -157,12 +157,11 @@ export const UnifiedTitleBar: React.FC = () => {
         )}
 
         {/* Focus mode toggle */}
-        <Toggle
-          pressed={focusModeEnabled}
-          onPressedChange={handleToggleFocusMode}
+        <Button
+          onClick={handleToggleFocusMode}
+          variant="ghost"
           size="sm"
-          variant="outline"
-          className="size-7 p-0"
+          className="size-7 p-0 [&_svg]:transform-gpu [&_svg]:scale-100"
           title={focusModeEnabled ? 'Disable Focus Mode' : 'Enable Focus Mode'}
           aria-label={
             focusModeEnabled ? 'Disable Focus Mode' : 'Enable Focus Mode'
@@ -173,15 +172,16 @@ export const UnifiedTitleBar: React.FC = () => {
           ) : (
             <Eye className="size-4" />
           )}
-        </Toggle>
+        </Button>
 
         {/* Save button - no drag region */}
         <Button
           onClick={handleSave}
           variant="ghost"
-          size="icon"
+          size="sm"
           disabled={!currentFile || !isDirty}
           title={`Save${isDirty ? ' (unsaved changes)' : ''}`}
+          className="size-7 p-0 [&_svg]:transform-gpu [&_svg]:scale-100"
         >
           <Save className="size-4" />
         </Button>
@@ -190,7 +190,8 @@ export const UnifiedTitleBar: React.FC = () => {
         <Button
           onClick={toggleFrontmatterPanel}
           variant="ghost"
-          size="icon"
+          size="sm"
+          className="size-7 p-0 [&_svg]:transform-gpu [&_svg]:scale-100"
           title={
             frontmatterPanelVisible
               ? 'Close Frontmatter Panel'
