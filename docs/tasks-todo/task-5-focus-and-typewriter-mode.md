@@ -328,7 +328,7 @@ This implementation plan follows the existing architectural patterns while provi
 
 ## Extra Things to do here
 
-- [ ] Use the centre icon for focus mode and don't change it to anything else on toggle. The button already shows its current state because it's a toggle component.
+- [x] Use the centre icon for focus mode and don't change it to anything else on toggle. The button already shows its current state because it's a toggle component.
 - [ ] Can we hide the native scrollbars in the editor window whenever we're doing a programatic scroll in typewriter mode, just briefly enough that they don't show up when the scroll is automatic. They should work normally the rest of the time. If this has performance or timeing issues we don't have to do it.
 - [ ] If both sidebars are hidden, hide the whole contents of the UnifiedtitleBar and statusbar after the user starts typing in the enditor. Only show it again if the user moves their mouse near the top of the window (or opens either sidebar, obvs). This probably means wrapping their contents, since we don't want anything else to change about the window/layout etc. Just visually hidingthose things. See screenshot of iA writer in this state.
 - [ ] Do not highlight the Save button so agressively when the doc isDirty. It means it's always a full-on-black background icon when I'm typing in the editor because it's constantly isDirty, which is distracting. Needs more sublety.

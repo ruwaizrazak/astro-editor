@@ -223,11 +223,7 @@ export const UnifiedTitleBar: React.FC = () => {
               : 'Enable Typewriter Mode'
           }
         >
-          {typewriterModeEnabled ? (
-            <AlignLeft className="size-4" />
-          ) : (
-            <AlignCenter className="size-4" />
-          )}
+          <AlignCenter className="size-4" />
         </Toggle>
 
         {/* Save button - no drag region */}
