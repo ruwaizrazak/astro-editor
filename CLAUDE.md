@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Current Task: `/docs/tasks-todo/task-5-focus-and-typewriter-mode.md`
+Current Task: `/docs/tasks-todo/task-3-distractionless-mode.md`
 
 **Recently Completed:** Store decomposition (3 focused stores), Frontmatter extraction (7 components + tests), TanStack Query v5, MDX Component Inserter
 
@@ -13,6 +13,7 @@ Current Task: `/docs/tasks-todo/task-5-focus-and-typewriter-mode.md`
 **Purpose:** Replace code editors for content writing. Focused environment understanding Astro's content structure.
 
 **Key Features:**
+
 - Auto-discovers Astro content collections from `src/content/config.ts`
 - Dynamic frontmatter forms from Zod schemas
 - File management with context menus
@@ -26,6 +27,7 @@ Current Task: `/docs/tasks-todo/task-5-focus-and-typewriter-mode.md`
 ## Core Rules
 
 ### New Sessions
+
 - Read @docs/TASKS.md for task management
 - Review `docs/developer/architecture-guide.md` for patterns
 - Check git status and project structure
@@ -73,6 +75,7 @@ Current Task: `/docs/tasks-todo/task-5-focus-and-typewriter-mode.md`
 ### State Management Philosophy
 
 #### Server State (TanStack Query)
+
 Use for: filesystem data, caching needs, loading states
 
 ```typescript
@@ -84,24 +87,28 @@ useFileContentQuery(projectPath, fileId)
 #### Client State (Zustand) - Decomposed Architecture
 
 **1. Editor Store** - File editing state:
+
 ```typescript
-currentFile, editorContent, frontmatter, isDirty
+;(currentFile, editorContent, frontmatter, isDirty)
 // Actions: openFile, saveFile, setEditorContent, updateFrontmatterField
 ```
 
 **2. Project Store** - Project-level state:
+
 ```typescript
-projectPath, currentProjectId, selectedCollection, globalSettings
+;(projectPath, currentProjectId, selectedCollection, globalSettings)
 // Actions: setProject, loadPersistedProject, setSelectedCollection
 ```
 
 **3. UI Store** - UI layout state:
+
 ```typescript
-sidebarVisible, frontmatterPanelVisible
+;(sidebarVisible, frontmatterPanelVisible)
 // Actions: toggleSidebar, toggleFrontmatterPanel
 ```
 
 #### Local State
+
 Keep local for: UI presentation, derived state, component lifecycle
 
 ### Data Flow
@@ -149,7 +156,7 @@ src/
 // ✅ CORRECT: Direct store pattern
 const StringField = ({ name, label, required }) => {
   const { frontmatter, updateFrontmatterField } = useEditorStore()
-  
+
   return (
     <Input
       value={frontmatter[name] || ''}
@@ -159,7 +166,9 @@ const StringField = ({ name, label, required }) => {
 }
 
 // ❌ WRONG: Callback dependencies cause infinite loops
-const BadField = ({ name, onChange }) => { /* Don't do this */ }
+const BadField = ({ name, onChange }) => {
+  /* Don't do this */
+}
 ```
 
 ### Command Pattern
@@ -197,13 +206,15 @@ useEffect(() => {
     // Use collections data
   }
   window.addEventListener('create-new-file', handleCreateNewFile)
-  return () => window.removeEventListener('create-new-file', handleCreateNewFile)
+  return () =>
+    window.removeEventListener('create-new-file', handleCreateNewFile)
 }, [])
 ```
 
 ### TanStack Query Patterns
 
 #### Query Keys Factory
+
 ```typescript
 export const queryKeys = {
   all: ['project'] as const,
@@ -214,6 +225,7 @@ export const queryKeys = {
 ```
 
 #### Automatic Cache Invalidation
+
 ```typescript
 // In mutation's onSuccess
 queryClient.invalidateQueries({
@@ -226,7 +238,13 @@ queryClient.invalidateQueries({
 Uses `react-hotkeys-hook` for cross-platform shortcuts:
 
 ```typescript
-useHotkeys('mod+s', () => { /* save */ }, { preventDefault: true })
+useHotkeys(
+  'mod+s',
+  () => {
+    /* save */
+  },
+  { preventDefault: true }
+)
 ```
 
 **Available:** `mod+s` (save), `mod+1` (sidebar), `mod+2` (frontmatter), `mod+n` (new), `mod+w` (close), `mod+comma` (preferences)
@@ -234,6 +252,7 @@ useHotkeys('mod+s', () => { /* save */ }, { preventDefault: true })
 ## Code Extraction Patterns
 
 ### When to Extract to `lib/`
+
 1. **Complexity**: 50+ lines of related logic
 2. **Reusability**: Used by 2+ components
 3. **Testability**: Needs unit tests
@@ -241,12 +260,14 @@ useHotkeys('mod+s', () => { /* save */ }, { preventDefault: true })
 5. **External Integration**: APIs, file system
 
 ### When to Extract to `hooks/`
+
 1. **Stateful Logic**: Uses React hooks
 2. **Component Logic**: React lifecycle
 3. **Shared Behavior**: Multiple components
 4. **Side Effects**: Subscriptions, timers
 
 ### Extraction Process
+
 1. Identify single responsibility
 2. Define minimal public API
 3. Extract with tests
@@ -289,6 +310,7 @@ See `docs/developer/editor-styles.md` for CSS theming details.
 To add new command groups:
 
 1. **Update Types** (`src/lib/commands/types.ts`):
+
 ```typescript
 export type CommandGroup = 'file' | 'navigation' | 'your-new-group'
 ```
@@ -301,6 +323,7 @@ export type CommandGroup = 'file' | 'navigation' | 'your-new-group'
 ## Testing Strategy
 
 ### Frontend (Vitest + React Testing Library)
+
 - **Unit Tests**: Modules in `lib/` and complex field components
 - **Integration Tests**: Hooks and workflows
 - **Component Tests**: User interactions
@@ -308,6 +331,7 @@ export type CommandGroup = 'file' | 'navigation' | 'your-new-group'
 - **Query Tests**: Mock with test utilities
 
 ### Field Component Testing
+
 **Unit test when:** Complex validation, schema defaults, orchestration logic
 **Integration test when:** User workflows, happy paths
 
@@ -327,12 +351,14 @@ scheduleAutoSave: () => {
 ## Best Practices
 
 ### Component Development
+
 - **NEVER** use React Hook Form (infinite loops)
 - **ALWAYS** use Direct Store Pattern
 - **EXTRACT** helper components for repeated JSX (3+ times)
 - **TYPE** store destructuring explicitly
 
 ### Module Development
+
 - **EXTRACT** complex logic into `lib/`
 - **CREATE** hooks for stateful logic
 - **DEFINE** clear interfaces
@@ -350,6 +376,7 @@ scheduleAutoSave: () => {
 ## Key Files Reference
 
 ### Essential Files
+
 - `src/store/*.ts` - State management
 - `src/lib/query-keys.ts` - TanStack Query keys
 - `src/components/layout/Layout.tsx` - Main orchestrator
@@ -357,6 +384,7 @@ scheduleAutoSave: () => {
 - `src/lib/schema.ts` - Zod schema parsing
 
 ### Documentation
+
 - `docs/developer/architecture-guide.md` - Comprehensive patterns
 - `docs/developer/toast-system.md` - Notifications
 - `docs/developer/editor-styles.md` - CSS theming
