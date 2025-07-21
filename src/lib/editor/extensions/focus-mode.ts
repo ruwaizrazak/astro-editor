@@ -48,7 +48,6 @@ export const focusModeState = StateField.define<{
       newValue = { ...newValue, currentSentence }
     }
 
-
     return newValue
   },
 })
@@ -100,7 +99,6 @@ export const focusModeDecorations = StateField.define<DecorationSet>({
         )
       )
     }
-
 
     return Decoration.set(marks, true)
   },

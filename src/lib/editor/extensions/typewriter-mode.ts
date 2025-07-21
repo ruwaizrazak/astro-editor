@@ -25,7 +25,6 @@ class TypewriterScroller {
   private lastCursorY = -1
 
   scrollToCenter(view: EditorView, cursorPos: number) {
-
     // Schedule both coordinate reading AND scrolling to happen after the current update completes
     // This avoids the "reading layout during update" error
     setTimeout(() => {
@@ -43,7 +42,6 @@ class TypewriterScroller {
       if (this.lastCursorY !== -1 && yDifference < 20) {
         return
       }
-
 
       view.dispatch({
         effects: EditorView.scrollIntoView(cursorPos, {
