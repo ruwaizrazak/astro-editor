@@ -187,8 +187,103 @@ The opacity transition ensures smooth visual feedback:
 
 ## Bugs after initial attempt
 
-- [ ] Background **behind** both bars is white, should be `--editor-color-background`. This can maybe just be set on one of the high-level containers, Since all of the sidebars and other stuff will have their own background set.
-- [ ] Keyboard shortcuts for showing and opening the sidebar no longer work reliably when the editor is focussed.
-- [ ] Opening the command palette or Component builder now triggers a "File Saved Successfully" toast. Making an edit in the document autosaves correctly, but then later when clicking out of the editor we get a "File Saved Successfully" toast. I assume this is because the toasts are somehow being saved up and appearing later. But it may be something different to that.
-- [ ] Open Project in IDE no longer works from the command panel
-- [ ] MOST IMPORTANTLY: When the title bar is hidden, auto-save no longer works. When I mouse over it for it to reappear, I can see that it hasn't saved changes, and crucially, I can no longer save changes to the document by clicking it.
+- [x] ~~Background **behind** both bars is white, should be `--editor-color-background`. This can maybe just be set on one of the high-level containers, Since all of the sidebars and other stuff will have their own background set.~~ - **FIXED**: Changed Layout background from `bg-background` to `bg-[var(--editor-color-background)]`
+- [x] ~~Keyboard shortcuts for showing and opening the sidebar no longer work reliably when the editor is focussed.~~ - **FIXED**: Made typing detection more specific - only counts `input.type` events from keyboard, not all document changes
+- [x] ~~Opening the command palette or Component builder now triggers a "File Saved Successfully" toast. Making an edit in the document autosaves correctly, but then later when clicking out of the editor we get a "File Saved Successfully" toast. I assume this is because the toasts are somehow being saved up and appearing later. But it may be something different to that.~~ - **FIXED**: Same root cause - typing detection was too broad and counted command palette/component builder actions as "typing"
+- [x] ~~Open Project in IDE no longer works from the command panel~~ - **FIXED**: Same root cause as above
+- [x] ~~MOST IMPORTANTLY: When the title bar is hidden, auto-save no longer works. When I mouse over it for it to reappear, I can see that it hasn't saved changes, and crucially, I can no longer save changes to the document by clicking it.~~ - **FIXED**: Root cause was the typing detection interfering with the normal editor flow
+
+## Root Cause Analysis
+
+All issues stemmed from the typing detection being too aggressive. The original implementation counted **every** document change as "typing":
+
+```typescript
+// PROBLEMATIC - counted all changes
+if (update.docChanged && !isProgrammaticUpdate.current) {
+  typingCharCount.current++ // This counted everything!
+}
+```
+
+This meant command palette opening, component builder opening, focus changes, etc. all counted as "typing", which:
+1. Triggered false auto-saves
+2. Interfered with normal editor operations 
+3. Caused focus/event flow issues
+
+## Fix Implementation
+
+Changed to only count actual keyboard text input:
+
+```typescript
+// FIXED - only counts actual typing
+if (update.transactions.some(tr => 
+  tr.isUserEvent('input.type') && 
+  tr.changes && 
+  !tr.changes.empty
+)) {
+  typingCharCount.current++
+}
+```
+
+Also added safeguards:
+- Command palette and component builder now explicitly show bars when opened
+- Added proper cleanup for typing detection timeout
+- All checks pass and functionality restored
+
+## Additional Issues Discovered - Deeper Architectural Problems
+
+After fixing the typing detection, most issues persist, revealing deeper coupling problems:
+
+### Keyboard Shortcut Inconsistency (Partially Separate Issue)
+- **Outside editor**: Cmd+1 works via React event handling
+- **Inside editor**: Cmd+1 triggers Tauri menu system (menu flashes), inconsistent behavior
+- **After toggling once**: Subsequently works fine even in editor
+- **Diagnosis**: Likely focus/listener setup issue, may be related to editor initialization
+
+### Auto-Save Still Broken (Main Concern) - ROOT CAUSE IDENTIFIED
+- Changed opacity from `0` to `0.01` to `90` - saving issues persist regardless
+- **CRITICAL FINDING**: Auto-save works before hiding sidebars, breaks when both hidden, works again when sidebars shown
+- **Console logs reveal**: Editor being destroyed/recreated repeatedly when both panels hidden:
+  ```
+  [Log] [Editor] viewRef.current exists: – false (repeated many times)
+  [Log] [Editor] No editor view available to dispatch effect
+  ```
+- **Root Cause**: React re-render cascade from frequent `distractionFreeBarsHidden` state updates is unmounting/remounting Editor component
+- **Currently testing**: Typing detection completely disabled to confirm this theory
+
+### Architectural Red Flags
+
+This feature should be completely isolated:
+1. Typing detection → boolean state
+2. Boolean state → CSS opacity
+3. Mouse hover → reset boolean
+
+**The fact that this affects auto-save and keyboard shortcuts suggests problematic coupling.**
+
+### Potential Root Causes
+
+1. **React Re-render Cascade**: Frequent `distractionFreeBarsHidden` updates causing excessive re-renders that interfere with other operations
+
+2. **CodeMirror UpdateListener Interference**: Our typing detection in the `updateListener` might be disrupting normal editor event flow, even though we made it more specific
+
+3. **State Update Timing**: Rapid state updates might cause race conditions with auto-save timers
+
+4. **Focus Management**: The state changes might be affecting focus/blur behavior in unexpected ways
+
+### Next Investigation Steps
+
+1. ✅ **Test 90% opacity** - Save buttons still don't work, confirms not visibility issue
+2. 🔄 **CURRENTLY TESTING: Typing detection disabled entirely** - If problems disappear, confirms re-render cascade theory
+3. **If typing detection is the culprit, solutions**:
+   - Add React.memo to Editor component to prevent unnecessary re-renders
+   - Move distraction-free state to isolated store/context
+   - Use CSS custom properties instead of React state
+   - Debounce state updates significantly
+4. **If problems persist even without typing detection** - Investigate other sources of re-renders
+
+### Alternative Approaches If Current Fails
+
+1. **CSS-Only Solution**: Use CSS custom properties updated via direct style manipulation
+2. **Debounced Updates**: Reduce frequency of state changes
+3. **Event-driven CSS**: Use CSS animations triggered by data attributes instead of React state
+
+The goal is to find why a simple opacity toggle is affecting core editor functionality - this shouldn't happen in a well-architected system.

@@ -1,7 +1,8 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useCommandContext } from '../lib/commands/command-context'
 import { getAllCommands } from '../lib/commands/app-commands'
 import { AppCommand, CommandGroup } from '../lib/commands/types'
+import { useUIStore } from '../store/uiStore'
 
 /**
  * Hook for managing command palette state and commands
@@ -9,19 +10,32 @@ import { AppCommand, CommandGroup } from '../lib/commands/types'
 export function useCommandPalette() {
   const [open, setOpen] = useState(false)
   const context = useCommandContext()
+  const { setDistractionFreeBarsHidden } = useUIStore()
+
+  // Custom setOpen that shows bars when command palette opens
+  const handleSetOpen = useCallback(
+    (value: boolean | ((prev: boolean) => boolean)) => {
+      setOpen(value)
+      // Show bars when command palette opens
+      if (typeof value === 'boolean' ? value : value(open)) {
+        setDistractionFreeBarsHidden(false)
+      }
+    },
+    [open, setDistractionFreeBarsHidden]
+  )
 
   // Handle Cmd+P keyboard shortcut
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'p' && e.metaKey) {
         e.preventDefault()
-        setOpen(open => !open)
+        handleSetOpen(open => !open)
       }
     }
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [])
+  }, [handleSetOpen])
 
   // Get all available commands based on current context
   const commands = useMemo(() => getAllCommands(context), [context])
@@ -56,13 +70,13 @@ export function useCommandPalette() {
 
   // Execute a command and close the palette
   const executeCommand = async (command: AppCommand) => {
-    setOpen(false)
+    handleSetOpen(false)
     await command.execute(context)
   }
 
   return {
     open,
-    setOpen,
+    setOpen: handleSetOpen,
     commands,
     commandGroups,
     executeCommand,

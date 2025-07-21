@@ -1,6 +1,7 @@
 import { EditorView } from '@codemirror/view'
 import { create } from 'zustand'
 import { MdxComponent } from '../hooks/queries/useMdxComponentsQuery'
+import { useUIStore } from './uiStore'
 
 // Define State and Actions
 interface ComponentBuilderState {
@@ -37,12 +38,16 @@ export const useComponentBuilderStore = create<
 >((set, get) => ({
   ...initialState,
 
-  open: editorView =>
+  open: editorView => {
+    // Show bars when component builder opens
+    useUIStore.getState().setDistractionFreeBarsHidden(false)
+
     set({
       ...initialState,
       isOpen: true,
       editorView,
-    }),
+    })
+  },
 
   close: () => set({ ...initialState }), // Fully reset on close
 

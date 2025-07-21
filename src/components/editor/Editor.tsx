@@ -160,24 +160,37 @@ export const EditorViewComponent: React.FC = () => {
             // Use captured handler to avoid infinite loops
             currentHandleChange(newContent)
 
-            // Typing detection for distraction-free mode
-            typingCharCount.current++
+            // TEMPORARILY DISABLED: Typing detection for distraction-free mode
+            // Testing if this is causing editor re-mount issues
+            /* 
+            // Only count actual text insertions from user input
+            if (
+              update.transactions.some(
+                tr =>
+                  tr.isUserEvent('input.type') &&
+                  tr.changes &&
+                  !tr.changes.empty
+              )
+            ) {
+              typingCharCount.current++
 
-            // Clear existing timeout
-            if (typingResetTimeout.current) {
-              clearTimeout(typingResetTimeout.current)
+              // Clear existing timeout
+              if (typingResetTimeout.current) {
+                clearTimeout(typingResetTimeout.current)
+              }
+
+              // Reset counter after 500ms of no typing
+              typingResetTimeout.current = window.setTimeout(() => {
+                typingCharCount.current = 0
+              }, 500)
+
+              // Hide bars after 4 characters
+              if (typingCharCount.current >= 4) {
+                useUIStore.getState().handleTypingInEditor()
+                typingCharCount.current = 0
+              }
             }
-
-            // Reset counter after 500ms of no typing
-            typingResetTimeout.current = window.setTimeout(() => {
-              typingCharCount.current = 0
-            }, 500)
-
-            // Hide bars after 4 characters
-            if (typingCharCount.current >= 4) {
-              useUIStore.getState().handleTypingInEditor()
-              typingCharCount.current = 0
-            }
+            */
           }
         }),
       ],
@@ -233,6 +246,11 @@ export const EditorViewComponent: React.FC = () => {
   useEffect(() => {
     return () => {
       cleanupCommands()
+      // Clean up typing detection timeout
+      if (typingResetTimeout.current) {
+        clearTimeout(typingResetTimeout.current)
+        typingResetTimeout.current = null
+      }
     }
   }, [cleanupCommands])
 
