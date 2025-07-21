@@ -5,14 +5,15 @@ import { useEditorStore } from '../../store/editorStore'
  * Hook for creating editor event handlers
  */
 export const useEditorHandlers = () => {
-  const { setEditorContent, currentFile, saveFile, isDirty } = useEditorStore()
+  // No store subscriptions needed - use getState() pattern
 
   // Handle content changes
   const handleChange = useCallback(
     (value: string) => {
-      setEditorContent(value)
+      // Use getState() to avoid dependency on setEditorContent function reference
+      useEditorStore.getState().setEditorContent(value)
     },
-    [setEditorContent]
+    []
   )
 
   // Handle editor focus - just set flag, menu state managed in Layout
@@ -27,17 +28,19 @@ export const useEditorHandlers = () => {
     window.dispatchEvent(new CustomEvent('editor-focus-changed'))
 
     // Manual save on blur for immediate feedback
+    const { currentFile, isDirty, saveFile } = useEditorStore.getState()
     if (currentFile && isDirty) {
       void saveFile()
     }
-  }, [currentFile, isDirty, saveFile])
+  }, [])
 
   // Handle manual save
   const handleSave = useCallback(() => {
+    const { currentFile, isDirty, saveFile } = useEditorStore.getState()
     if (currentFile && isDirty) {
       void saveFile()
     }
-  }, [currentFile, isDirty, saveFile])
+  }, [])
 
   return {
     handleChange,

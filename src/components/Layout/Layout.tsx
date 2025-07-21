@@ -68,19 +68,18 @@ const EditorAreaWithFrontmatter: React.FC<{
       >
         <MainEditor />
       </ResizablePanel>
-      {frontmatterPanelVisible && (
-        <>
-          <ResizableHandle className="!cursor-col-resize" />
-          <ResizablePanel
-            defaultSize={responsiveDefaultSize}
-            minSize={20}
-            maxSize={60}
-            className="bg-muted/10 border-l border-border overflow-hidden"
-          >
-            <FrontmatterPanel />
-          </ResizablePanel>
-        </>
-      )}
+      {/* ALWAYS render handle and panel - control visibility with CSS */}
+      <ResizableHandle 
+        className={`!cursor-col-resize ${frontmatterPanelVisible ? '' : 'hidden'}`} 
+      />
+      <ResizablePanel
+        defaultSize={frontmatterPanelVisible ? responsiveDefaultSize : 0}
+        minSize={frontmatterPanelVisible ? 20 : 0}
+        maxSize={frontmatterPanelVisible ? 60 : 0}
+        className={`bg-muted/10 border-l border-border overflow-hidden ${frontmatterPanelVisible ? '' : 'hidden'}`}
+      >
+        <FrontmatterPanel />
+      </ResizablePanel>
     </ResizablePanelGroup>
   )
 })

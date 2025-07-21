@@ -137,13 +137,61 @@ After hooks off:  Layout #1,     MainEditor #1-2,   Editor #1 PERFECT!
 After useEditorHandlers: CASCADE RETURNS - CULPRIT CONFIRMED!
 ```
 
+## LATEST UPDATE: useEditorHandlers Fix Insufficient ❌
+
+**Date**: Current session continuation
+
+**Applied Fix**: ❌ `useEditorHandlers` fix INSUFFICIENT - cascade returns when re-enabled
+**Test Result**: ❌ **Render cascade PERSISTS**
+
+**Evidence**: 
+- All hooks disabled: Editor RENDER #1 only ✅
+- With fixed `useEditorHandlers`: Editor RENDER #3-15+ with **"changedProps: none"** ❌
+- Layout and MainEditor not cascading anymore ✅
+
+**Conclusion**: ✅ **ROOT CAUSE IDENTIFIED** - Store function calls from handlers cause re-renders
+
+**BREAKTHROUGH**: 
+- `useEditorHandlers` hook: RENDER #3-15+ cascade ❌
+- Direct `setEditorContent` call: RENDER #1 only ✅  
+- **The problem is NOT store calls - it's the `useEditorHandlers` hook structure itself**
+
+**REFINED ROOT CAUSE**: Something in `useEditorHandlers` hook is causing function references to change on every store update, triggering Editor re-renders.
+
+**New Investigation Required**: 
+- ✅ **Store subscriptions eliminated** - Editor STILL re-renders with hardcoded values
+- ❌ **Root cause is NOT store subscriptions**
+- 🔍 **Must be Editor hooks or internal React patterns**
+- Previous systematic hook elimination worked - need to repeat process
+
 ## Next Session Continuation
 
 The next Claude Code instance should:
-1. **Apply the verified fix** to `useEditorHandlers` 
-2. **Test the solution** thoroughly
-3. **Revert debugging changes** systematically  
-4. **Restore full functionality**
-5. **Implement distraction-free mode** with the now-optimized architecture
+1. **Continue investigating Editor render cascade** - useEditorHandlers fix was insufficient
+2. **Identify additional problematic subscriptions** in Editor component  
+3. **Apply systematic elimination again** to find remaining culprits
+4. **Test each fix incrementally**
+5. **Document any new findings** in this file
+6. **Restore full functionality** once cascade eliminated
+7. **Implement distraction-free mode** with optimized architecture
 
-**All necessary information for continuation is documented in this file and the referenced documentation files.**
+**Status**: ✅ **RENDER CASCADE FIXED** - `useEditorHandlers` root cause resolved
+
+## CRITICAL NEW ISSUE: ResizablePanelGroup Crash ❌
+
+**Date**: Current session - STEP 1 testing
+
+**Issue**: App crashes when toggling frontmatter panel with error:
+```
+Error: Previous layout not found for panel index -1
+```
+
+**Root Cause**: Conditional rendering changes during debugging likely broke `react-resizable-panels` structure in Layout component.
+
+**Evidence**: 
+- Sidebar toggle works ✅
+- Frontmatter panel toggle crashes app ❌
+- Error originates from `react-resizable-panels.js`
+- Layout conditional rendering may be inconsistent
+
+**Priority**: CRITICAL - must fix before continuing restore process

@@ -22,21 +22,13 @@ declare global {
 }
 
 const EditorViewComponent: React.FC = () => {
-  // DEBUGGING: Remove ALL store subscriptions to test if they're causing cascade
-  // const currentFileId = useEditorStore(state => state.currentFile?.id)
-  // const focusModeEnabled = useUIStore(state => state.focusModeEnabled)
-  // const typewriterModeEnabled = useUIStore(state => state.typewriterModeEnabled)
-  // const sidebarVisible = useUIStore(state => state.sidebarVisible)
-  // const frontmatterPanelVisible = useUIStore(state => state.frontmatterPanelVisible)
-  // const distractionFreeBarsHidden = useUIStore(state => state.distractionFreeBarsHidden)
-  
-  // Hardcoded values for testing
-  const currentFileId = "test-file"
-  const focusModeEnabled = false
-  const typewriterModeEnabled = false
-  const sidebarVisible = true
-  const frontmatterPanelVisible = true
-  const distractionFreeBarsHidden = false
+  // STEP 1: Restore real store subscriptions
+  const currentFileId = useEditorStore(state => state.currentFile?.id)
+  const focusModeEnabled = useUIStore(state => state.focusModeEnabled)
+  const typewriterModeEnabled = useUIStore(state => state.typewriterModeEnabled)
+  const sidebarVisible = useUIStore(state => state.sidebarVisible)
+  const frontmatterPanelVisible = useUIStore(state => state.frontmatterPanelVisible)
+  const distractionFreeBarsHidden = useUIStore(state => state.distractionFreeBarsHidden)
   const editorRef = useRef<HTMLDivElement>(null)
   const viewRef = useRef<EditorView | null>(null)
   // Content initialization handled in useEffect, not via subscription
@@ -47,109 +39,39 @@ const EditorViewComponent: React.FC = () => {
   const typingCharCount = useRef(0)
   const typingResetTimeout = useRef<number | null>(null)
 
-  // DEBUG: Add comprehensive logging to track component lifecycle
-  const renderCountRef = useRef(0)
-  renderCountRef.current++
-  
-  // Track what changed to cause this render
-  const prevPropsRef = useRef({
-    currentFileId,
-    sidebarVisible,
-    frontmatterPanelVisible,
-    focusModeEnabled,
-    typewriterModeEnabled,
-    distractionFreeBarsHidden,
-  })
-  
-  const currentProps = {
-    currentFileId,
-    sidebarVisible,
-    frontmatterPanelVisible,
-    focusModeEnabled,
-    typewriterModeEnabled,
-    distractionFreeBarsHidden,
-  }
-  
-  const changedProps = Object.keys(currentProps).filter(key => 
-    prevPropsRef.current[key as keyof typeof currentProps] !== currentProps[key as keyof typeof currentProps]
-  )
-  
-  // eslint-disable-next-line no-console
-  console.log(`[Editor] RENDER #${renderCountRef.current}`, {
-    ...currentProps,
-    hasEditorRef: !!editorRef.current,
-    hasViewRef: !!viewRef.current,
-    changedProps: changedProps.length > 0 ? changedProps : 'none',
-  })
-  
-  prevPropsRef.current = currentProps
-
-  // DEBUG: Track individual state changes
-  useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log('[Editor] Sidebar visibility changed:', sidebarVisible)
-  }, [sidebarVisible])
-
-  useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log('[Editor] Frontmatter panel visibility changed:', frontmatterPanelVisible)
-  }, [frontmatterPanelVisible])
-
-  useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log('[Editor] Distraction-free bars hidden changed:', distractionFreeBarsHidden)
-  }, [distractionFreeBarsHidden])
 
   // Initialize global focus flag (menu state managed in Layout)
   useEffect(() => {
     window.isEditorFocused = false
   }, [])
 
-  // FINAL TEST: Re-enable useEditorHandlers (suspected culprit)
+  // TESTING: Re-enable fixed useEditorHandlers 
   const { handleChange, handleFocus, handleBlur, handleSave } = useEditorHandlers()
   
-  // Remove temporary handlers - using real ones now
-  
+  // STEP 2: Re-enable useEditorSetup (extensions and commands)
   const componentBuilderHandler = useCallback((view: EditorView) => {
     return false
   }, [])
   
-  // RE-ENABLE TEST: useEditorSetup (extensions and commands)
   const { extensions, setupCommands, cleanupCommands } = useEditorSetup(
     handleSave,
     handleFocus,
     handleBlur,
     componentBuilderHandler
   )
-
-  // RE-ENABLE TEST: Tauri listeners (least likely to cause React re-renders)
+  
+  // STEP 3: Re-enable useTauriListeners (native integration)
   useTauriListeners(viewRef.current)
 
   // Update editor effects when writing modes change
   useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log('[Editor] Focus mode effect triggered')
-    // eslint-disable-next-line no-console
-    console.log('[Editor] focusModeEnabled:', focusModeEnabled)
-    // eslint-disable-next-line no-console
-    console.log('[Editor] typewriterModeEnabled:', typewriterModeEnabled)
-    // eslint-disable-next-line no-console
-    console.log('[Editor] viewRef.current exists:', !!viewRef.current)
-
     if (viewRef.current) {
-      // eslint-disable-next-line no-console
-      console.log('[Editor] Dispatching focus mode effect to CodeMirror')
       viewRef.current.dispatch({
         effects: [
           toggleFocusMode.of(focusModeEnabled),
           toggleTypewriterMode.of(typewriterModeEnabled),
         ],
       })
-      // eslint-disable-next-line no-console
-      console.log('[Editor] Effect dispatched successfully')
-    } else {
-      // eslint-disable-next-line no-console
-      console.log('[Editor] No editor view available to dispatch effect')
     }
   }, [focusModeEnabled, typewriterModeEnabled])
 
@@ -201,15 +123,8 @@ const EditorViewComponent: React.FC = () => {
     }
   }, [isAltPressed])
 
-  // Initialize the CodeMirror editor once - EXACTLY like DebugScreen
+  // Initialize the CodeMirror editor once
   useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log('[Editor] CodeMirror useEffect triggered', {
-      hasEditorRef: !!editorRef.current,
-      hasViewRef: !!viewRef.current,
-      shouldCreateEditor: !(!editorRef.current || viewRef.current)
-    })
-    
     if (!editorRef.current || viewRef.current) return
 
     // Get current handlers - capture them at effect creation time
@@ -272,15 +187,11 @@ const EditorViewComponent: React.FC = () => {
     })
 
     viewRef.current = view
-    // eslint-disable-next-line no-console
-    console.log('[Editor] CodeMirror view created successfully')
 
     // Set up commands once the view is ready
     currentSetupCommands(view)
 
     return () => {
-      // eslint-disable-next-line no-console
-      console.log('[Editor] CodeMirror view being destroyed')
       view.destroy()
       viewRef.current = null
       currentCleanupCommands()
