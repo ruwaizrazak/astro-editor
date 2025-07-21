@@ -14,7 +14,6 @@ import {
   Plus,
   Eye,
   EyeOff,
-  AlignCenter,
 } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { Toggle } from '../ui/toggle'
@@ -31,8 +30,6 @@ export const UnifiedTitleBar: React.FC = () => {
     sidebarVisible,
     focusModeEnabled,
     toggleFocusMode,
-    typewriterModeEnabled,
-    toggleTypewriterMode,
   } = useUIStore()
 
   const { createNewFile } = useCreateFile()
@@ -66,30 +63,6 @@ export const UnifiedTitleBar: React.FC = () => {
     }, 100)
   }
 
-  const handleToggleTypewriterMode = () => {
-    // eslint-disable-next-line no-console
-    console.log('[UnifiedTitleBar] Typewriter mode toggle clicked')
-    // eslint-disable-next-line no-console
-    console.log(
-      '[UnifiedTitleBar] Current typewriter mode state:',
-      typewriterModeEnabled
-    )
-    toggleTypewriterMode()
-    // eslint-disable-next-line no-console
-    console.log(
-      '[UnifiedTitleBar] Typewriter mode toggled, new state should be:',
-      !typewriterModeEnabled
-    )
-    // Verify the state actually changed
-    setTimeout(() => {
-      const newState = useUIStore.getState().typewriterModeEnabled
-      // eslint-disable-next-line no-console
-      console.log(
-        '[UnifiedTitleBar] Verified new typewriter mode state:',
-        newState
-      )
-    }, 100)
-  }
 
   const handleMinimize = async () => {
     const window = getCurrentWindow()
@@ -147,8 +120,7 @@ export const UnifiedTitleBar: React.FC = () => {
         <Button
           onClick={toggleSidebar}
           variant="ghost"
-          size="sm"
-          className="size-7 p-0"
+          size="icon"
           title={sidebarVisible ? 'Close Sidebar' : 'Open Sidebar'}
         >
           {sidebarVisible ? (
@@ -177,8 +149,7 @@ export const UnifiedTitleBar: React.FC = () => {
           <Button
             onClick={handleNewFile}
             variant="ghost"
-            size="sm"
-            className="size-7 p-0"
+            size="icon"
             title={`New ${selectedCollection} file`}
           >
             <Plus className="size-4" />
@@ -204,34 +175,12 @@ export const UnifiedTitleBar: React.FC = () => {
           )}
         </Toggle>
 
-        {/* Typewriter mode toggle */}
-        <Toggle
-          pressed={typewriterModeEnabled}
-          onPressedChange={handleToggleTypewriterMode}
-          size="sm"
-          variant="outline"
-          className="size-7 p-0"
-          title={
-            typewriterModeEnabled
-              ? 'Disable Typewriter Mode'
-              : 'Enable Typewriter Mode'
-          }
-          aria-label={
-            typewriterModeEnabled
-              ? 'Disable Typewriter Mode'
-              : 'Enable Typewriter Mode'
-          }
-        >
-          <AlignCenter className="size-4" />
-        </Toggle>
-
         {/* Save button - no drag region */}
         <Button
           onClick={handleSave}
-          variant={isDirty ? 'default' : 'ghost'}
-          size="sm"
+          variant="ghost"
+          size="icon"
           disabled={!currentFile || !isDirty}
-          className="size-7 p-0"
           title={`Save${isDirty ? ' (unsaved changes)' : ''}`}
         >
           <Save className="size-4" />
@@ -241,8 +190,7 @@ export const UnifiedTitleBar: React.FC = () => {
         <Button
           onClick={toggleFrontmatterPanel}
           variant="ghost"
-          size="sm"
-          className="size-7 p-0"
+          size="icon"
           title={
             frontmatterPanelVisible
               ? 'Close Frontmatter Panel'
