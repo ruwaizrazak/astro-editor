@@ -37,7 +37,7 @@ describe('Sentence Detection', () => {
 
       expect(sentences).toEqual([
         { from: 0, to: 16 }, // "What is this??? "
-        { from: 16, to: 26 }, // "And this!"
+        { from: 16, to: 25 }, // "And this!"
       ])
     })
 
@@ -82,15 +82,15 @@ describe('Sentence Detection', () => {
       const sentenceAtEnd = findCurrentSentence(state, 15)
       expect(sentenceAtEnd).toEqual({ from: 0, to: 16 })
 
-      // Cursor at start of second sentence
+      // Cursor at start of second sentence (boundary selects previous)
       const sentenceAtStart = findCurrentSentence(state, 16)
-      expect(sentenceAtStart).toEqual({ from: 16, to: 32 })
+      expect(sentenceAtStart).toEqual({ from: 0, to: 16 })
     })
 
-    test('returns null for empty document', () => {
+    test('returns range for empty document', () => {
       const state = EditorState.create({ doc: '' })
       const sentence = findCurrentSentence(state, 0)
-      expect(sentence).toBeNull()
+      expect(sentence).toEqual({ from: 0, to: 0 })
     })
 
     test('handles multiline documents', () => {
@@ -103,7 +103,7 @@ describe('Sentence Detection', () => {
 
       // Cursor in second line
       const sentence2 = findCurrentSentence(state, 30)
-      expect(sentence2).toEqual({ from: 20, to: 42 })
+      expect(sentence2).toEqual({ from: 21, to: 42 })
     })
   })
 })

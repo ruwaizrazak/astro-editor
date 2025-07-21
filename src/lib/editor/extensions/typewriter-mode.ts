@@ -40,7 +40,10 @@ class TypewriterScroller {
 
   scrollToCenter(view: EditorView, cursorPos: number) {
     // eslint-disable-next-line no-console
-    console.log('[TypewriterScroller] scrollToCenter called for position:', cursorPos)
+    console.log(
+      '[TypewriterScroller] scrollToCenter called for position:',
+      cursorPos
+    )
 
     // Schedule both coordinate reading AND scrolling to happen after the current update completes
     // This avoids the "reading layout during update" error
@@ -55,19 +58,30 @@ class TypewriterScroller {
 
       const cursorY = coords.top
       // eslint-disable-next-line no-console
-      console.log('[TypewriterScroller] Cursor Y coordinate:', cursorY, 'Previous Y:', this.lastCursorY)
+      console.log(
+        '[TypewriterScroller] Cursor Y coordinate:',
+        cursorY,
+        'Previous Y:',
+        this.lastCursorY
+      )
 
       // Only scroll if cursor moved vertically by more than 20px
       // This handles both line changes and wrapped line movement
       const yDifference = Math.abs(cursorY - this.lastCursorY)
       if (this.lastCursorY !== -1 && yDifference < 20) {
         // eslint-disable-next-line no-console
-        console.log('[TypewriterScroller] Skipping - cursor Y movement too small:', yDifference + 'px')
+        console.log(
+          '[TypewriterScroller] Skipping - cursor Y movement too small:',
+          yDifference + 'px'
+        )
         return
       }
 
       // eslint-disable-next-line no-console
-      console.log('[TypewriterScroller] Executing scroll for Y coordinate change:', yDifference + 'px')
+      console.log(
+        '[TypewriterScroller] Executing scroll for Y coordinate change:',
+        yDifference + 'px'
+      )
 
       view.dispatch({
         effects: EditorView.scrollIntoView(cursorPos, {
