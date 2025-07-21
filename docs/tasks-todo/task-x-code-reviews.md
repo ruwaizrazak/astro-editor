@@ -1,6 +1,6 @@
 # Task: Code Review Tasks
 
-Series of Extensive Code Reviews with specific AI Agent personalities, with clear focussed review goals: "Look for opportunities to..."
+Series of Extensive Code Reviews with specific AI Agent personalities, with clear focussed review goals: "Look for opportunities to..." Maybe do this with GEMINI?
 
 ## 1 - Shadcn components
 
