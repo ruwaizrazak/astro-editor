@@ -396,7 +396,7 @@ export const Layout: React.FC = () => {
   }, [createNewFileWithQuery])
 
   return (
-    <div className="h-screen w-screen bg-background font-sans flex flex-col rounded-xl overflow-hidden">
+    <div className="h-screen w-screen bg-[var(--editor-color-background)] font-sans flex flex-col rounded-xl overflow-hidden">
       {/* Unified titlebar */}
       <UnifiedTitleBar />
 
