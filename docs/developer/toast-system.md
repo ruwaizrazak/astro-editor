@@ -2,7 +2,7 @@
 
 ## Overview
 
-The blog editor uses a comprehensive toast notification system based on shadcn/ui's Sonner component. This system provides user-friendly notifications for successes, errors, warnings, and informational messages throughout the application.
+Asrro Editor uses a comprehensive toast notification system based on shadcn/ui's Sonner component. This system provides user-friendly notifications for successes, errors, warnings, and informational messages throughout the application.
 
 ## Architecture
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document details the architectural patterns and principles used in the Astro Blog Editor. It serves as a reference for maintaining consistency and understanding the reasoning behind key design decisions.
+This document details the architectural patterns and principles used in the Astro Editor. It serves as a reference for maintaining consistency and understanding the reasoning behind key design decisions.
 
 ## Core Architecture Principles
 

@@ -1,4 +1,4 @@
-# Gemini Architect's Report: Astro Blog Editor
+# Gemini Architect's Report: Astro Editor
 
 ## 1. Executive Summary
 

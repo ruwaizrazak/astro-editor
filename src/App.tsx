@@ -5,7 +5,7 @@ import './App.css'
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="system" storageKey="blog-editor-theme">
+    <ThemeProvider defaultTheme="system" storageKey="astro-editor-theme">
       <Layout />
       <ComponentBuilderDialog />
     </ThemeProvider>

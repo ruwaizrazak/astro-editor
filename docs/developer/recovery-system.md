@@ -16,12 +16,12 @@ When a save operation fails, the system automatically:
 ## Recovery File Locations
 
 ### macOS
-- **Recovery Files**: `~/Library/Application Support/Astro Blog Editor/recovery/`
-- **Crash Reports**: `~/Library/Application Support/Astro Blog Editor/crash-reports/`
+- **Recovery Files**: `~/Library/Application Support/com.astroeditor.app/recovery/`
+- **Crash Reports**: `~/Library/Application Support/com.astroeditor.app/crash-reports/`
 
 ### Windows
-- **Recovery Files**: `%APPDATA%\Astro Blog Editor\recovery\`
-- **Crash Reports**: `%APPDATA%\Astro Blog Editor\crash-reports\`
+- **Recovery Files**: `%APPDATA%\com.astroeditor.app\recovery\`
+- **Crash Reports**: `%APPDATA%\com.astroeditor.app\crash-reports\`
 
 ## File Naming Convention
 

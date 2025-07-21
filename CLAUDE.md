@@ -1,4 +1,4 @@
-# Claude Instructions for Astro Blog Editor
+# Claude Instructions for Astro Editor
 
 ## Current Status
 

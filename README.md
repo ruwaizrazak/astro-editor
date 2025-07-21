@@ -39,7 +39,7 @@ The paths to the _Assets_, _Content_, and _MDX Components_ directories (relative
 
 ## Installation
 
-Download the [latest Release](https://github.com/dannysmith/blog-editor/releases)
+Download the [latest Release](https://github.com/dannysmith/astro-editor/releases)
 
 ## User Guide
 
