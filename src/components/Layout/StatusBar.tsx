@@ -34,7 +34,7 @@ export const StatusBar: React.FC = () => {
           : 'bg-muted/50 border-border text-muted-foreground',
         distractionFreeBarsHidden &&
           bothPanelsHidden &&
-          'opacity-90 transition-opacity duration-300'
+          'opacity-0 transition-opacity duration-300'
       )}
       onMouseEnter={handleMouseEnter}
     >

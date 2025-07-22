@@ -82,7 +82,7 @@ export const UnifiedTitleBar: React.FC = () => {
           : 'bg-background border-border',
         distractionFreeBarsHidden &&
           bothPanelsHidden &&
-          'opacity-90 transition-opacity duration-300'
+          'opacity-0 transition-opacity duration-300'
       )}
       data-tauri-drag-region
       onMouseEnter={handleMouseEnter}
