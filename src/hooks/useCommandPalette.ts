@@ -39,14 +39,18 @@ export function useCommandPalette() {
 
   // Get all available commands based on current context
   // Optimize dependencies to prevent unnecessary recalculations that could disrupt navigation
-  const commands = useMemo(() => getAllCommands(context), [
-    context.currentFile?.id,
-    context.selectedCollection,
-    context.projectPath,
-    context.isDirty,
-    context.globalSettings?.general?.ideCommand,
-    context.collections.length, // Only react to collection count changes, not array reference
-  ])
+  const commands = useMemo(
+    () => getAllCommands(context),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      context.currentFile?.id,
+      context.selectedCollection,
+      context.projectPath,
+      context.isDirty,
+      context.globalSettings?.general?.ideCommand,
+      context.collections.length, // Only react to collection count changes, not array reference
+    ]
+  )
 
   // Group commands by category
   const commandGroups = useMemo((): CommandGroup[] => {

@@ -40,7 +40,7 @@ export const useCreateFile = () => {
     // Get current values from store state
     const { selectedCollection } = useProjectStore.getState()
     const currentProjectPath = useProjectStore.getState().projectPath
-    
+
     if (!selectedCollection || !currentProjectPath) {
       toast.error('No collection selected')
       return
@@ -155,8 +155,9 @@ export const useCreateFile = () => {
       if (newFile) {
         // Get current functions from store state
         const { openFile } = useEditorStore.getState()
-        const { frontmatterPanelVisible, toggleFrontmatterPanel } = useUIStore.getState()
-        
+        const { frontmatterPanelVisible, toggleFrontmatterPanel } =
+          useUIStore.getState()
+
         await openFile(newFile)
 
         // Open frontmatter panel if we have a title field
@@ -192,10 +193,7 @@ export const useCreateFile = () => {
           error instanceof Error ? error.message : 'Unknown error occurred',
       })
     }
-  }, [
-    collections,
-    createFileMutation,
-  ]) // PERFORMANCE FIX: Only include stable dependencies, get other values via getState()
+  }, [collections, createFileMutation]) // PERFORMANCE FIX: Only include stable dependencies, get other values via getState()
 
   return { createNewFile }
 }

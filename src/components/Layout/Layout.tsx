@@ -16,7 +16,6 @@ import { Toaster } from '../ui/sonner'
 import { toast } from '../../lib/toast'
 import { initializeRustToastBridge } from '../../lib/rust-toast-bridge'
 import { PreferencesDialog } from '../preferences'
-import { useComponentBuilderStore } from '../../store/componentBuilderStore'
 import { useCreateFile } from '../../hooks/useCreateFile'
 import {
   ResizablePanelGroup,
@@ -76,7 +75,7 @@ export const Layout: React.FC = () => {
   // Preferences dialog state
   const [preferencesOpen, setPreferencesOpen] = useState(false)
 
-  // RESTORED: Get useCreateFile back for functionality 
+  // RESTORED: Get useCreateFile back for functionality
   // We need to be careful not to cause render cascade
   const { createNewFile: createNewFileWithQuery } = useCreateFile()
 

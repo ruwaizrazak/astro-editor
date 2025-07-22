@@ -28,7 +28,8 @@
       "WebFetch(domain:medium.com)",
       "WebFetch(domain:codemirror.net)",
       "Bash(mv:*)",
-      "Bash(touch:*)"
+      "Bash(touch:*)",
+      "Bash(npm test:*)"
     ],
     "deny": []
   }

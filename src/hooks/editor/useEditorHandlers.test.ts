@@ -4,32 +4,71 @@ import { useEditorHandlers } from './useEditorHandlers'
 
 // Mock the store
 vi.mock('../../store/editorStore', () => ({
-  useEditorStore: vi.fn(),
+  useEditorStore: {
+    getState: vi.fn(),
+  },
 }))
 
-const mockUseEditorStore = vi.mocked(
-  await import('../../store/editorStore')
-).useEditorStore
+const { useEditorStore } = await import('../../store/editorStore')
+const mockGetState = vi.mocked(useEditorStore.getState)
 
 describe('useEditorHandlers', () => {
-  let mockStore: {
+  let mockStoreState: {
     setEditorContent: ReturnType<typeof vi.fn>
-    currentFile: { id: string; name: string } | null
+    currentFile: {
+      id: string
+      name: string
+      path: string
+      extension: string
+      is_draft: boolean
+      collection: string
+    } | null
     saveFile: ReturnType<typeof vi.fn>
     isDirty: boolean
+    editorContent: string
+    frontmatter: Record<string, unknown>
+    rawFrontmatter: string
+    imports: string
+    openFile: ReturnType<typeof vi.fn>
+    closeCurrentFile: ReturnType<typeof vi.fn>
+    updateFrontmatterField: ReturnType<typeof vi.fn>
+    scheduleAutoSave: ReturnType<typeof vi.fn>
+    recentlySavedFile: string | null
+    autoSaveTimeoutId: number | null
+    updateFrontmatter: ReturnType<typeof vi.fn>
+    updateCurrentFilePath: ReturnType<typeof vi.fn>
   }
 
   beforeEach(() => {
     vi.clearAllMocks()
 
-    mockStore = {
+    mockStoreState = {
       setEditorContent: vi.fn(),
-      currentFile: { id: 'test', name: 'test.md' },
+      currentFile: {
+        id: 'test',
+        name: 'test.md',
+        path: '/test/test.md',
+        extension: 'md',
+        is_draft: false,
+        collection: 'test-collection',
+      },
       saveFile: vi.fn(),
       isDirty: false,
+      editorContent: '',
+      frontmatter: {},
+      rawFrontmatter: '',
+      imports: '',
+      openFile: vi.fn(),
+      closeCurrentFile: vi.fn(),
+      updateFrontmatterField: vi.fn(),
+      scheduleAutoSave: vi.fn(),
+      recentlySavedFile: null,
+      autoSaveTimeoutId: null,
+      updateFrontmatter: vi.fn(),
+      updateCurrentFilePath: vi.fn(),
     }
 
-    mockUseEditorStore.mockReturnValue(mockStore)
+    mockGetState.mockReturnValue(mockStoreState)
 
     // Mock window global
     Object.defineProperty(window, 'isEditorFocused', {
@@ -49,7 +88,9 @@ describe('useEditorHandlers', () => {
         result.current.handleChange('new content')
       })
 
-      expect(mockStore.setEditorContent).toHaveBeenCalledWith('new content')
+      expect(mockStoreState.setEditorContent).toHaveBeenCalledWith(
+        'new content'
+      )
     })
 
     it('should be stable across re-renders', () => {
@@ -124,151 +165,125 @@ describe('useEditorHandlers', () => {
     })
 
     it('should save file when current file exists and is dirty', () => {
-      mockStore.isDirty = true
+      mockStoreState.isDirty = true
       const { result } = renderHook(() => useEditorHandlers())
 
       act(() => {
         result.current.handleBlur()
       })
 
-      expect(mockStore.saveFile).toHaveBeenCalledTimes(1)
+      expect(mockGetState).toHaveBeenCalled()
+      expect(mockStoreState.saveFile).toHaveBeenCalledTimes(1)
     })
 
     it('should not save file when no current file', () => {
-      mockStore.currentFile = null
-      mockStore.isDirty = true
+      mockStoreState.currentFile = null
+      mockStoreState.isDirty = true
       const { result } = renderHook(() => useEditorHandlers())
 
       act(() => {
         result.current.handleBlur()
       })
 
-      expect(mockStore.saveFile).not.toHaveBeenCalled()
+      expect(mockGetState).toHaveBeenCalled()
+      expect(mockStoreState.saveFile).not.toHaveBeenCalled()
     })
 
     it('should not save file when not dirty', () => {
-      mockStore.isDirty = false
+      mockStoreState.isDirty = false
       const { result } = renderHook(() => useEditorHandlers())
 
       act(() => {
         result.current.handleBlur()
       })
 
-      expect(mockStore.saveFile).not.toHaveBeenCalled()
+      expect(mockGetState).toHaveBeenCalled()
+      expect(mockStoreState.saveFile).not.toHaveBeenCalled()
     })
 
-    it('should update dependencies when currentFile changes', () => {
+    it('should be stable across re-renders when store state changes', () => {
       const { result, rerender } = renderHook(() => useEditorHandlers())
       const firstHandler = result.current.handleBlur
 
-      // Change currentFile
-      mockStore.currentFile = { id: 'new', name: 'new.md' }
-      mockUseEditorStore.mockReturnValue(mockStore)
+      // Change store state - handler should remain stable
+      mockStoreState.currentFile = {
+        id: 'new',
+        name: 'new.md',
+        path: '/test/new.md',
+        extension: 'md',
+        is_draft: false,
+        collection: 'test-collection',
+      }
+      mockStoreState.isDirty = true
+      mockStoreState.saveFile = vi.fn()
+      mockGetState.mockReturnValue(mockStoreState)
 
       rerender()
 
-      expect(result.current.handleBlur).not.toBe(firstHandler)
-    })
-
-    it('should update dependencies when isDirty changes', () => {
-      const { result, rerender } = renderHook(() => useEditorHandlers())
-      const firstHandler = result.current.handleBlur
-
-      // Change isDirty
-      mockStore.isDirty = true
-      mockUseEditorStore.mockReturnValue(mockStore)
-
-      rerender()
-
-      expect(result.current.handleBlur).not.toBe(firstHandler)
-    })
-
-    it('should update dependencies when saveFile changes', () => {
-      const { result, rerender } = renderHook(() => useEditorHandlers())
-      const firstHandler = result.current.handleBlur
-
-      // Change saveFile
-      mockStore.saveFile = vi.fn()
-      mockUseEditorStore.mockReturnValue(mockStore)
-
-      rerender()
-
-      expect(result.current.handleBlur).not.toBe(firstHandler)
+      // Handler should be stable due to empty dependency array
+      expect(result.current.handleBlur).toBe(firstHandler)
     })
   })
 
   describe('handleSave', () => {
     it('should save file when current file exists and is dirty', () => {
-      mockStore.isDirty = true
+      mockStoreState.isDirty = true
       const { result } = renderHook(() => useEditorHandlers())
 
       act(() => {
         result.current.handleSave()
       })
 
-      expect(mockStore.saveFile).toHaveBeenCalledTimes(1)
+      expect(mockGetState).toHaveBeenCalled()
+      expect(mockStoreState.saveFile).toHaveBeenCalledTimes(1)
     })
 
     it('should not save file when no current file', () => {
-      mockStore.currentFile = null
-      mockStore.isDirty = true
+      mockStoreState.currentFile = null
+      mockStoreState.isDirty = true
       const { result } = renderHook(() => useEditorHandlers())
 
       act(() => {
         result.current.handleSave()
       })
 
-      expect(mockStore.saveFile).not.toHaveBeenCalled()
+      expect(mockGetState).toHaveBeenCalled()
+      expect(mockStoreState.saveFile).not.toHaveBeenCalled()
     })
 
     it('should not save file when not dirty', () => {
-      mockStore.isDirty = false
+      mockStoreState.isDirty = false
       const { result } = renderHook(() => useEditorHandlers())
 
       act(() => {
         result.current.handleSave()
       })
 
-      expect(mockStore.saveFile).not.toHaveBeenCalled()
+      expect(mockGetState).toHaveBeenCalled()
+      expect(mockStoreState.saveFile).not.toHaveBeenCalled()
     })
 
-    it('should update dependencies when currentFile changes', () => {
+    it('should be stable across re-renders when store state changes', () => {
       const { result, rerender } = renderHook(() => useEditorHandlers())
       const firstHandler = result.current.handleSave
 
-      // Change currentFile
-      mockStore.currentFile = { id: 'new', name: 'new.md' }
-      mockUseEditorStore.mockReturnValue(mockStore)
+      // Change store state - handler should remain stable
+      mockStoreState.currentFile = {
+        id: 'new',
+        name: 'new.md',
+        path: '/test/new.md',
+        extension: 'md',
+        is_draft: false,
+        collection: 'test-collection',
+      }
+      mockStoreState.isDirty = true
+      mockStoreState.saveFile = vi.fn()
+      mockGetState.mockReturnValue(mockStoreState)
 
       rerender()
 
-      expect(result.current.handleSave).not.toBe(firstHandler)
-    })
-
-    it('should update dependencies when isDirty changes', () => {
-      const { result, rerender } = renderHook(() => useEditorHandlers())
-      const firstHandler = result.current.handleSave
-
-      // Change isDirty
-      mockStore.isDirty = true
-      mockUseEditorStore.mockReturnValue(mockStore)
-
-      rerender()
-
-      expect(result.current.handleSave).not.toBe(firstHandler)
-    })
-
-    it('should update dependencies when saveFile changes', () => {
-      const { result, rerender } = renderHook(() => useEditorHandlers())
-      const firstHandler = result.current.handleSave
-
-      // Change saveFile
-      mockStore.saveFile = vi.fn()
-      mockUseEditorStore.mockReturnValue(mockStore)
-
-      rerender()
-
-      expect(result.current.handleSave).not.toBe(firstHandler)
+      // Handler should be stable due to empty dependency array
+      expect(result.current.handleSave).toBe(firstHandler)
     })
   })
 
