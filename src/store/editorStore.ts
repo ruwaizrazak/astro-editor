@@ -78,6 +78,14 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         imports: markdownContent.imports,
         isDirty: false,
       })
+
+      // Update the selected collection to match the opened file's collection
+      // Use custom event to communicate with project store (Bridge Pattern)
+      window.dispatchEvent(
+        new CustomEvent('file-opened', {
+          detail: { collectionName: file.collection },
+        })
+      )
     } catch (error) {
       toast.error('Failed to open file', {
         description: `Could not open ${file.name}: ${error instanceof Error ? error.message : 'Unknown error occurred'}`,

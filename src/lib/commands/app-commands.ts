@@ -17,8 +17,11 @@ import {
   Edit,
 } from 'lucide-react'
 import { AppCommand, CommandContext } from './types'
-import { Collection } from '../../store'
+import { Collection, FileEntry } from '../../store'
 import { toast } from '../toast'
+import { queryClient } from '../query-client'
+import { queryKeys } from '../query-keys'
+import { useEditorStore } from '../../store/editorStore'
 
 /**
  * File-related commands
@@ -287,12 +290,72 @@ export const ideCommands: AppCommand[] = [
 ]
 
 /**
+ * Generate search result commands based on search query
+ *
+ * Note: This function only searches collections that have been loaded into the
+ * TanStack Query cache. Collections are automatically loaded when visited via
+ * the sidebar, following the established architecture patterns.
+ */
+function generateSearchCommands(
+  context: CommandContext,
+  searchValue: string
+): AppCommand[] {
+  // Only show search results if user has typed at least 2 characters
+  if (!searchValue || searchValue.length < 2 || !context.projectPath) {
+    return []
+  }
+
+  const searchCommands: AppCommand[] = []
+
+  // Get all files from collections that are cached
+  // This follows the architecture guide's pattern of using cached query data
+  context.collections.forEach(collection => {
+    const filesData = queryClient.getQueryData<FileEntry[]>(
+      queryKeys.collectionFiles(context.projectPath!, collection.name)
+    )
+
+    if (filesData) {
+      filesData.forEach(file => {
+        // Create searchable text from filename and title
+        const title = file.frontmatter?.title as string | undefined
+        const searchableText = title ? `${file.name} ${title}` : file.name
+
+        // Perform case-insensitive search
+        if (searchableText.toLowerCase().includes(searchValue.toLowerCase())) {
+          searchCommands.push({
+            id: `search-file-${file.id}`,
+            label: title || file.name,
+            description: `${collection.name}/${file.name}.${file.extension}`,
+            icon: FileText,
+            group: 'search',
+            execute: async () => {
+              // Open the file using the editor store
+              const { openFile } = useEditorStore.getState()
+              await openFile(file)
+            },
+            isAvailable: () => true,
+          })
+        }
+      })
+    }
+  })
+
+  // Limit to top 10 results for performance
+  return searchCommands.slice(0, 10)
+}
+
+/**
  * Get all available commands based on current context
  */
-export function getAllCommands(context: CommandContext): AppCommand[] {
+export function getAllCommands(
+  context: CommandContext,
+  searchValue = ''
+): AppCommand[] {
   const collectionCommands = generateCollectionCommands(context.collections)
+  const searchCommands = generateSearchCommands(context, searchValue)
 
   return [
+    ...searchCommands, // Search results first when searching
     ...fileCommands,
     ...navigationCommands,
     ...projectCommands,

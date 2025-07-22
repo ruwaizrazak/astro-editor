@@ -219,11 +219,20 @@ export const Layout: React.FC = () => {
       useUIStore.getState().toggleTypewriterMode()
     }
 
+    const handleFileOpened = (event: Event) => {
+      const customEvent = event as CustomEvent<{ collectionName: string }>
+      const { collectionName } = customEvent.detail
+
+      // Update the selected collection to match the opened file
+      useProjectStore.getState().setSelectedCollection(collectionName)
+    }
+
     window.addEventListener('toggle-focus-mode', handleToggleFocusMode)
     window.addEventListener(
       'toggle-typewriter-mode',
       handleToggleTypewriterMode
     )
+    window.addEventListener('file-opened', handleFileOpened)
 
     return () => {
       window.removeEventListener('toggle-focus-mode', handleToggleFocusMode)
@@ -231,6 +240,7 @@ export const Layout: React.FC = () => {
         'toggle-typewriter-mode',
         handleToggleTypewriterMode
       )
+      window.removeEventListener('file-opened', handleFileOpened)
     }
   }, [])
   useEffect(() => {

@@ -41,7 +41,7 @@ export interface AppCommand {
   label: string
   description?: string
   icon?: React.ComponentType<{ className?: string }>
-  group: 'file' | 'navigation' | 'project' | 'ide' | 'settings'
+  group: 'file' | 'navigation' | 'project' | 'ide' | 'settings' | 'search'
   execute: (context: CommandContext) => void | Promise<void>
   isAvailable: (context: CommandContext) => boolean
 }

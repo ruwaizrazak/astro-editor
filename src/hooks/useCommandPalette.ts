@@ -7,7 +7,7 @@ import { useUIStore } from '../store/uiStore'
 /**
  * Hook for managing command palette state and commands
  */
-export function useCommandPalette() {
+export function useCommandPalette(searchValue = '') {
   const [open, setOpen] = useState(false)
   const context = useCommandContext()
   const { setDistractionFreeBarsHidden } = useUIStore()
@@ -40,7 +40,7 @@ export function useCommandPalette() {
   // Get all available commands based on current context
   // Optimize dependencies to prevent unnecessary recalculations that could disrupt navigation
   const commands = useMemo(
-    () => getAllCommands(context),
+    () => getAllCommands(context, searchValue),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       context.currentFile?.id,
@@ -49,6 +49,7 @@ export function useCommandPalette() {
       context.isDirty,
       context.globalSettings?.general?.ideCommand,
       context.collections.length, // Only react to collection count changes, not array reference
+      searchValue, // Add searchValue as dependency
     ]
   )
 
@@ -65,6 +66,7 @@ export function useCommandPalette() {
 
     // Define group order and labels
     const groupOrder: Array<{ key: string; heading: string }> = [
+      { key: 'search', heading: 'Search Results' },
       { key: 'file', heading: 'File' },
       { key: 'navigation', heading: 'Navigation' },
       { key: 'project', heading: 'Project' },
