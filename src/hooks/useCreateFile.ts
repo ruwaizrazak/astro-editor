@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { useEditorStore, type FileEntry } from '../store/editorStore'
 import { useProjectStore } from '../store/projectStore'
@@ -36,23 +36,32 @@ export const useCreateFile = () => {
 
   const createFileMutation = useCreateFileMutation()
 
+  // React ref for concurrency guard (doesn't trigger re-renders)
+  const isCreatingRef = useRef(false)
+
   const createNewFile = useCallback(async () => {
-    // Get current values from store state
-    const { selectedCollection } = useProjectStore.getState()
-    const currentProjectPath = useProjectStore.getState().projectPath
-
-    if (!selectedCollection || !currentProjectPath) {
-      toast.error('No collection selected')
-      return
+    if (isCreatingRef.current) {
+      return // Silently ignore concurrent calls
     }
 
-    const collection = collections.find(c => c.name === selectedCollection)
-    if (!collection) {
-      toast.error('Collection not found')
-      return
-    }
+    isCreatingRef.current = true
 
     try {
+      // Get current values from store state
+      const { selectedCollection } = useProjectStore.getState()
+      const currentProjectPath = useProjectStore.getState().projectPath
+
+      if (!selectedCollection || !currentProjectPath) {
+        toast.error('No collection selected')
+        return
+      }
+
+      const collection = collections.find(c => c.name === selectedCollection)
+      if (!collection) {
+        toast.error('Collection not found')
+        return
+      }
+
       // Generate filename based on today's date
       const today = new Date().toISOString().split('T')[0]
       let filename = `${today}.md`
@@ -192,6 +201,8 @@ export const useCreateFile = () => {
         description:
           error instanceof Error ? error.message : 'Unknown error occurred',
       })
+    } finally {
+      isCreatingRef.current = false
     }
   }, [collections, createFileMutation]) // PERFORMANCE FIX: Only include stable dependencies, get other values via getState()
 
