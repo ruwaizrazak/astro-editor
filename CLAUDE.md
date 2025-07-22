@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Current Task: `/docs/tasks-todo/task-3-distractionless-mode.md`
+Current Task: `/docs/tasks-todo/task-4-search.md`
 
 **Recently Completed:** Store decomposition (3 focused stores), Frontmatter extraction (7 components + tests), TanStack Query v5, MDX Component Inserter
 
