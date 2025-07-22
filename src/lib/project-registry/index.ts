@@ -180,6 +180,10 @@ export class ProjectRegistryManager {
         ...projectData.settings.frontmatterMappings,
         ...settings.frontmatterMappings,
       },
+      collectionViewSettings: {
+        ...projectData.settings.collectionViewSettings,
+        ...settings.collectionViewSettings,
+      },
     }
 
     // Update cache
@@ -232,6 +236,10 @@ export class ProjectRegistryManager {
       frontmatterMappings: {
         ...globalSettings.defaultProjectSettings.frontmatterMappings,
         ...projectData.settings.frontmatterMappings,
+      },
+      collectionViewSettings: {
+        ...globalSettings.defaultProjectSettings.collectionViewSettings,
+        ...projectData.settings.collectionViewSettings,
       },
     }
   }

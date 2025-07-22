@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { useEditorStore, type FileEntry } from '../../store/editorStore'
 import { useProjectStore } from '../../store/projectStore'
@@ -13,7 +13,7 @@ import { useCollectionFilesQuery } from '../../hooks/queries/useCollectionFilesQ
 import { useRenameFileMutation } from '../../hooks/mutations/useRenameFileMutation'
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
-import { FolderOpen, ArrowLeft } from 'lucide-react'
+import { FolderOpen, ArrowLeft, FileText, Filter } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { FileContextMenu } from '../ui/context-menu'
 import { useEffectiveSettings } from '../../lib/project-registry/utils-effective'
@@ -80,6 +80,29 @@ export const Sidebar: React.FC = () => {
     setProject,
     setSelectedCollection,
   } = useProjectStore()
+
+  // Get current collection's view settings
+  const collectionViewSettings =
+    currentProjectSettings?.collectionViewSettings?.[selectedCollection || '']
+  const showDraftsOnly = collectionViewSettings?.showDraftsOnly || false
+
+  // Use getState() pattern for callbacks to avoid render cascades
+  const handleToggleDraftsOnly = useCallback(() => {
+    if (selectedCollection) {
+      const { updateProjectSettings } = useProjectStore.getState()
+      const currentSettings = useProjectStore.getState().currentProjectSettings
+
+      const newSettings = {
+        ...currentSettings,
+        collectionViewSettings: {
+          ...currentSettings?.collectionViewSettings,
+          [selectedCollection]: { showDraftsOnly: !showDraftsOnly },
+        },
+      }
+
+      void updateProjectSettings(newSettings)
+    }
+  }, [selectedCollection, showDraftsOnly])
 
   const [fileCounts, setFileCounts] = useState<Record<string, number>>({})
 
@@ -262,9 +285,21 @@ export const Sidebar: React.FC = () => {
     }
   }
 
-  // Sort files by published date (reverse chronological), files without dates first
-  const sortedFiles = React.useMemo((): FileEntry[] => {
-    return [...files].sort((a, b) => {
+  // Filter and sort files by published date (reverse chronological), files without dates first
+  const filteredAndSortedFiles = React.useMemo((): FileEntry[] => {
+    // Filter files if drafts-only mode is enabled
+    let filesToSort = files
+    if (showDraftsOnly) {
+      filesToSort = files.filter(file => {
+        return (
+          file.is_draft ||
+          file.frontmatter?.[frontmatterMappings.draft] === true
+        )
+      })
+    }
+
+    // Apply existing sorting logic
+    return [...filesToSort].sort((a, b) => {
       const dateA = getPublishedDate(
         a.frontmatter || {},
         frontmatterMappings.publishedDate
@@ -282,7 +317,12 @@ export const Sidebar: React.FC = () => {
       // Sort by date descending (newest first)
       return dateB.getTime() - dateA.getTime()
     })
-  }, [files, frontmatterMappings.publishedDate])
+  }, [
+    files,
+    frontmatterMappings.publishedDate,
+    frontmatterMappings.draft,
+    showDraftsOnly,
+  ])
 
   const headerTitle = selectedCollection
     ? selectedCollection.charAt(0).toUpperCase() + selectedCollection.slice(1)
@@ -291,7 +331,12 @@ export const Sidebar: React.FC = () => {
   return (
     <div className="h-full flex flex-col border-r bg-background">
       {/* Header */}
-      <div className="border-b bg-muted/30 p-3">
+      <div
+        className={cn(
+          'border-b p-3',
+          showDraftsOnly ? 'bg-orange-50/50' : 'bg-muted/30'
+        )}
+      >
         <div className="flex items-center gap-2">
           {selectedCollection && (
             <Button
@@ -317,7 +362,31 @@ export const Sidebar: React.FC = () => {
           )}
           <span className="text-sm font-medium text-foreground flex-1">
             {headerTitle}
+            {showDraftsOnly && (
+              <span className="text-xs text-orange-600 ml-2 font-normal">
+                (Drafts Only)
+              </span>
+            )}
           </span>
+          {selectedCollection && (
+            <Button
+              onClick={handleToggleDraftsOnly}
+              variant="ghost"
+              size="sm"
+              className={cn(
+                'size-7 p-0 [&_svg]:transform-gpu [&_svg]:scale-100',
+                showDraftsOnly &&
+                  'text-orange-600 bg-orange-100/50 hover:bg-orange-200/50'
+              )}
+              title={showDraftsOnly ? 'Show All Files' : 'Show Drafts Only'}
+            >
+              {showDraftsOnly ? (
+                <Filter className="size-4" />
+              ) : (
+                <FileText className="size-4" />
+              )}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -356,7 +425,7 @@ export const Sidebar: React.FC = () => {
         ) : (
           // Files List
           <div className="p-2">
-            {sortedFiles.map(file => {
+            {filteredAndSortedFiles.map(file => {
               const title = getTitle(file, frontmatterMappings.title)
               const publishedDate = getPublishedDate(
                 file.frontmatter || {},
@@ -428,9 +497,11 @@ export const Sidebar: React.FC = () => {
                 </button>
               )
             })}
-            {sortedFiles.length === 0 && (
+            {filteredAndSortedFiles.length === 0 && (
               <div className="p-4 text-center text-muted-foreground text-sm">
-                No files found in this collection.
+                {showDraftsOnly
+                  ? 'No draft files found in this collection.'
+                  : 'No files found in this collection.'}
               </div>
             )}
           </div>

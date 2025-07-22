@@ -26,6 +26,12 @@ export interface ProjectSettings {
     description?: string
     draft?: string
   }
+  // Per-collection view settings
+  collectionViewSettings?: {
+    [collectionName: string]: {
+      showDraftsOnly?: boolean
+    }
+  }
 }
 
 export interface ProjectData {
