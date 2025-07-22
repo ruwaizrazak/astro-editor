@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { listen } from '@tauri-apps/api/event'
 import { invoke } from '@tauri-apps/api/core'
@@ -8,6 +8,7 @@ import { useUIStore } from '../store/uiStore'
 import { globalCommandRegistry } from '../lib/editor/commands'
 import { toast } from '../lib/toast'
 import { initializeRustToastBridge } from '../lib/rust-toast-bridge'
+import { focusEditor } from '../lib/focus-utils'
 import { useCreateFile } from './useCreateFile'
 
 export function useLayoutEventListeners() {
@@ -16,6 +17,17 @@ export function useLayoutEventListeners() {
   // Only subscribe to data that triggers re-renders (none in this case)
   // Use getState() pattern for all store access in callbacks
   const { createNewFile: createNewFileWithQuery } = useCreateFile()
+
+  // Custom setPreferencesOpen that returns focus to editor when closed
+  const handleSetPreferencesOpen = useCallback((open: boolean) => {
+    setPreferencesOpen(open)
+    if (!open) {
+      // Return focus to editor when preferences are closed
+      setTimeout(() => {
+        focusEditor()
+      }, 100) // Small delay to allow dialog to fully close
+    }
+  }, [])
 
   // Update format menu state based on editor focus and file presence
   useEffect(() => {
@@ -122,7 +134,7 @@ export function useLayoutEventListeners() {
     'mod+comma',
     () => {
       // Cmd+,: Open Preferences
-      setPreferencesOpen(true)
+      handleSetPreferencesOpen(true)
     },
     {
       preventDefault: true,
@@ -131,16 +143,29 @@ export function useLayoutEventListeners() {
     }
   )
 
+  useHotkeys(
+    'mod+0',
+    () => {
+      // Cmd+0: Focus main editor
+      focusEditor()
+    },
+    {
+      preventDefault: true,
+      enableOnFormTags: ['input', 'textarea', 'select'],
+      enableOnContentEditable: true, // Enable in all contexts
+    }
+  )
+
   // DOM event listeners for menu actions
   useEffect(() => {
     const handleOpenPreferences = () => {
-      setPreferencesOpen(true)
+      handleSetPreferencesOpen(true)
     }
 
     window.addEventListener('open-preferences', handleOpenPreferences)
     return () =>
       window.removeEventListener('open-preferences', handleOpenPreferences)
-  }, [])
+  }, [handleSetPreferencesOpen])
 
   useEffect(() => {
     const handleCreateNewFile = () => {
@@ -323,6 +348,6 @@ export function useLayoutEventListeners() {
 
   return {
     preferencesOpen,
-    setPreferencesOpen,
+    setPreferencesOpen: handleSetPreferencesOpen,
   }
 }

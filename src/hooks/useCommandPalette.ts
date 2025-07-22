@@ -3,6 +3,7 @@ import { useCommandContext } from '../lib/commands/command-context'
 import { getAllCommands } from '../lib/commands/app-commands'
 import { AppCommand, CommandGroup } from '../lib/commands/types'
 import { useUIStore } from '../store/uiStore'
+import { focusEditorDelayed } from '../lib/focus-utils'
 
 /**
  * Hook for managing command palette state and commands
@@ -12,13 +13,18 @@ export function useCommandPalette(searchValue = '') {
   const context = useCommandContext()
   const { setDistractionFreeBarsHidden } = useUIStore()
 
-  // Custom setOpen that shows bars when command palette opens
+  // Custom setOpen that shows bars when command palette opens and returns focus when closed
   const handleSetOpen = useCallback(
     (value: boolean | ((prev: boolean) => boolean)) => {
+      const newValue = typeof value === 'boolean' ? value : value(open)
       setOpen(value)
+      
       // Show bars when command palette opens
-      if (typeof value === 'boolean' ? value : value(open)) {
+      if (newValue) {
         setDistractionFreeBarsHidden(false)
+      } else {
+        // Return focus to editor when command palette closes
+        focusEditorDelayed()
       }
     },
     [open, setDistractionFreeBarsHidden]
@@ -84,7 +90,7 @@ export function useCommandPalette(searchValue = '') {
 
   // Execute a command and close the palette
   const executeCommand = async (command: AppCommand) => {
-    handleSetOpen(false)
+    handleSetOpen(false) // This will automatically return focus to editor via handleSetOpen
     await command.execute(context)
   }
 

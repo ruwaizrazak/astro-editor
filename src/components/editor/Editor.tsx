@@ -229,6 +229,7 @@ const EditorViewComponent: React.FC = () => {
       <div
         ref={editorRef}
         className={`editor-codemirror ${isAltPressed ? 'alt-pressed' : ''} ${typewriterModeEnabled ? 'typewriter-mode' : ''}`}
+        data-editor-container
       />
     </div>
   )
