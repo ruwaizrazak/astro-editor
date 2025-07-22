@@ -48,7 +48,9 @@ const EditorAreaWithFrontmatter: React.FC<{
         defaultSize={frontmatterPanelVisible ? responsiveDefaultSize : 0}
         minSize={frontmatterPanelVisible ? 20 : 0}
         maxSize={frontmatterPanelVisible ? 60 : 0}
-        className={`bg-muted/10 border-l border-border overflow-hidden ${frontmatterPanelVisible ? '' : 'hidden'}`}
+        className={`bg-background border-l border-border overflow-hidden ${
+          frontmatterPanelVisible ? '' : 'hidden'
+        }`}
       >
         <FrontmatterPanel />
       </ResizablePanel>
