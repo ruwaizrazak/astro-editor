@@ -18,6 +18,7 @@ These tasks are necessary before releasing this "to the world".
 - [ ] Add standard CONTRIBUTING.md to `/docs`
 - [ ] Add README.md to `/docs` as index
 - [ ] Add LICENSE.md and SECURITY.md to root
+- [ ] Add license info to package.json
 - [ ] Add ISSUE_TEMPLATE.md etc to `.github`
 - [ ] Review all non-code files - any which can be removed?
 - [ ] Clean up CLAUDE.md
