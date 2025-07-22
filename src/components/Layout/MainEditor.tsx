@@ -1,5 +1,5 @@
 import React from 'react'
-import { useEditorStore, type FileEntry } from '../../store/editorStore'
+import { useEditorStore } from '../../store/editorStore'
 import { Editor } from '../editor'
 import { StatusBar } from '.'
 
@@ -18,14 +18,6 @@ const WelcomeScreen: React.FC = () => (
 export const MainEditor: React.FC = () => {
   // PERFORMANCE FIX: Use specific selector instead of currentFile object to avoid cascade
   const hasCurrentFile = useEditorStore(state => !!state.currentFile)
-
-  // DEBUG: Track MainEditor renders
-  const renderCountRef = React.useRef(0)
-  renderCountRef.current++
-  // eslint-disable-next-line no-console
-  console.log(`[MainEditor] RENDER #${renderCountRef.current}`, { 
-    hasCurrentFile
-  })
 
   return (
     <div className="flex flex-col h-full">

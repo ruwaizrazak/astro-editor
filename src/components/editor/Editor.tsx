@@ -2,8 +2,8 @@ import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { EditorView } from '@codemirror/view'
 import { EditorState } from '@codemirror/state'
 import { useEditorStore } from '../../store/editorStore'
-import { useComponentBuilderStore } from '../../store/componentBuilderStore'
 import { useUIStore } from '../../store/uiStore'
+import { useComponentBuilderStore } from '../../store/componentBuilderStore'
 import {
   useEditorSetup,
   useEditorHandlers,
@@ -26,40 +26,45 @@ const EditorViewComponent: React.FC = () => {
   const currentFileId = useEditorStore(state => state.currentFile?.id)
   const focusModeEnabled = useUIStore(state => state.focusModeEnabled)
   const typewriterModeEnabled = useUIStore(state => state.typewriterModeEnabled)
-  const sidebarVisible = useUIStore(state => state.sidebarVisible)
-  const frontmatterPanelVisible = useUIStore(state => state.frontmatterPanelVisible)
-  const distractionFreeBarsHidden = useUIStore(state => state.distractionFreeBarsHidden)
   const editorRef = useRef<HTMLDivElement>(null)
   const viewRef = useRef<EditorView | null>(null)
+
+  // Simple render tracking to monitor for cascade
+  const renderCountRef = useRef(0)
+  renderCountRef.current++
+  // eslint-disable-next-line no-console
+  console.log(`[Editor] RENDER #${renderCountRef.current}`)
   // Content initialization handled in useEffect, not via subscription
   const [isAltPressed, setIsAltPressed] = useState(false)
   const isProgrammaticUpdate = useRef(false)
-
-  // Typing detection for distraction-free mode
-  const typingCharCount = useRef(0)
-  const typingResetTimeout = useRef<number | null>(null)
-
 
   // Initialize global focus flag (menu state managed in Layout)
   useEffect(() => {
     window.isEditorFocused = false
   }, [])
 
-  // TESTING: Re-enable fixed useEditorHandlers 
-  const { handleChange, handleFocus, handleBlur, handleSave } = useEditorHandlers()
-  
+  // TESTING: Re-enable fixed useEditorHandlers
+  const { handleChange, handleFocus, handleBlur, handleSave } =
+    useEditorHandlers()
+
   // STEP 2: Re-enable useEditorSetup (extensions and commands)
   const componentBuilderHandler = useCallback((view: EditorView) => {
-    return false
+    // Only open component builder for .mdx files
+    const { currentFile } = useEditorStore.getState()
+    if (currentFile?.path.endsWith('.mdx')) {
+      useComponentBuilderStore.getState().open(view)
+      return true // Indicates we handled the command
+    }
+    return false // Let CodeMirror handle it (insert comment)
   }, [])
-  
+
   const { extensions, setupCommands, cleanupCommands } = useEditorSetup(
     handleSave,
     handleFocus,
     handleBlur,
     componentBuilderHandler
   )
-  
+
   // STEP 3: Re-enable useTauriListeners (native integration)
   useTauriListeners(viewRef.current)
 
@@ -134,7 +139,7 @@ const EditorViewComponent: React.FC = () => {
 
     // Get initial content directly from store, not from subscription
     const { editorContent } = useEditorStore.getState()
-    
+
     const startState = EditorState.create({
       doc: editorContent,
       extensions: [
@@ -203,10 +208,10 @@ const EditorViewComponent: React.FC = () => {
   // Load content when file changes (not on every content update)
   useEffect(() => {
     if (!viewRef.current || !currentFileId) return
-    
+
     // Get content directly from store when file changes
     const { editorContent } = useEditorStore.getState()
-    
+
     if (viewRef.current.state.doc.toString() !== editorContent) {
       // Mark this as a programmatic update to prevent triggering the update listener
       isProgrammaticUpdate.current = true
@@ -230,11 +235,6 @@ const EditorViewComponent: React.FC = () => {
   useEffect(() => {
     return () => {
       cleanupCommands()
-      // Clean up typing detection timeout
-      if (typingResetTimeout.current) {
-        clearTimeout(typingResetTimeout.current)
-        typingResetTimeout.current = null
-      }
     }
   }, [cleanupCommands])
 
@@ -248,9 +248,9 @@ const EditorViewComponent: React.FC = () => {
   )
 }
 
-// PERFORMANCE FIX: Memoize Editor to prevent re-renders when editorContent changes  
+// PERFORMANCE FIX: Memoize Editor to prevent re-renders when editorContent changes
 // Only re-render when UI state actually changes, not on every keystroke
-const MemoizedEditor = React.memo(EditorViewComponent, (prevProps, nextProps) => {
+const MemoizedEditor = React.memo(EditorViewComponent, () => {
   // Custom comparison - Editor has no props, so always equal unless React forces update
   return true
 })

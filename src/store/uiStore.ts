@@ -43,29 +43,11 @@ export const useUIStore = create<UIState>((set, get) => ({
   },
 
   toggleFocusMode: () => {
-    set(state => {
-      const newState = !state.focusModeEnabled
-      // eslint-disable-next-line no-console
-      console.log('[UIStore] toggleFocusMode called')
-      // eslint-disable-next-line no-console
-      console.log('[UIStore] Current state:', state.focusModeEnabled)
-      // eslint-disable-next-line no-console
-      console.log('[UIStore] New state:', newState)
-      return { focusModeEnabled: newState }
-    })
+    set(state => ({ focusModeEnabled: !state.focusModeEnabled }))
   },
 
   toggleTypewriterMode: () => {
-    set(state => {
-      const newState = !state.typewriterModeEnabled
-      // eslint-disable-next-line no-console
-      console.log('[UIStore] toggleTypewriterMode called')
-      // eslint-disable-next-line no-console
-      console.log('[UIStore] Current state:', state.typewriterModeEnabled)
-      // eslint-disable-next-line no-console
-      console.log('[UIStore] New state:', newState)
-      return { typewriterModeEnabled: newState }
-    })
+    set(state => ({ typewriterModeEnabled: !state.typewriterModeEnabled }))
   },
 
   setDistractionFreeBarsHidden: (hidden: boolean) => {

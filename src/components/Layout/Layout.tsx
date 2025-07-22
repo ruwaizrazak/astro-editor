@@ -24,40 +24,13 @@ import {
   ResizableHandle,
 } from '../ui/resizable'
 
-// Hook to get responsive default size for frontmatter panel
-const useResponsiveFrontmatterSize = () => {
-  const [windowWidth, setWindowWidth] = useState(
-    typeof window !== 'undefined' ? window.innerWidth : 1200
-  )
-
-  useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth)
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
-
-  // Return smaller default size on wider screens
-  if (windowWidth >= 1400) return 20 // Very wide screens
-  if (windowWidth >= 1024) return 25 // Large screens
-  return 30 // Default for smaller screens
-}
-
 // Helper component to reduce duplication in Layout
 const EditorAreaWithFrontmatter: React.FC<{
   frontmatterPanelVisible: boolean
 }> = React.memo(({ frontmatterPanelVisible }) => {
   // PERFORMANCE TEST: Use fixed size to eliminate useResponsiveFrontmatterSize dependency
   const responsiveDefaultSize = 25
-  
-  // DEBUG: Track EditorAreaWithFrontmatter renders
-  const renderCountRef = React.useRef(0)
-  renderCountRef.current++
-  // eslint-disable-next-line no-console
-  console.log(`[EditorAreaWithFrontmatter] RENDER #${renderCountRef.current}`, { 
-    frontmatterPanelVisible,
-    responsiveDefaultSize
-  })
-  
+
   return (
     <ResizablePanelGroup direction="horizontal" className="h-full">
       <ResizablePanel
@@ -69,8 +42,8 @@ const EditorAreaWithFrontmatter: React.FC<{
         <MainEditor />
       </ResizablePanel>
       {/* ALWAYS render handle and panel - control visibility with CSS */}
-      <ResizableHandle 
-        className={`!cursor-col-resize ${frontmatterPanelVisible ? '' : 'hidden'}`} 
+      <ResizableHandle
+        className={`!cursor-col-resize ${frontmatterPanelVisible ? '' : 'hidden'}`}
       />
       <ResizablePanel
         defaultSize={frontmatterPanelVisible ? responsiveDefaultSize : 0}
@@ -92,97 +65,56 @@ export const Layout: React.FC = () => {
     toggleSidebar,
     toggleFrontmatterPanel,
   } = useUIStore()
-  
-  // Keep editor store disabled for render cascade testing
-  // const hasCurrentFile = useEditorStore(state => !!state.currentFile)
-  // const currentFileName = useEditorStore(state => state.currentFile?.name)
-  // const { saveFile, closeCurrentFile } = useEditorStore()
-  
-  // PROJECT STORE: All subscriptions disabled to avoid cascade
-  
-  // Temporary hardcoded values for remaining stores
-  const hasCurrentFile = true
-  const currentFileName = "test"
-  const selectedCollection = "articles"
 
-  // DEBUG: Track Layout renders and what's causing them
-  const renderCountRef = React.useRef(0)
-  renderCountRef.current++
-  
-  const prevPropsRef = React.useRef({
-    hasCurrentFile,
-    fileName: currentFileName,
-    sidebarVisible,
-    frontmatterPanelVisible,
-    selectedCollection,
-  })
-  
-  const currentProps = {
-    hasCurrentFile,
-    fileName: currentFileName,
-    sidebarVisible,
-    frontmatterPanelVisible,
-    selectedCollection,
-  }
-  
-  const changedProps = Object.keys(currentProps).filter(key => 
-    prevPropsRef.current[key as keyof typeof currentProps] !== currentProps[key as keyof typeof currentProps]
-  )
-  
-  // eslint-disable-next-line no-console
-  console.log(`[Layout] RENDER #${renderCountRef.current}`, {
-    ...currentProps,
-    changedProps: changedProps.length > 0 ? changedProps : 'none',
-  })
-  
-  if (changedProps.length > 0) {
-    // eslint-disable-next-line no-console
-    console.log(`[Layout] CHANGED PROPS:`, changedProps)
-  }
-  
-  prevPropsRef.current = currentProps
+  // RESTORED: Editor store subscriptions (using proven patterns to avoid cascade)
+  const hasCurrentFile = useEditorStore(state => !!state.currentFile)
+  const { saveFile, closeCurrentFile } = useEditorStore()
+
+  // PROJECT STORE: Restore subscriptions
+  const selectedCollection = useProjectStore(state => state.selectedCollection)
 
   // Preferences dialog state
   const [preferencesOpen, setPreferencesOpen] = useState(false)
 
-  // PERFORMANCE FIX: Don't subscribe to useCreateFile, get it only when needed
-  // Use existing event system instead
+  // RESTORED: Get useCreateFile back for functionality 
+  // We need to be careful not to cause render cascade
+  const { createNewFile: createNewFileWithQuery } = useCreateFile()
 
-  // TEMPORARILY DISABLED: Menu state management
-  // useEffect(() => {
-  //   const shouldEnableMenu = Boolean(hasCurrentFile && window.isEditorFocused)
-  //   void invoke('update_format_menu_state', { enabled: shouldEnableMenu })
-  // }, [hasCurrentFile])
+  // RESTORED: Menu state management
+  useEffect(() => {
+    const shouldEnableMenu = Boolean(hasCurrentFile && window.isEditorFocused)
+    void invoke('update_format_menu_state', { enabled: shouldEnableMenu })
+  }, [hasCurrentFile])
 
-  // useEffect(() => {
-  //   window.isEditorFocused = false
-  //   void invoke('update_format_menu_state', { enabled: false })
+  useEffect(() => {
+    window.isEditorFocused = false
+    void invoke('update_format_menu_state', { enabled: false })
 
-  //   const handleEditorFocusChange = () => {
-  //     const shouldEnableMenu = Boolean(hasCurrentFile && window.isEditorFocused)
-  //     void invoke('update_format_menu_state', { enabled: shouldEnableMenu })
-  //   }
+    const handleEditorFocusChange = () => {
+      const shouldEnableMenu = Boolean(hasCurrentFile && window.isEditorFocused)
+      void invoke('update_format_menu_state', { enabled: shouldEnableMenu })
+    }
 
-  //   window.addEventListener('editor-focus-changed', handleEditorFocusChange)
-  //   return () =>
-  //     window.removeEventListener(
-  //       'editor-focus-changed',
-  //       handleEditorFocusChange
-  //     )
-  // }, [hasCurrentFile])
+    window.addEventListener('editor-focus-changed', handleEditorFocusChange)
+    return () =>
+      window.removeEventListener(
+        'editor-focus-changed',
+        handleEditorFocusChange
+      )
+  }, [hasCurrentFile])
 
-  // TEMPORARILY DISABLED: Keyboard shortcuts
-  // useHotkeys(
-  //   'mod+s',
-  //   () => {
-  //     // Cmd+S: Save File - get isDirty and currentFile directly to avoid subscription
-  //     const { currentFile, isDirty } = useEditorStore.getState()
-  //     if (currentFile && isDirty) {
-  //       void saveFile()
-  //     }
-  //   },
-  //   { preventDefault: true }
-  // )
+  // RESTORED: Save keyboard shortcut
+  useHotkeys(
+    'mod+s',
+    () => {
+      // Cmd+S: Save File - get isDirty directly to avoid subscription
+      const { currentFile, isDirty } = useEditorStore.getState()
+      if (currentFile && isDirty) {
+        void saveFile()
+      }
+    },
+    { preventDefault: true }
+  )
 
   // RE-ENABLE TEST: Basic sidebar shortcuts
   useHotkeys(
@@ -203,68 +135,57 @@ export const Layout: React.FC = () => {
     { preventDefault: true }
   )
 
-  // TEMPORARILY DISABLED: All remaining shortcuts
-  // useHotkeys(
-  //   'mod+n',
-  //   () => {
-  //     // Cmd+N: Create New File (only if a collection is selected)  
-  //     if (selectedCollection) {
-  //       // Use existing menu event system to avoid createNewFile dependency
-  //       window.dispatchEvent(new CustomEvent('menu-new-file'))
-  //       // Fix for cursor disappearing - ensure cursor is visible
-  //       document.body.style.cursor = 'auto'
-  //       // Force a reflow to ensure the cursor change is applied
-  //       void document.body.offsetHeight
-  //     }
-  //   },
-  //   { preventDefault: true }
-  // )
+  useHotkeys(
+    'mod+n',
+    () => {
+      // Cmd+N: Create New File (only if a collection is selected)
+      if (selectedCollection) {
+        // Use DOM event system to trigger the existing listener
+        window.dispatchEvent(new CustomEvent('create-new-file'))
+        // Fix for cursor disappearing - ensure cursor is visible
+        document.body.style.cursor = 'auto'
+        // Force a reflow to ensure the cursor change is applied
+        void document.body.offsetHeight
+      }
+    },
+    {
+      preventDefault: true,
+      enableOnFormTags: true,
+      enableOnContentEditable: true,
+      scopes: ['all'],
+    }
+  )
 
-  // useHotkeys(
-  //   'mod+w',
-  //   () => {
-  //     // Cmd+W: Close Current File (only if a file is open)
-  //     if (hasCurrentFile) {
-  //       closeCurrentFile()
-  //     }
-  //   },
-  //   {
-  //     preventDefault: true,
-  //     enableOnFormTags: ['input', 'textarea', 'select'],
-  //     enableOnContentEditable: true, // Enable in contenteditable elements like CodeMirror
-  //   }
-  // )
+  useHotkeys(
+    'mod+w',
+    () => {
+      // Cmd+W: Close Current File (only if a file is open)
+      if (hasCurrentFile) {
+        closeCurrentFile()
+      }
+    },
+    {
+      preventDefault: true,
+      enableOnFormTags: ['input', 'textarea', 'select'],
+      enableOnContentEditable: true, // Enable in contenteditable elements like CodeMirror
+    }
+  )
 
-  // useHotkeys(
-  //   'mod+comma',
-  //   () => {
-  //     // Cmd+,: Open Preferences
-  //     setPreferencesOpen(true)
-  //   },
-  //   {
-  //     preventDefault: true,
-  //     enableOnFormTags: ['input', 'textarea', 'select'],
-  //     enableOnContentEditable: true, // Enable in contenteditable elements like CodeMirror
-  //   }
-  // )
+  useHotkeys(
+    'mod+comma',
+    () => {
+      // Cmd+,: Open Preferences
+      setPreferencesOpen(true)
+    },
+    {
+      preventDefault: true,
+      enableOnFormTags: ['input', 'textarea', 'select'],
+      enableOnContentEditable: true, // Enable in contenteditable elements like CodeMirror
+    }
+  )
 
-  // useHotkeys(
-  //   'mod+/',
-  //   () => {
-  //     // Cmd+/: Open MDX Component Builder (only for .mdx files)
-  //     const { currentFile } = useEditorStore.getState()
-  //     if (currentFile?.path.endsWith('.mdx')) {
-  //       const editorView = globalCommandRegistry.getEditorView()
-  //       if (editorView) {
-  //         useComponentBuilderStore.getState().open(editorView)
-  //       }
-  //     }
-  //   },
-  //   {
-  //     preventDefault: true,
-  //     enableOnContentEditable: true,
-  //   }
-  // )
+  // NOTE: Cmd+/ (component builder) is handled by CodeMirror keymap, not here
+  // This ensures it only works when the editor is focused and can distinguish between .md and .mdx files
 
   // RE-ENABLE TEST: Preferences event listener
   useEffect(() => {
@@ -277,8 +198,16 @@ export const Layout: React.FC = () => {
       window.removeEventListener('open-preferences', handleOpenPreferences)
   }, [])
 
-  // PERFORMANCE FIX: Removed create-new-file event listener to avoid useCreateFile dependency
-  // This is now handled by the menu system via 'menu-new-file' event
+  // RESTORED: Event listener for command palette 'create-new-file' events
+  useEffect(() => {
+    const handleCreateNewFile = () => {
+      void createNewFileWithQuery()
+    }
+
+    window.addEventListener('create-new-file', handleCreateNewFile)
+    return () =>
+      window.removeEventListener('create-new-file', handleCreateNewFile)
+  }, [createNewFileWithQuery])
 
   // TEMPORARILY DISABLED: More event listeners and project loading
   // useEffect(() => {
@@ -324,8 +253,7 @@ export const Layout: React.FC = () => {
     }
   }, [])
 
-  // TEMPORARILY DISABLED: Menu event listeners
-  /* 
+  // RESTORED: Menu event listeners
   useEffect(() => {
     const handleOpenProject = async () => {
       try {
@@ -367,13 +295,13 @@ export const Layout: React.FC = () => {
         listen('menu-toggle-frontmatter', () => {
           useUIStore.getState().toggleFrontmatterPanel()
         }),
-        // TEMPORARILY DISABLED: Fix render cascade by removing useCreateFile dependency
-        // listen('menu-new-file', () => {
-        //   const { selectedCollection } = useProjectStore.getState()
-        //   if (selectedCollection) {
-        //     void createNewFileWithQuery()
-        //   }
-        // }),
+        // RESTORED: Native menu new file listener
+        listen('menu-new-file', () => {
+          const { selectedCollection } = useProjectStore.getState()
+          if (selectedCollection) {
+            void createNewFileWithQuery()
+          }
+        }),
         // Text formatting menu listeners
         listen('menu-format-bold', () => {
           const { currentFile } = useEditorStore.getState()
@@ -440,8 +368,7 @@ export const Layout: React.FC = () => {
         }
       })
     }
-  }, []) // PERFORMANCE FIX: Removed createNewFileWithQuery dependency
-  */
+  }, [createNewFileWithQuery]) // RESTORED: Include createNewFileWithQuery for menu listeners
 
   return (
     <div className="h-screen w-screen bg-[var(--editor-color-background)] font-sans flex flex-col rounded-xl overflow-hidden">

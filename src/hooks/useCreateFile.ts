@@ -25,12 +25,9 @@ const singularize = (word: string): string => {
 }
 
 export const useCreateFile = () => {
-  const { openFile } = useEditorStore()
-
-  const { selectedCollection, projectPath, currentProjectSettings } =
-    useProjectStore()
-
-  const { frontmatterPanelVisible, toggleFrontmatterPanel } = useUIStore()
+  // PERFORMANCE FIX: Only subscribe to data needed for TanStack Query
+  // Get other values via getState() to avoid frequent re-renders
+  const { projectPath, currentProjectSettings } = useProjectStore()
 
   const { data: collections = [] } = useCollectionsQuery(
     projectPath,
@@ -40,7 +37,11 @@ export const useCreateFile = () => {
   const createFileMutation = useCreateFileMutation()
 
   const createNewFile = useCallback(async () => {
-    if (!selectedCollection || !projectPath) {
+    // Get current values from store state
+    const { selectedCollection } = useProjectStore.getState()
+    const currentProjectPath = useProjectStore.getState().projectPath
+    
+    if (!selectedCollection || !currentProjectPath) {
       toast.error('No collection selected')
       return
     }
@@ -138,7 +139,7 @@ export const useCreateFile = () => {
         directory: collection.path,
         filename,
         content: frontmatterYaml,
-        projectPath,
+        projectPath: currentProjectPath,
         collectionName: selectedCollection,
       })
 
@@ -152,6 +153,10 @@ export const useCreateFile = () => {
       )
 
       if (newFile) {
+        // Get current functions from store state
+        const { openFile } = useEditorStore.getState()
+        const { frontmatterPanelVisible, toggleFrontmatterPanel } = useUIStore.getState()
+        
         await openFile(newFile)
 
         // Open frontmatter panel if we have a title field
@@ -188,14 +193,9 @@ export const useCreateFile = () => {
       })
     }
   }, [
-    selectedCollection,
-    projectPath,
     collections,
-    openFile,
-    frontmatterPanelVisible,
-    toggleFrontmatterPanel,
     createFileMutation,
-  ])
+  ]) // PERFORMANCE FIX: Only include stable dependencies, get other values via getState()
 
   return { createNewFile }
 }

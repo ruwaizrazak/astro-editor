@@ -1,6 +1,7 @@
 import { useEditorStore } from '../../store/editorStore'
 import { useProjectStore } from '../../store/projectStore'
 import { useUIStore } from '../../store/uiStore'
+import { useCollectionsQuery } from '../../hooks/queries/useCollectionsQuery'
 import { CommandContext } from './types'
 
 /**
@@ -14,16 +15,23 @@ export function useCommandContext(): CommandContext {
     selectedCollection,
     projectPath,
     globalSettings,
+    currentProjectSettings,
     setSelectedCollection,
     setProject,
   } = useProjectStore()
 
   const { toggleSidebar, toggleFrontmatterPanel } = useUIStore()
 
+  // Get collections data from TanStack Query
+  const { data: collections = [] } = useCollectionsQuery(
+    projectPath,
+    currentProjectSettings?.pathOverrides?.contentDirectory
+  )
+
   return {
     currentFile,
     selectedCollection,
-    collections: [], // Available through TanStack Query in components
+    collections, // Now properly populated from TanStack Query
     projectPath,
     isDirty,
     globalSettings,

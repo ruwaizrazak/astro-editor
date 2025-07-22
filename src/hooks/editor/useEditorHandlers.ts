@@ -8,13 +8,10 @@ export const useEditorHandlers = () => {
   // No store subscriptions needed - use getState() pattern
 
   // Handle content changes
-  const handleChange = useCallback(
-    (value: string) => {
-      // Use getState() to avoid dependency on setEditorContent function reference
-      useEditorStore.getState().setEditorContent(value)
-    },
-    []
-  )
+  const handleChange = useCallback((value: string) => {
+    // Use getState() to avoid dependency on setEditorContent function reference
+    useEditorStore.getState().setEditorContent(value)
+  }, [])
 
   // Handle editor focus - just set flag, menu state managed in Layout
   const handleFocus = useCallback(() => {
