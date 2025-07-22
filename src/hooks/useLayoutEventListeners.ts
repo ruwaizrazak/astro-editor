@@ -99,7 +99,6 @@ export function useLayoutEventListeners() {
       preventDefault: true,
       enableOnFormTags: true,
       enableOnContentEditable: true,
-      scopes: ['all'],
     }
   )
 

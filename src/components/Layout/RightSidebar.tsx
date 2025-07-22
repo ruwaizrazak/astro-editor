@@ -6,7 +6,7 @@ interface RightSidebarProps {
 
 export const RightSidebar: React.FC<RightSidebarProps> = ({ children }) => {
   return (
-    <div className="h-full flex flex-col bg-background border-l border-border overflow-hidden">
+    <div className="h-full flex flex-col bg-background border-l border-border overflow-hidden min-w-0">
       {children}
     </div>
   )
