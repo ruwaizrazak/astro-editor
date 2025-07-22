@@ -117,7 +117,11 @@ export const Layout: React.FC = () => {
       // Cmd+1: Toggle Sidebar
       toggleSidebar()
     },
-    { preventDefault: true }
+    {
+      preventDefault: true,
+      enableOnFormTags: ['input', 'textarea', 'select'],
+      enableOnContentEditable: true, // Enable in contenteditable elements like CodeMirror
+    }
   )
 
   useHotkeys(
@@ -126,7 +130,11 @@ export const Layout: React.FC = () => {
       // Cmd+2: Toggle Frontmatter Panel
       toggleFrontmatterPanel()
     },
-    { preventDefault: true }
+    {
+      preventDefault: true,
+      enableOnFormTags: ['input', 'textarea', 'select'],
+      enableOnContentEditable: true, // Enable in contenteditable elements like CodeMirror
+    }
   )
 
   useHotkeys(
@@ -364,19 +372,17 @@ export const Layout: React.FC = () => {
       {/* Main content area with integrated sidebar */}
       <div className="flex flex-1 overflow-hidden">
         <ResizablePanelGroup direction="horizontal" className="flex-1">
-          {sidebarVisible && (
-            <>
-              <ResizablePanel
-                defaultSize={20}
-                minSize={15}
-                maxSize={35}
-                className="min-w-[200px]"
-              >
-                <Sidebar />
-              </ResizablePanel>
-              <ResizableHandle className="!cursor-col-resize" />
-            </>
-          )}
+          <ResizablePanel
+            defaultSize={sidebarVisible ? 20 : 0}
+            minSize={sidebarVisible ? 15 : 0}
+            maxSize={sidebarVisible ? 35 : 0}
+            className={`min-w-[200px] ${sidebarVisible ? '' : 'hidden'}`}
+          >
+            <Sidebar />
+          </ResizablePanel>
+          <ResizableHandle
+            className={`!cursor-col-resize ${sidebarVisible ? '' : 'hidden'}`}
+          />
           <ResizablePanel defaultSize={sidebarVisible ? 80 : 100} minSize={65}>
             <EditorAreaWithFrontmatter
               frontmatterPanelVisible={frontmatterPanelVisible}
