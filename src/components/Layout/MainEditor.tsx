@@ -1,7 +1,6 @@
 import React from 'react'
 import { useEditorStore } from '../../store/editorStore'
 import { Editor } from '../editor'
-import { StatusBar } from '.'
 
 // Welcome screen component for better organization
 const WelcomeScreen: React.FC = () => (
@@ -24,7 +23,6 @@ export const MainEditor: React.FC = () => {
       <div className="flex-1 overflow-x-hidden overflow-y-auto bg-[var(--editor-color-background)]">
         {hasCurrentFile ? <Editor /> : <WelcomeScreen />}
       </div>
-      <StatusBar />
     </div>
   )
 }

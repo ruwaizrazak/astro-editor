@@ -28,7 +28,7 @@ export const StatusBar: React.FC = () => {
   return (
     <div
       className={cn(
-        'flex justify-between items-center px-4 py-1 text-xs h-6 border-t',
+        'flex justify-between items-center px-4 py-1 text-xs min-h-6 border-t',
         bothPanelsHidden
           ? 'bg-[var(--editor-color-background)] border-transparent text-muted-foreground/40'
           : 'bg-muted/50 border-border text-muted-foreground',

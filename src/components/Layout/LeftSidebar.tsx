@@ -70,7 +70,7 @@ function getTitle(file: FileEntry, titleField: string): string {
   return filename.replace(/\.(md|mdx)$/, '')
 }
 
-export const Sidebar: React.FC = () => {
+export const LeftSidebar: React.FC = () => {
   const { currentFile, openFile, updateCurrentFilePath } = useEditorStore()
 
   const {

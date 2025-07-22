@@ -29,7 +29,9 @@
       "WebFetch(domain:codemirror.net)",
       "Bash(mv:*)",
       "Bash(touch:*)",
-      "Bash(npm test:*)"
+      "Bash(npm test:*)",
+      "Bash(true)",
+      "Bash(rmdir:*)"
     ],
     "deny": []
   }
