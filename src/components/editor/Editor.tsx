@@ -22,19 +22,11 @@ declare global {
 }
 
 const EditorViewComponent: React.FC = () => {
-  // STEP 1: Restore real store subscriptions
   const currentFileId = useEditorStore(state => state.currentFile?.id)
   const focusModeEnabled = useUIStore(state => state.focusModeEnabled)
   const typewriterModeEnabled = useUIStore(state => state.typewriterModeEnabled)
   const editorRef = useRef<HTMLDivElement>(null)
   const viewRef = useRef<EditorView | null>(null)
-
-  // Simple render tracking to monitor for cascade
-  const renderCountRef = useRef(0)
-  renderCountRef.current++
-  // eslint-disable-next-line no-console
-  console.log(`[Editor] RENDER #${renderCountRef.current}`)
-  // Content initialization handled in useEffect, not via subscription
   const [isAltPressed, setIsAltPressed] = useState(false)
   const isProgrammaticUpdate = useRef(false)
 
@@ -43,11 +35,9 @@ const EditorViewComponent: React.FC = () => {
     window.isEditorFocused = false
   }, [])
 
-  // TESTING: Re-enable fixed useEditorHandlers
   const { handleChange, handleFocus, handleBlur, handleSave } =
     useEditorHandlers()
 
-  // STEP 2: Re-enable useEditorSetup (extensions and commands)
   const componentBuilderHandler = useCallback((view: EditorView) => {
     // Only open component builder for .mdx files
     const { currentFile } = useEditorStore.getState()
@@ -65,7 +55,6 @@ const EditorViewComponent: React.FC = () => {
     componentBuilderHandler
   )
 
-  // STEP 3: Re-enable useTauriListeners (native integration)
   useTauriListeners(viewRef.current)
 
   // Update editor effects when writing modes change
@@ -149,38 +138,6 @@ const EditorViewComponent: React.FC = () => {
             const newContent = update.state.doc.toString()
             // Use captured handler to avoid infinite loops
             currentHandleChange(newContent)
-
-            // TEMPORARILY DISABLED: Typing detection for distraction-free mode
-            // Testing if this is causing editor re-mount issues
-            /* 
-            // Only count actual text insertions from user input
-            if (
-              update.transactions.some(
-                tr =>
-                  tr.isUserEvent('input.type') &&
-                  tr.changes &&
-                  !tr.changes.empty
-              )
-            ) {
-              typingCharCount.current++
-
-              // Clear existing timeout
-              if (typingResetTimeout.current) {
-                clearTimeout(typingResetTimeout.current)
-              }
-
-              // Reset counter after 500ms of no typing
-              typingResetTimeout.current = window.setTimeout(() => {
-                typingCharCount.current = 0
-              }, 500)
-
-              // Hide bars after 4 characters
-              if (typingCharCount.current >= 4) {
-                useUIStore.getState().handleTypingInEditor()
-                typingCharCount.current = 0
-              }
-            }
-            */
           }
         }),
       ],
@@ -201,7 +158,7 @@ const EditorViewComponent: React.FC = () => {
       viewRef.current = null
       currentCleanupCommands()
     }
-    // CRITICAL: Empty dependency array like DebugScreen - only create once!
+    // CRITICAL: Empty dependency array - only create once!
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

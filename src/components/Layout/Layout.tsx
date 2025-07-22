@@ -27,7 +27,7 @@ import {
 const EditorAreaWithFrontmatter: React.FC<{
   frontmatterPanelVisible: boolean
 }> = React.memo(({ frontmatterPanelVisible }) => {
-  // PERFORMANCE TEST: Use fixed size to eliminate useResponsiveFrontmatterSize dependency
+  // Use fixed size to avoid complex responsive calculations
   const responsiveDefaultSize = 25
 
   return (
@@ -57,7 +57,6 @@ const EditorAreaWithFrontmatter: React.FC<{
 })
 
 export const Layout: React.FC = () => {
-  // RE-ENABLE TEST: Start with UI store only (most critical for functionality)
   const {
     sidebarVisible,
     frontmatterPanelVisible,
@@ -65,7 +64,6 @@ export const Layout: React.FC = () => {
     toggleFrontmatterPanel,
   } = useUIStore()
 
-  // RESTORED: Editor store subscriptions (using proven patterns to avoid cascade)
   const hasCurrentFile = useEditorStore(state => !!state.currentFile)
   const { saveFile, closeCurrentFile } = useEditorStore()
 
@@ -75,11 +73,8 @@ export const Layout: React.FC = () => {
   // Preferences dialog state
   const [preferencesOpen, setPreferencesOpen] = useState(false)
 
-  // RESTORED: Get useCreateFile back for functionality
-  // We need to be careful not to cause render cascade
   const { createNewFile: createNewFileWithQuery } = useCreateFile()
 
-  // RESTORED: Menu state management
   useEffect(() => {
     const shouldEnableMenu = Boolean(hasCurrentFile && window.isEditorFocused)
     void invoke('update_format_menu_state', { enabled: shouldEnableMenu })
@@ -102,7 +97,6 @@ export const Layout: React.FC = () => {
       )
   }, [hasCurrentFile])
 
-  // RESTORED: Save keyboard shortcut
   useHotkeys(
     'mod+s',
     () => {
@@ -115,7 +109,6 @@ export const Layout: React.FC = () => {
     { preventDefault: true }
   )
 
-  // RE-ENABLE TEST: Basic sidebar shortcuts
   useHotkeys(
     'mod+1',
     () => {
@@ -186,7 +179,6 @@ export const Layout: React.FC = () => {
   // NOTE: Cmd+/ (component builder) is handled by CodeMirror keymap, not here
   // This ensures it only works when the editor is focused and can distinguish between .md and .mdx files
 
-  // RE-ENABLE TEST: Preferences event listener
   useEffect(() => {
     const handleOpenPreferences = () => {
       setPreferencesOpen(true)
@@ -197,7 +189,6 @@ export const Layout: React.FC = () => {
       window.removeEventListener('open-preferences', handleOpenPreferences)
   }, [])
 
-  // RESTORED: Event listener for command palette 'create-new-file' events
   useEffect(() => {
     const handleCreateNewFile = () => {
       void createNewFileWithQuery()
@@ -208,38 +199,34 @@ export const Layout: React.FC = () => {
       window.removeEventListener('create-new-file', handleCreateNewFile)
   }, [createNewFileWithQuery])
 
-  // TEMPORARILY DISABLED: More event listeners and project loading
-  // useEffect(() => {
-  //   const handleToggleFocusMode = () => {
-  //     useUIStore.getState().toggleFocusMode()
-  //   }
+  // Focus mode and typewriter mode event listeners
+  useEffect(() => {
+    const handleToggleFocusMode = () => {
+      useUIStore.getState().toggleFocusMode()
+    }
 
-  //   const handleToggleTypewriterMode = () => {
-  //     useUIStore.getState().toggleTypewriterMode()
-  //   }
+    const handleToggleTypewriterMode = () => {
+      useUIStore.getState().toggleTypewriterMode()
+    }
 
-  //   window.addEventListener('toggle-focus-mode', handleToggleFocusMode)
-  //   window.addEventListener(
-  //     'toggle-typewriter-mode',
-  //     handleToggleTypewriterMode
-  //   )
+    window.addEventListener('toggle-focus-mode', handleToggleFocusMode)
+    window.addEventListener(
+      'toggle-typewriter-mode',
+      handleToggleTypewriterMode
+    )
 
-  //   return () => {
-  //     window.removeEventListener('toggle-focus-mode', handleToggleFocusMode)
-  //     window.removeEventListener(
-  //       'toggle-typewriter-mode',
-  //       handleToggleTypewriterMode
-  //     )
-  //   }
-  // }, [])
-
-  // MINIMAL PROJECT INITIALIZATION: Enable project loading for basic functionality
-  // Remove loadPersistedProject dependency to avoid cascade - call once on mount
+    return () => {
+      window.removeEventListener('toggle-focus-mode', handleToggleFocusMode)
+      window.removeEventListener(
+        'toggle-typewriter-mode',
+        handleToggleTypewriterMode
+      )
+    }
+  }, [])
   useEffect(() => {
     void useProjectStore.getState().loadPersistedProject()
   }, [])
 
-  // RE-ENABLE TEST: Rust toast bridge
   useEffect(() => {
     let cleanup: (() => void) | undefined
 
@@ -252,7 +239,6 @@ export const Layout: React.FC = () => {
     }
   }, [])
 
-  // RESTORED: Menu event listeners
   useEffect(() => {
     const handleOpenProject = async () => {
       try {
@@ -294,7 +280,6 @@ export const Layout: React.FC = () => {
         listen('menu-toggle-frontmatter', () => {
           useUIStore.getState().toggleFrontmatterPanel()
         }),
-        // RESTORED: Native menu new file listener
         listen('menu-new-file', () => {
           const { selectedCollection } = useProjectStore.getState()
           if (selectedCollection) {
@@ -367,7 +352,7 @@ export const Layout: React.FC = () => {
         }
       })
     }
-  }, [createNewFileWithQuery]) // RESTORED: Include createNewFileWithQuery for menu listeners
+  }, [createNewFileWithQuery])
 
   return (
     <div className="h-screen w-screen bg-[var(--editor-color-background)] font-sans flex flex-col rounded-xl overflow-hidden">

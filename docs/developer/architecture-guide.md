@@ -406,9 +406,116 @@ This allows the same actions to be triggered from:
 
 ## Performance Patterns
 
-### 1. Memoization
+**CRITICAL**: Following these patterns is essential to prevent render cascades and maintain optimal performance.
 
-Use memoization strategically:
+### 1. The `getState()` Pattern
+
+**Core Principle**: Subscribe only to data that should trigger component re-renders. For callbacks that need current state, use `getState()` to access values without subscribing.
+
+```typescript
+// ❌ BAD: Causes render cascade
+const { currentFile, isDirty, saveFile } = useEditorStore()
+
+const handleSave = useCallback(() => {
+  if (currentFile && isDirty) {
+    void saveFile()
+  }
+}, [currentFile, isDirty, saveFile]) // ← Re-creates on every keystroke!
+
+// ✅ GOOD: No cascade
+const { setEditorContent } = useEditorStore() // Only subscribe to what triggers re-renders
+
+const handleSave = useCallback(() => {
+  const { currentFile, isDirty, saveFile } = useEditorStore.getState()
+  if (currentFile && isDirty) {
+    void saveFile()
+  }
+}, []) // ← Stable dependency array
+```
+
+**When to Use `getState()`**:
+- In useCallback dependencies when you need current state but don't want re-renders
+- In event handlers for accessing latest state without subscriptions
+- In useEffect with empty dependencies when you need current state on mount only
+- In async operations when state might change during execution
+
+### 2. Store Subscription Optimization
+
+#### Specific Selectors vs Object Destructuring
+
+```typescript
+// ❌ BAD: Object recreation triggers re-renders
+const { currentFile } = useEditorStore() 
+
+// ✅ GOOD: Primitive selectors only change when needed
+const hasCurrentFile = useEditorStore(state => !!state.currentFile)
+const currentFileName = useEditorStore(state => state.currentFile?.name)
+const fileCount = useEditorStore(state => state.files.length)
+```
+
+#### Function Dependencies in useEffect
+
+```typescript
+// ❌ BAD: Function dependencies cause re-render loops
+const { loadProject } = useProjectStore()
+useEffect(() => {
+  void loadProject()
+}, [loadProject])
+
+// ✅ GOOD: Direct getState() calls
+useEffect(() => {
+  void useProjectStore.getState().loadProject()
+}, [])
+```
+
+### 3. CSS Visibility vs Conditional Rendering
+
+For stateful UI components (like `react-resizable-panels`), use CSS visibility instead of conditional rendering:
+
+```typescript
+// ❌ BAD: Conditional rendering breaks stateful components
+{frontmatterVisible ? (
+  <ResizablePanelGroup>
+    <ResizablePanel>Content</ResizablePanel>
+  </ResizablePanelGroup>
+) : (
+  <div>Content</div>
+)}
+
+// ✅ GOOD: CSS visibility preserves component tree
+<ResizablePanelGroup>
+  <ResizablePanel 
+    className={cn(
+      'base-styles',
+      frontmatterVisible ? '' : 'hidden'
+    )}
+  >
+    Content
+  </ResizablePanel>
+</ResizablePanelGroup>
+```
+
+### 4. Strategic React.memo Placement
+
+Use React.memo to break render cascades at component boundaries:
+
+```typescript
+// ✅ GOOD: Breaks cascade propagation
+const EditorAreaWithFrontmatter = React.memo(({ frontmatterPanelVisible }) => {
+  // Component only re-renders when frontmatterPanelVisible changes
+  // Not affected by parent re-renders from unrelated state
+})
+
+// ❌ NOTE: React.memo doesn't help with internal store subscriptions
+const Editor = React.memo(() => {
+  const content = useStore(state => state.content) // Still triggers re-renders
+  // React.memo can't prevent re-renders from internal subscriptions
+})
+```
+
+### 5. Traditional Memoization
+
+Use memoization strategically for expensive computations:
 
 ```typescript
 // Memoize expensive computations
@@ -417,22 +524,22 @@ const sortedFiles = useMemo(
   [files]
 )
 
-// Stable callbacks for child components
+// Stable callbacks for child components (using getState pattern)
 const handleChange = useCallback(
   (value: string) => {
-    setEditorContent(value)
+    useEditorStore.getState().setEditorContent(value)
   },
-  [setEditorContent]
+  [] // Stable dependency array
 )
 ```
 
-### 2. Lazy Loading
+### 6. Lazy Loading
 
 - Defer heavy operations until needed
 - Use dynamic imports for large dependencies
 - Virtualize long lists
 
-### 3. Debouncing
+### 7. Debouncing
 
 Critical for editor performance:
 
@@ -443,6 +550,35 @@ scheduleAutoSave: () => {
   timeoutId = setTimeout(() => saveFile(), 2000)
 }
 ```
+
+### 8. Performance Anti-Patterns to Avoid
+
+1. **Subscribing to frequently-changing data** in components that don't need to re-render
+2. **Using objects as dependencies** in useCallback/useEffect when you only need specific properties
+3. **Conditional rendering** of complex stateful components
+4. **Function dependencies** in useEffect when you can use direct getState() calls
+5. **Object destructuring** from stores for frequently-changing data
+
+### 9. Performance Monitoring
+
+Add temporary render tracking during development:
+
+```typescript
+// Temporary debugging only - remove before production
+const renderCountRef = useRef(0)
+renderCountRef.current++
+console.log(`[ComponentName] RENDER #${renderCountRef.current}`)
+```
+
+**Always remove render tracking after debugging.**
+
+### 10. Performance Testing Checklist
+
+- Monitor component render counts during typical interactions
+- Test with sidebars in different states
+- Verify auto-save works under all conditions
+- Use React DevTools Profiler to identify unnecessary re-renders
+- Ensure editor renders only once per actual content change
 
 ## Testing Strategy
 
