@@ -334,7 +334,7 @@ export const LeftSidebar: React.FC = () => {
       <div
         className={cn(
           'border-b p-3',
-          showDraftsOnly ? 'bg-orange-50/50' : 'bg-muted/30'
+          showDraftsOnly ? 'bg-[var(--color-draft-bg)]' : 'bg-muted/30'
         )}
       >
         <div className="flex items-center gap-2">
@@ -363,7 +363,7 @@ export const LeftSidebar: React.FC = () => {
           <span className="text-sm font-medium text-foreground flex-1">
             {headerTitle}
             {showDraftsOnly && (
-              <span className="text-xs text-orange-600 ml-2 font-normal">
+              <span className="text-xs text-[var(--color-draft)] ml-2 font-normal">
                 (Drafts Only)
               </span>
             )}
@@ -376,7 +376,7 @@ export const LeftSidebar: React.FC = () => {
               className={cn(
                 'size-7 p-0 [&_svg]:transform-gpu [&_svg]:scale-100',
                 showDraftsOnly &&
-                  'text-orange-600 bg-orange-100/50 hover:bg-orange-200/50'
+                  'text-[var(--color-draft)] bg-[var(--color-draft-bg)] hover:bg-[var(--color-draft-bg)]/80'
               )}
               title={showDraftsOnly ? 'Show All Files' : 'Show Drafts Only'}
             >
@@ -445,7 +445,8 @@ export const LeftSidebar: React.FC = () => {
                   className={cn(
                     'w-full text-left p-3 rounded-md transition-colors',
                     'hover:bg-accent',
-                    isFileDraft && 'bg-yellow-50/50 hover:bg-yellow-100/50',
+                    isFileDraft &&
+                      'bg-[var(--color-warning-bg)] hover:bg-[var(--color-warning-bg)]/80',
                     isSelected && 'bg-primary/15 hover:bg-primary/20'
                   )}
                 >

@@ -22,7 +22,9 @@ export const ArrayField: React.FC<FieldProps> = ({ name, label, required }) => {
     <div className="space-y-2">
       <label className="text-sm font-medium">
         {label}
-        {required && <span className="text-red-500 ml-1">*</span>}
+        {required && (
+          <span className="text-[var(--color-required)] ml-1">*</span>
+        )}
       </label>
       <TagInput
         placeholder={`Enter ${label.toLowerCase()}...`}

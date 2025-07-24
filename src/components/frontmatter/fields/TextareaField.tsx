@@ -25,7 +25,9 @@ export const TextareaField: React.FC<TextareaFieldProps> = ({
     <div className="space-y-2">
       <label className="text-sm font-medium">
         {label}
-        {required && <span className="text-red-500 ml-1">*</span>}
+        {required && (
+          <span className="text-[var(--color-required)] ml-1">*</span>
+        )}
       </label>
       <AutoExpandingTextarea
         id={name === 'title' ? 'frontmatter-title-field' : undefined}

@@ -25,7 +25,7 @@ export const Layout: React.FC = () => {
   const { preferencesOpen, setPreferencesOpen } = useLayoutEventListeners()
 
   return (
-    <div className="h-screen w-screen bg-[var(--editor-color-background)] flex flex-col rounded-xl overflow-hidden">
+    <div className="h-screen w-screen bg-background flex flex-col rounded-xl overflow-hidden">
       {/* Unified titlebar */}
       <UnifiedTitleBar />
 

@@ -61,7 +61,7 @@
   --input: hsl(214.3 31.8% 91.4%);
   --ring: hsl(222.2 84% 4.9%);
   --radius: 0.5rem;
-  --sidebar: hsl(0 0% 98%);
+  --sidebar: var(--card);
   --sidebar-foreground: hsl(240 5.3% 26.1%);
   --sidebar-primary: hsl(240 5.9% 10%);
   --sidebar-primary-foreground: hsl(0 0% 98%);
@@ -69,6 +69,13 @@
   --sidebar-accent-foreground: hsl(240 5.9% 10%);
   --sidebar-border: hsl(220 13% 91%);
   --sidebar-ring: hsl(217.2 91.2% 59.8%);
+
+  /* Status colors */
+  --color-draft: 37 99% 25%; /* orange-600 equivalent */
+  --color-draft-bg: 33 100% 96%; /* orange-50 equivalent */
+  --color-required: 0 84% 60%; /* red-500 equivalent */
+  --color-warning: 45 93% 47%; /* yellow-500 equivalent */
+  --color-warning-bg: 55 92% 95%; /* yellow-50 equivalent */
 }
 
 .dark {
@@ -91,7 +98,7 @@
   --border: hsl(217.2 32.6% 17.5%);
   --input: hsl(217.2 32.6% 17.5%);
   --ring: hsl(212.7 26.8% 83.9%);
-  --sidebar: hsl(240 5.9% 10%);
+  --sidebar: hsl(222.2 84% 3%);
   --sidebar-foreground: hsl(240 4.8% 95.9%);
   --sidebar-primary: hsl(224.3 76.3% 48%);
   --sidebar-primary-foreground: hsl(0 0% 100%);
@@ -99,6 +106,13 @@
   --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
   --sidebar-border: hsl(240 3.7% 15.9%);
   --sidebar-ring: hsl(217.2 91.2% 59.8%);
+
+  /* Status colors - dark mode */
+  --color-draft: 33 100% 70%; /* Lighter orange for dark */
+  --color-draft-bg: 33 100% 8%; /* Dark orange background */
+  --color-required: 0 91% 71%; /* Lighter red for dark */
+  --color-warning: 48 96% 80%; /* Lighter yellow for dark */
+  --color-warning-bg: 48 100% 6%; /* Dark yellow background */
 }
 
 @theme inline {
@@ -130,6 +144,11 @@
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar: var(--sidebar);
+  --color-draft: hsl(var(--color-draft));
+  --color-draft-bg: hsl(var(--color-draft-bg));
+  --color-required: hsl(var(--color-required));
+  --color-warning: hsl(var(--color-warning));
+  --color-warning-bg: hsl(var(--color-warning-bg));
 }
 
 @layer base {
@@ -159,7 +178,7 @@ body {
   padding: 0;
   font-family: -apple-system, 'Segoe UI', 'Roboto', sans-serif;
   background: transparent;
-  color: #333;
+  color: hsl(var(--foreground));
   font-size: 16px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -182,8 +201,8 @@ body {
   width: 100vw;
   overflow: hidden;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.8);
-  border: 0.5px solid rgba(0, 0, 0, 0.25);
+  background: hsl(var(--background));
+  border: 0.5px solid hsl(var(--border));
 }
 
 /* macOS Traffic Light Styling */
@@ -238,6 +257,26 @@ body {
 
   .traffic-light:hover .symbol {
     opacity: 1;
+  }
+
+  /* Dark mode traffic light adaptations */
+  .dark .traffic-light-close {
+    background: hsl(var(--destructive));
+    border-color: hsl(var(--destructive));
+  }
+
+  .dark .traffic-light-minimize {
+    background: hsl(var(--muted));
+    border-color: hsl(var(--muted-foreground));
+  }
+
+  .dark .traffic-light-maximize {
+    background: hsl(var(--primary));
+    border-color: hsl(var(--primary));
+  }
+
+  .dark .traffic-light .symbol {
+    color: hsl(var(--foreground));
   }
 }
 
