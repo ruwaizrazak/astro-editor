@@ -1,5 +1,8 @@
 # Astro Editor User Guide
 
+![overview-clean](assets/overview-clean.png)
+![overview-editor](assets/Editor-mode.png)
+
 ## Overview
 
 Astro Editor provides a clean, pleasant user experience for authoring and editing [Markdown](https://www.markdownguide.org/) & [MDX](https://mdxjs.com/) files in the content collections of local [Astro](https://astro.build/) sites.
@@ -74,7 +77,9 @@ That's it. Astro Editor handles project discovery, file management, and frontmat
 
 ### Interface Overview
 
-_[Screenshot needed: Full application window showing all interface elements]_
+![overview of app](assets/Overview.png)
+
+![overview of app in with file open ](<assets/Overview 2.png>)
 
 Astro Editor uses a clean three-panel layout designed to minimize distractions while providing easy access to files and metadata:
 
@@ -149,7 +154,7 @@ Fields appear in the sidebar in the same order they're defined in your Zod schem
 
 The frontmatter is written to your file in the same order it's shown in the schema, with any non-schema fields shown in alphabetical order by field name.
 
-_[Screenshot needed: Frontmatter sidebar showing different field types (string, boolean, date, enum, array)]_
+![view with frontmatter highlighted](assets/Frontmatter.png)
 
 ## The File List Sidebar
 
@@ -186,9 +191,11 @@ The left sidebar provides your primary interface for navigating between files an
 
 **Creating New Files**: Use `Cmd+N` or the "New File" button to create a new file in the currently selected collection. You'll be prompted to enter a filename, and the file will be created with default frontmatter from your collection schema.
 
-_[Screenshot needed: File list showing draft indicators, context menu, and file metadata]_
+![sidebar with context menu open](assets/sidebar.png)
 
 ## The Command Palette
+
+![alt text](assets/command-palette.png)
 
 The command palette provides quick access to all major functions in Astro Editor. It's designed for keyboard-driven workflows and fast file switching.
 
@@ -236,8 +243,6 @@ The "Open in IDE" command launches your preferred code editor with either the cu
 - `cursor` for Cursor
 - `subl` for Sublime Text
 
-_[Screenshot needed: Command palette showing search results with different command categories]_
-
 ## Editing Modes
 
 A number of "modes" can be toggled while writing/editing, which alter how the editor displays your content. These are generally compatible with each other (they can be toggled on and off independently).
@@ -254,6 +259,8 @@ Dims everything but the current sentence (or line for lists). Can be toggled wit
 Keeps the editor cursor centered vertically in the window and scrolls the document – much like a typewriter.
 
 ### Copyedit Highlighting
+
+![with highlights enabled](assets/Editor-mode.png)
 
 Copyedit mode highlights different parts of speech in your writing with distinct colors, helping you analyze writing patterns and identify areas for improvement.
 
@@ -289,6 +296,8 @@ _[Gif needed: Using the component builder]_
 Astro Editor provides both global preferences and project-specific settings to accommodate different workflows and project structures.
 
 ### General Preferences
+
+![alt text](assets/Preferences.png)
 
 Access global preferences through `Cmd+,` or the application menu. These settings apply across all projects:
 

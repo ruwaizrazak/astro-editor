@@ -1,6 +1,50 @@
-# Task: Global NEw Note Window and Editor
+# Task: Global New Note Window and Editor
 
-A global keyboard shortcut which opens a new note window and allows for the creation of extremely quick notes. This window should be floating on top of everything else, without requiring the actual app to be open. Kind of like a quick entry panel. Press here to save the note and just close the panel. It should be possible to edit from matter easily here. We'd also need to have a preference to choose which collection is your kind of quick notes one. Or perhaps the ability to switch between them, And remember the last collection that was accessed. We don't need all of the editor features in this mini editor.
+https://github.com/dannysmith/astro-editor/issues/4
 
-- https://v2.tauri.app/plugin/global-shortcut/
--
+Implement a global quick-entry window that can be summoned from anywhere on the system via keyboard shortcut, allowing users to rapidly capture notes without opening the main application.
+
+## Overview
+
+Create a lightweight, floating note capture window that appears on top of all other applications when triggered by a global keyboard shortcut. This "quick entry panel" should provide immediate access to note creation with minimal friction.
+
+## Core Requirements
+
+### Window Behavior
+
+- Global keyboard shortcut activation (system-wide, works when app is closed)
+- Floating window that appears on top of all other applications
+- Compact, focused interface optimized for quick text entry
+- Auto-saves and closes when user presses designated save shortcut
+- Can be dismissed/canceled without saving
+
+### Editor Features
+
+- Simplified markdown editor (subset of main editor features)
+- Basic frontmatter editing capabilities
+- Auto-completion for common fields
+- Real-time preview of markdown formatting
+
+### Collection Management
+
+- User preference to set default "quick notes" collection
+- Option to switch between collections within the quick entry window
+- Remembers last-used collection for subsequent quick entries
+- Validates that selected collection exists and is accessible
+
+### User Experience
+
+- Instant appearance with keyboard focus in the editor
+- Minimal UI chrome to maximize writing space
+- Clear visual indication of which collection will receive the note
+- Smooth animations for window appearance/dismissal
+
+## Technical Notes
+
+- Utilizes Tauri v2 Global Shortcut plugin
+- Separate window instance from main application
+- Lightweight bundle to ensure fast startup time
+
+## References
+
+- [Tauri v2 Global Shortcut Plugin](https://v2.tauri.app/plugin/global-shortcut/)

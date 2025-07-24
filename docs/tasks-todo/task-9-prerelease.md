@@ -24,19 +24,17 @@ These tasks are necessary before releasing this "to the world".
 
 ## User Guide, Icons & README
 
+- [x] Add screenshorts etc to User Guide
+- [x] Finish editing User Guide
+- [x] Update README.md accordingly
+
 - [ ] Create and add custom App icons (`src-tauri/icons`)
 - [ ] Add icon to About screen
 
-- [ ] Add screenshorts etc to User Guide
-- [ ] Finish editing User Guide
-
-- [ ] Record 5-min demo video, demo gif and sexy-screenshot-header for README.md
-- [ ] Update README.md accordingly
-
 ## GitHub Config
 
+- [x] Migrate any outstanding features or known bugs to GitHub Issues
+- [x] Migrate Roadmap to GitHub Project
 - [ ] Configure GitHub repo for proper dev, security, releases, issue tags etc
 - [ ] Configure sensible checks on PRs etc (BugBot etc)
-- [ ] Migrate any outstanding features or known bugs to GitHub Issues
-- [ ] Migrate Roadmap to GitHub Project
-- [ ] Clean up any old issues/branches etc
+- [x] Clean up any old issues/branches etc

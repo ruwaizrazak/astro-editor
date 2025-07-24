@@ -1,5 +1,7 @@
 # Astro Editor
 
+![Screenshots of Astro Editor](docs/assets/header.png)
+
 ## Features
 
 - Super-clean, minimal markdown editor inspired by iA Writer, supporting markdown and MDX files. Hides YAML frontmatter and component imports so you can focus on your writing.
@@ -95,7 +97,7 @@ PRs are most welcome. See [CONTRIBUTING.md](docs/CONTRIBUTING.md)
 
 ## Roadmap
 
-See the [GitHub Project]()
+See the [GitHub Project](https://github.com/users/dannysmith/projects/5/)
 
 ## Thanks 🙏
 
@@ -123,7 +125,6 @@ npm install # Install node deps
 npm reset:testdata # Create a local astro project for manual testing
 npm run tauri:dev # Start the development app (which will install any missing rust dependencies)
 ```
-
 
 ### Basic Workflow
 
