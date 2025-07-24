@@ -1,5 +1,7 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useUIStore } from '../../store/uiStore'
+import { useTheme } from '../../lib/theme-provider'
+import { useProjectStore } from '../../store/projectStore'
 import { UnifiedTitleBar } from './UnifiedTitleBar'
 import { LeftSidebar } from './LeftSidebar'
 import { MainEditor } from './MainEditor'
@@ -20,9 +22,19 @@ import {
 
 export const Layout: React.FC = () => {
   const { sidebarVisible, frontmatterPanelVisible } = useUIStore()
+  const { setTheme } = useTheme()
+  const { globalSettings } = useProjectStore()
 
   // Extract all event listeners to custom hook
   const { preferencesOpen, setPreferencesOpen } = useLayoutEventListeners()
+
+  // Sync stored theme preference with theme provider on app load
+  useEffect(() => {
+    const storedTheme = globalSettings?.general?.theme
+    if (storedTheme) {
+      setTheme(storedTheme)
+    }
+  }, [globalSettings?.general?.theme, setTheme])
 
   return (
     <div className="h-screen w-screen bg-background flex flex-col rounded-xl overflow-hidden">

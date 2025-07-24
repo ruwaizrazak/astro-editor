@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { usePreferences } from '../../../hooks/usePreferences'
+import { useTheme } from '../../../lib/theme-provider'
 
 const SettingsField: React.FC<{
   label: string
@@ -44,8 +45,9 @@ const SettingsSection: React.FC<{
 
 export const GeneralPane: React.FC = () => {
   const { globalSettings, updateGlobal } = usePreferences()
+  const { setTheme } = useTheme()
 
-  const handleIdeCommandChange = (value: string) => {
+  const handleIdeCommandChange = useCallback((value: string) => {
     void updateGlobal({
       general: {
         ideCommand: value,
@@ -59,9 +61,14 @@ export const GeneralPane: React.FC = () => {
         },
       },
     })
-  }
+  }, [updateGlobal, globalSettings?.general?.theme, globalSettings?.general?.highlights])
 
-  const handleThemeChange = (value: 'light' | 'dark' | 'system') => {
+  const handleThemeChange = useCallback((value: 'light' | 'dark' | 'system') => {
+    // Update the theme provider immediately for live preview
+    setTheme(value)
+    
+    // Also save to global settings for persistence  
+    // Using current globalSettings state (not getState pattern here as we need the current subscription)
     void updateGlobal({
       general: {
         ideCommand: globalSettings?.general?.ideCommand || '',
@@ -75,7 +82,7 @@ export const GeneralPane: React.FC = () => {
         },
       },
     })
-  }
+  }, [setTheme, updateGlobal, globalSettings?.general?.ideCommand, globalSettings?.general?.highlights])
 
   return (
     <div className="space-y-6">

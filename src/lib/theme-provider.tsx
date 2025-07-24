@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react'
 
 type Theme = 'light' | 'dark' | 'system'
 
@@ -51,19 +51,31 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
         : 'light'
 
       root.classList.add(systemTheme)
-      return
+      
+      // Listen for system theme changes
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+      const handleChange = () => {
+        root.classList.remove('light', 'dark')
+        const newSystemTheme = mediaQuery.matches ? 'dark' : 'light'
+        root.classList.add(newSystemTheme)
+      }
+      
+      mediaQuery.addEventListener('change', handleChange)
+      return () => mediaQuery.removeEventListener('change', handleChange)
     }
 
     root.classList.add(theme)
   }, [theme])
 
-  const value = {
+  const handleSetTheme = useCallback((theme: Theme) => {
+    localStorage.setItem(storageKey, theme)
+    setTheme(theme)
+  }, [storageKey])
+
+  const value = useMemo(() => ({
     theme,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme)
-      setTheme(theme)
-    },
-  }
+    setTheme: handleSetTheme,
+  }), [theme, handleSetTheme])
 
   return (
     <ThemeProviderContext.Provider value={value}>

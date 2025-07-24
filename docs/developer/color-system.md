@@ -81,6 +81,9 @@ All form inputs and labels use explicit dark mode classes:
 // Input/Textarea components
 className="text-gray-900 dark:text-white placeholder:text-muted-foreground"
 
+// Select triggers (dropdowns)
+className="text-gray-900 dark:text-white"
+
 // Field labels
 <label className="text-sm font-medium text-gray-900 dark:text-white">
   {label}
@@ -157,7 +160,7 @@ macOS-style window controls maintain consistent colors across both themes:
 
 ## Theme Provider Integration
 
-The app uses a React context for theme management:
+The app uses a React context for theme management with seamless integration between the theme provider and preferences system:
 
 ```tsx
 // Theme Provider supports: 'light' | 'dark' | 'system'
@@ -166,7 +169,40 @@ The app uses a React context for theme management:
 </ThemeProvider>
 ```
 
-Themes persist to localStorage and respect system preferences when set to 'system'.
+### Theme Synchronization
+
+1. **Initial Load**: Theme preference from global settings syncs to theme provider
+2. **Immediate Updates**: Theme changes in preferences update instantly (no reload required)
+3. **System Integration**: Automatic detection of OS theme changes when set to 'system'
+4. **Persistence**: Themes save to both localStorage and global settings
+
+### Implementation Details
+
+```tsx
+// Preferences dialog updates both systems
+const handleThemeChange = (value: 'light' | 'dark' | 'system') => {
+  setTheme(value) // Immediate theme provider update
+  updateGlobal({ general: { theme: value } }) // Settings persistence
+}
+
+// Layout component syncs on app load
+useEffect(() => {
+  const storedTheme = globalSettings?.general?.theme
+  if (storedTheme) {
+    setTheme(storedTheme)
+  }
+}, [globalSettings?.general?.theme, setTheme])
+```
+
+### System Theme Detection
+
+The theme provider automatically listens for OS theme changes:
+
+```tsx
+// Responds to OS dark/light mode changes
+const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+mediaQuery.addEventListener('change', handleSystemThemeChange)
+```
 
 ## Placeholder Text
 
