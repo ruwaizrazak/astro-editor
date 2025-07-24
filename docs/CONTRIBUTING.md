@@ -1,6 +1,6 @@
 # Contributing to Astro Editor
 
-Thank you for your interest in contributing to Astro Editor! This document provides guidelines and information for contributors.
+This document provides guidelines and information for contributors.
 
 ## Getting Started
 
@@ -104,13 +104,14 @@ npm run fix:all    # Auto-fix issues
 
 ### State Management
 
-- Server state: Use TanStack Query hooks
+- "Server" state: Use TanStack Query hooks
 - Client state: Use Zustand stores (decomposed architecture)
 - Local state: Keep in components for UI presentation
 
 ### Component Extraction
 
 Extract to `lib/` when:
+
 - 50+ lines of related logic
 - Used by 2+ components
 - Needs unit tests

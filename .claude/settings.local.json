@@ -32,7 +32,8 @@
       "Bash(npm test:*)",
       "Bash(true)",
       "Bash(rmdir:*)",
-      "WebFetch(domain:ia.net)"
+      "WebFetch(domain:ia.net)",
+      "Bash(git mv:*)"
     ],
     "deny": []
   }

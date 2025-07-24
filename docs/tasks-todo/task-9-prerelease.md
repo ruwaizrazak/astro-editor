@@ -34,5 +34,5 @@ These tasks are necessary before releasing this "to the world".
 - [x] Finish editing User Guide
 - [x] Update README.md accordingly
 
-- [ ] Create and add custom App icons (`src-tauri/icons`)
+- [x] Create and add custom App icons (`src-tauri/icons`)
 - [ ] Add icon to About screen
