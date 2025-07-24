@@ -1,0 +1,31 @@
+/**
+ * Copyedit Mode Styles
+ * 
+ * Parts of speech highlighting using editor CSS variables for theme compatibility
+ */
+
+.cm-pos-noun {
+  color: var(--editor-color-red);
+}
+
+.cm-pos-verb {
+  color: var(--editor-color-blue);
+}
+
+.cm-pos-adjective {
+  color: var(--editor-color-brown);
+}
+
+.cm-pos-adverb {
+  color: var(--editor-color-pink);
+}
+
+.cm-pos-conjunction {
+  color: var(--editor-color-green);
+}
+
+/* Excluded content styling - muted appearance */
+.cm-pos-excluded {
+  color: var(--editor-color-mdtag);
+  background: none;
+}

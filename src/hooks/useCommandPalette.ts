@@ -18,7 +18,7 @@ export function useCommandPalette(searchValue = '') {
     (value: boolean | ((prev: boolean) => boolean)) => {
       const newValue = typeof value === 'boolean' ? value : value(open)
       setOpen(value)
-      
+
       // Show bars when command palette opens
       if (newValue) {
         setDistractionFreeBarsHidden(false)
@@ -54,6 +54,11 @@ export function useCommandPalette(searchValue = '') {
       context.projectPath,
       context.isDirty,
       context.globalSettings?.general?.ideCommand,
+      context.globalSettings?.general?.highlights?.nouns,
+      context.globalSettings?.general?.highlights?.verbs,
+      context.globalSettings?.general?.highlights?.adjectives,
+      context.globalSettings?.general?.highlights?.adverbs,
+      context.globalSettings?.general?.highlights?.conjunctions,
       context.collections.length, // Only react to collection count changes, not array reference
       searchValue, // Add searchValue as dependency
     ]
@@ -77,6 +82,7 @@ export function useCommandPalette(searchValue = '') {
       { key: 'navigation', heading: 'Navigation' },
       { key: 'project', heading: 'Project' },
       { key: 'settings', heading: 'Settings' },
+      { key: 'highlight', heading: 'Highlights' },
       { key: 'ide', heading: 'IDE' },
     ]
 

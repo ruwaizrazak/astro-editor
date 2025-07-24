@@ -15,6 +15,7 @@ import {
   Settings,
   Eye,
   Edit,
+  Highlighter,
 } from 'lucide-react'
 import { AppCommand, CommandContext } from './types'
 import { Collection, FileEntry } from '../../store'
@@ -182,6 +183,104 @@ export const viewModeCommands: AppCommand[] = [
     isAvailable: () => true,
   },
 ]
+
+/**
+ * Highlight commands for parts of speech with dynamic labels
+ */
+export function getHighlightCommands(context: CommandContext): AppCommand[] {
+  const highlights = context.globalSettings?.general?.highlights
+
+  // Get the actual state with proper defaults using nullish coalescing
+  const highlightStates = {
+    nouns: highlights?.nouns ?? true,
+    verbs: highlights?.verbs ?? true,
+    adjectives: highlights?.adjectives ?? true,
+    adverbs: highlights?.adverbs ?? true,
+    conjunctions: highlights?.conjunctions ?? true,
+  }
+
+  // Check if any highlights are enabled for the "Toggle All" command
+  const anyEnabled = Object.values(highlightStates).some(enabled => enabled)
+
+  return [
+    {
+      id: 'toggle-highlight-nouns',
+      label: highlightStates.nouns
+        ? 'Hide Noun Highlights'
+        : 'Show Noun Highlights',
+      description: 'Toggle highlighting of nouns in the editor',
+      icon: Highlighter,
+      group: 'highlight',
+      execute: (context: CommandContext) => {
+        context.toggleHighlightNouns()
+      },
+      isAvailable: () => true,
+    },
+    {
+      id: 'toggle-highlight-verbs',
+      label: highlightStates.verbs
+        ? 'Hide Verb Highlights'
+        : 'Show Verb Highlights',
+      description: 'Toggle highlighting of verbs in the editor',
+      icon: Highlighter,
+      group: 'highlight',
+      execute: (context: CommandContext) => {
+        context.toggleHighlightVerbs()
+      },
+      isAvailable: () => true,
+    },
+    {
+      id: 'toggle-highlight-adjectives',
+      label: highlightStates.adjectives
+        ? 'Hide Adjective Highlights'
+        : 'Show Adjective Highlights',
+      description: 'Toggle highlighting of adjectives in the editor',
+      icon: Highlighter,
+      group: 'highlight',
+      execute: (context: CommandContext) => {
+        context.toggleHighlightAdjectives()
+      },
+      isAvailable: () => true,
+    },
+    {
+      id: 'toggle-highlight-adverbs',
+      label: highlightStates.adverbs
+        ? 'Hide Adverb Highlights'
+        : 'Show Adverb Highlights',
+      description: 'Toggle highlighting of adverbs in the editor',
+      icon: Highlighter,
+      group: 'highlight',
+      execute: (context: CommandContext) => {
+        context.toggleHighlightAdverbs()
+      },
+      isAvailable: () => true,
+    },
+    {
+      id: 'toggle-highlight-conjunctions',
+      label: highlightStates.conjunctions
+        ? 'Hide Conjunction Highlights'
+        : 'Show Conjunction Highlights',
+      description: 'Toggle highlighting of conjunctions in the editor',
+      icon: Highlighter,
+      group: 'highlight',
+      execute: (context: CommandContext) => {
+        context.toggleHighlightConjunctions()
+      },
+      isAvailable: () => true,
+    },
+    {
+      id: 'toggle-all-highlights',
+      label: anyEnabled ? 'Hide All Highlights' : 'Show All Highlights',
+      description: 'Toggle all part-of-speech highlights on or off together',
+      icon: Highlighter,
+      group: 'highlight',
+      execute: (context: CommandContext) => {
+        context.toggleAllHighlights()
+      },
+      isAvailable: () => true,
+    },
+  ]
+}
 
 /**
  * Generate dynamic collection commands based on available collections
@@ -353,6 +452,7 @@ export function getAllCommands(
 ): AppCommand[] {
   const collectionCommands = generateCollectionCommands(context.collections)
   const searchCommands = generateSearchCommands(context, searchValue)
+  const highlightCommands = getHighlightCommands(context)
 
   return [
     ...searchCommands, // Search results first when searching
@@ -361,6 +461,7 @@ export function getAllCommands(
     ...projectCommands,
     ...settingsCommands,
     ...viewModeCommands,
+    ...highlightCommands,
     ...ideCommands,
     ...collectionCommands,
   ].filter(command => command.isAvailable(context))

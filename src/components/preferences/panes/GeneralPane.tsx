@@ -46,6 +46,13 @@ export const GeneralPane: React.FC = () => {
       general: {
         ideCommand: value,
         theme: globalSettings?.general?.theme || 'system',
+        highlights: globalSettings?.general?.highlights || {
+          nouns: true,
+          verbs: true,
+          adjectives: true,
+          adverbs: true,
+          conjunctions: true,
+        },
       },
     })
   }
@@ -55,6 +62,13 @@ export const GeneralPane: React.FC = () => {
       general: {
         ideCommand: globalSettings?.general?.ideCommand || '',
         theme: value,
+        highlights: globalSettings?.general?.highlights || {
+          nouns: true,
+          verbs: true,
+          adjectives: true,
+          adverbs: true,
+          conjunctions: true,
+        },
       },
     })
   }

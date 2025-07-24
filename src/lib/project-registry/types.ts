@@ -49,6 +49,13 @@ export interface GlobalSettings {
   general: {
     ideCommand: string
     theme: 'light' | 'dark' | 'system'
+    highlights: {
+      nouns: boolean
+      verbs: boolean
+      adjectives: boolean
+      adverbs: boolean
+      conjunctions: boolean
+    }
   }
   // Default settings that apply to new projects
   defaultProjectSettings: ProjectSettings

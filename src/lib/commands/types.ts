@@ -27,6 +27,12 @@ export interface CommandContext {
   openPreferences: () => void
   toggleFocusMode: () => void
   toggleTypewriterMode: () => void
+  toggleHighlightNouns: () => void
+  toggleHighlightVerbs: () => void
+  toggleHighlightAdjectives: () => void
+  toggleHighlightAdverbs: () => void
+  toggleHighlightConjunctions: () => void
+  toggleAllHighlights: () => void
 
   // Future extensibility
   editorSelection?: {
@@ -41,7 +47,14 @@ export interface AppCommand {
   label: string
   description?: string
   icon?: React.ComponentType<{ className?: string }>
-  group: 'file' | 'navigation' | 'project' | 'ide' | 'settings' | 'search'
+  group:
+    | 'file'
+    | 'navigation'
+    | 'project'
+    | 'ide'
+    | 'settings'
+    | 'search'
+    | 'highlight'
   execute: (context: CommandContext) => void | Promise<void>
   isAvailable: (context: CommandContext) => boolean
 }
