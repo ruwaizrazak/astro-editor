@@ -28,8 +28,8 @@ Because the goal of this **simplicity when in writer mode**, Astro Editor is int
 
 Astro Editor will only work properly with Astro projects which:
 
-- Are using Atro 5+ _(it might work with Astro 4+ but you should expect a few bugs)_
-- Use Astro [Content Collections ](https://docs.astro.build/en/guides/content-collections/) and have a `src/content.config.ts` or `/src/content/content.ts`.
+- Are using Astro 5+ _(it might work with Astro 4+ but you should expect a few bugs)_
+- Use Astro [Content Collections](https://docs.astro.build/en/guides/content-collections/) and have a `src/content/config.ts` file.
 - Have at least one collection defined with `defineCollection`. It **must** use the `glob` loader and have a `schema`.
 - Have all collections in a single directory: `src/content/[collectionname]`
 
@@ -60,13 +60,13 @@ The paths to the _Assets_, _Content_, and _MDX Components_ directories (relative
 
 Getting started with Astro Editor takes just a few steps. The application is designed to work with existing Astro projects that use content collections.
 
-1. **Open an Astro Project**: Use `File > Open Project` or `Cmd+O` to select your Astro project directory. Astro Editor will automatically scan for content collections defined in your `src/content/config.ts` file.
+1. **Open an Astro Project**: Use `File > Open Project` to select your Astro project directory. Astro Editor will automatically scan for content collections defined in your `src/content/config.ts` file.
 
 2. **Select a Collection**: Once your project opens, you'll see your content collections listed in the left sidebar. Click on any collection name to view the files it contains.
 
 3. **Open a File**: Click on any markdown or MDX file in the file list to open it in the main editor. The editor will show your content without the frontmatter, which appears in the right sidebar.
 
-4. **Start Writing**: Begin editing immediately. Your changes are automatically saved every 2 seconds, and you can manually save anytime with `Cmd+S`.
+4. **Start Writing**: Begin editing. Your changes are automatically saved every 2 seconds, and you can manually save anytime with `Cmd+S`.
 
 5. **Edit Frontmatter**: Use the right sidebar to edit metadata fields. These forms are automatically generated from your Astro content collection schemas.
 
@@ -78,48 +78,23 @@ _[Screenshot needed: Full application window showing all interface elements]_
 
 Astro Editor uses a clean three-panel layout designed to minimize distractions while providing easy access to files and metadata:
 
-**Left Sidebar (File Browser)**
-- **Collections List**: Shows all content collections found in your project
-- **File List**: Displays markdown/MDX files in the selected collection, sorted by date
-- **File Metadata**: Each file shows its title (from frontmatter) and publication date
-- **Draft Indicators**: Draft files are marked with a yellow "Draft" badge
-- **Context Menu**: Right-click any file for rename, duplicate, or reveal options
-
-**Main Editor (Center)**
-- **Clean Writing Space**: Shows only your markdown content, hiding frontmatter and imports
-- **Syntax Highlighting**: Gentle highlighting for markdown formatting and embedded HTML/JSX
-- **Toolbar**: Contains writing mode toggles (focus mode, typewriter mode, copyedit mode)
-- **Auto-save Indicator**: Shows save status and word count in the bottom-right corner
-
-**Right Sidebar (Frontmatter Panel)**
-- **Dynamic Forms**: Automatically generated from your Astro content collection schemas
-- **Field Types**: Renders appropriate inputs for strings, numbers, dates, booleans, enums, and arrays
-- **Required Fields**: Visually marked with asterisks and validation feedback
-- **Resizable**: Drag the panel border to adjust width for longer content
-
-**Top Bar**
-- **Project Name**: Shows currently opened project
-- **Window Controls**: Standard macOS window controls integrated into the title bar
-- **Menu Access**: Application menu available via the menu bar
+| Interface Area    | Purpose                                                                      |
+| ----------------- | ---------------------------------------------------------------------------- |
+| **Left Sidebar**  | Browse collections and files, with draft indicators and context menu options |
+| **Main Editor**   | Clean writing space with markdown syntax highlighting                        |
+| **Right Sidebar** | Dynamic frontmatter forms generated from your Astro collection schemas       |
+| **Top Bar**       | Project name, window controls, and menu access                               |
+| **Status Bar**    | Shows current file, save status, and word count                              |
 
 Both sidebars can be hidden using `Cmd+1` (left) and `Cmd+2` (right) for distraction-free writing. The panels remember their sizes and visibility between sessions.
 
 ## The Editor
 
-The editor window shows the entire contents of your markdown or MDX files with the exception of the YAML frontmatter and any JSX `import` lines immediatly following the frontmatter. It's designed to provide an extremely clean writing interface, especially with both sidebars are closed. It provides markdown syntax highlighting.
+The editor window shows the entire contents of your markdown or MDX files with the exception of the YAML frontmatter and any JSX `import` lines immediately following the frontmatter. It's designed to provide an extremely clean writing interface, especially when both sidebars are closed. It provides markdown syntax highlighting.
 
-### Writing Markdown
+### Auto-Save
 
-[Basic editing, bold italic etc]
-[Pasting over text to insert links]
-[Lists]
-[HTML and JSX highlighting]
-
-### Inserting Images & Files
-
-### Inserting Astro Components into MDX files
-
-### Saving & Auto-Save
+Astro Editor automatically saves your work every 2 seconds while you're editing. You'll see a brief "Saved" notification in the status bar when auto-save occurs. You can also manually save at any time using `Cmd+S`.
 
 ### Editor Keyboard Shortcuts
 
@@ -150,29 +125,29 @@ The frontmatter sidebar automatically generates editing forms based on your Astr
 
 Astro Editor reads your `src/content/config.ts` file and converts Zod schema definitions into appropriate form controls. The mapping works as follows:
 
-| Zod Schema Type | Form Control | Behavior |
-|---|---|---|
-| `z.string()` | Single-line input | Standard text input |
-| `z.string().optional()` | Single-line input | Empty field allowed, no validation |
-| `z.enum(['a', 'b', 'c'])` | Dropdown select | Shows all enum options |
-| `z.boolean()` | Toggle switch | True/false with visual switch |
-| `z.date()` | Date picker | Native date selection widget |
-| `z.number()` | Number input | Numeric validation and steppers |
-| `z.array(z.string())` | Tag input | Add/remove tags with keyboard |
+| Zod Schema Type           | Form Control      | Behavior                           |
+| ------------------------- | ----------------- | ---------------------------------- |
+| `z.string()`              | Single-line input | Standard text input                |
+| `z.string().optional()`   | Single-line input | Empty field allowed, no validation |
+| `z.enum(['a', 'b', 'c'])` | Dropdown select   | Shows all enum options             |
+| `z.boolean()`             | Toggle switch     | True/false with visual switch      |
+| `z.date()`                | Date picker       | Native date selection widget       |
+| `z.number()`              | Number input      | Numeric validation and steppers    |
+| `z.array(z.string())`     | Tag input         | Add/remove tags with keyboard      |
 
 ### Special Field Handling
 
-**Title Fields**: If your schema has a field named `title` (or configured in project settings), it renders as a larger, bold textarea that automatically expands as you type.
+**Title Fields**: If your schema has a field named `title` (or configured in project settings), it renders as a larger, bold textarea that automatically expands as you type. Title fields always appear first in the panel, regardless of their position in the schema.
 
-**Description Fields**: Fields named `description` get a multi-line textarea that grows from 3 to 16 rows based on content length.
+**Description Fields**: Fields named `description` get a multi-line textarea that grows based on content length.
 
-**Required Fields**: Required schema fields show an asterisk (*) next to their label and prevent saving if empty.
+**Required Fields**: Required schema fields show an asterisk (\*) next to their label and prevent saving if empty.
 
 ### Field Order and Defaults
 
-Fields appear in the sidebar in the same order they're defined in your Zod schema. When you create a new file, any default values specified in your schema are automatically applied to the frontmatter.
+Fields appear in the sidebar in the same order they're defined in your Zod schema. When you create a new file, any default values specified in your schema are automatically applied in the panel.
 
-The frontmatter is written to your file in alphabetical order by field name, with proper YAML formatting and appropriate quotes when needed. This ensures consistent, readable frontmatter across all your files.
+The frontmatter is written to your file in the same order it's shown in the schema, with any non-schema fields shown in alphabetical order by field name.
 
 _[Screenshot needed: Frontmatter sidebar showing different field types (string, boolean, date, enum, array)]_
 
@@ -187,6 +162,7 @@ The left sidebar provides your primary interface for navigating between files an
 **File Ordering**: Files are automatically sorted by their publication date (newest first), using the date field configured in your project settings (defaults to `pubDate`, `date`, or `publishedDate`). Files without dates appear at the top of the list.
 
 **File Display**: Each file shows:
+
 - **Title**: Taken from the `title` frontmatter field, or the filename if no title exists
 - **Date**: Publication date in a readable format (e.g., "Dec 15, 2023")
 - **Draft Badge**: Yellow "Draft" indicator for files marked as drafts
@@ -197,16 +173,16 @@ The left sidebar provides your primary interface for navigating between files an
 
 **Draft Filtering**: Use the "Show Drafts Only" toggle in the toolbar to filter the file list to show only draft files. This is useful when reviewing unpublished content.
 
-**Visual Indicators**: Draft files have a subtle yellow background in the file list to make them easy to identify at a glance.
-
 ### File Operations
 
 **Opening Files**: Click any file to open it in the main editor. The currently open file is highlighted with a border.
 
 **Context Menu**: Right-click any file to access additional operations:
+
 - **Rename**: Edit the filename inline without changing file content
 - **Duplicate**: Create a copy of the file with a new name
 - **Reveal in Finder**: Open the file's location in the Finder
+- **Copy Path**: Copies the file's absolute path to the clipboard
 
 **Creating New Files**: Use `Cmd+N` or the "New File" button to create a new file in the currently selected collection. You'll be prompted to enter a filename, and the file will be created with default frontmatter from your collection schema.
 
@@ -225,26 +201,22 @@ The command palette provides quick access to all major functions in Astro Editor
 Commands are organized into logical groups that appear at the top of the search results:
 
 **File Operations**
+
 - **New File**: Create a new file in the current collection
 - **Save File**: Save the currently open file
 - **Close File**: Close the current file
-- **Rename File**: Rename the current file
 
 **Navigation**
-- **Switch Collection**: Jump to a different content collection
+
+- **Open Collection**: Jump to a different content collection
 - **Toggle Sidebar**: Show/hide the left file browser
 - **Toggle Frontmatter Panel**: Show/hide the right frontmatter editor
-- **Focus Editor**: Return keyboard focus to the main editor
 
-**Project Management**  
+**Project Management**
+
 - **Open Project**: Select and open a different Astro project
 - **Reload Collections**: Refresh the project's content collections
-- **Open in IDE**: Launch the project or current file in your configured IDE
-
-**Writing Modes**
-- **Toggle Focus Mode**: Enable/disable sentence-level focus highlighting
-- **Toggle Typewriter Mode**: Enable/disable centered cursor mode
-- **Toggle Copyedit Mode**: Enable/disable parts-of-speech highlighting
+- **Open in IDE**: Open the current project, collection, or file in your configured IDE.
 
 ### File Search
 
@@ -259,7 +231,8 @@ The command palette doubles as a powerful file search tool. When you type text t
 ### Opening in Your IDE
 
 The "Open in IDE" command launches your preferred code editor with either the current file or the entire project. Configure your IDE command in preferences (`Cmd+,`). Popular options include:
-- `code` for Visual Studio Code  
+
+- `code` for Visual Studio Code
 - `cursor` for Cursor
 - `subl` for Sublime Text
 
@@ -267,7 +240,7 @@ _[Screenshot needed: Command palette showing search results with different comma
 
 ## Editing Modes
 
-A number of "modes" can be toggled while writing/editing, which alter how the editor displays your content. These are generally compatible with each other (ie they can be toggled on and off independantly).
+A number of "modes" can be toggled while writing/editing, which alter how the editor displays your content. These are generally compatible with each other (they can be toggled on and off independently).
 
 ### Focus Mode
 
@@ -280,26 +253,24 @@ Dims everything but the current sentence (or line for lists). Can be toggled wit
 
 Keeps the editor cursor centered vertically in the window and scrolls the document – much like a typewriter.
 
-### Copyedit Mode
+### Copyedit Highlighting
 
 Copyedit mode highlights different parts of speech in your writing with distinct colors, helping you analyze writing patterns and identify areas for improvement.
 
-**Activation**: Toggle copyedit mode using the palette icon (📝) in the toolbar, the command palette, or `Cmd+Shift+E`.
+**Parts of Text Highlighted**:
 
-**Parts of Speech Highlighted**:
 - **Nouns**: Purple highlighting to identify subjects and objects
-- **Verbs**: Blue highlighting to spot action words and tense patterns  
+- **Verbs**: Blue highlighting to spot action words and tense patterns
 - **Adjectives**: Green highlighting to review descriptive language
 - **Adverbs**: Orange highlighting to catch potentially unnecessary modifiers
 - **Conjunctions**: Red highlighting to see sentence connection patterns
 
-**Individual Controls**: You can toggle highlighting for specific parts of speech using the dropdown menu next to the copyedit mode button. This lets you focus on just nouns, or just adverbs, depending on what you're reviewing.
+**Individual Controls**: You can toggle highlighting for specific parts of speech using the command palette.
 
-**Smart Exclusions**: Copyedit mode automatically excludes code blocks, frontmatter, and markdown syntax from highlighting, so only your actual prose is analyzed.
+**Smart Exclusions**: Highlighting automatically excludes code blocks and markdown syntax, so only your actual prose is analyzed.
 
-**Performance**: The highlighting updates in real-time as you type, with smart debouncing to maintain smooth editor performance even in long documents.
+**Writing Use Cases**:
 
-**Writing Use Cases**: 
 - Spot overuse of adverbs in your writing
 - Check for consistent verb tenses
 - Review the density of adjectives in descriptions
@@ -309,8 +280,9 @@ _[Screenshot needed: Editor with copyedit mode enabled showing different colored
 
 ## MDX Components
 
-[How to use the component builder]
-[Optimising your Astro Project for this]
+When editing an MDX file, `Cmd+/` will open the component builder. This will show all the components inside your configured "/components/mdx" directory. You can select a component to insert and toggle the props you want in the next panel. Pressing `Cmd+Enter` will insert the component into your document, where you can tab through the various props.
+
+_[Gif needed: Using the component builder]_
 
 ## Preferences & Configuration
 
@@ -323,8 +295,9 @@ Access global preferences through `Cmd+,` or the application menu. These setting
 **Theme**: Choose between light mode, dark mode, or system theme (follows macOS setting).
 
 **IDE Command**: Configure the command used for "Open in IDE" functionality. Common values:
+
 - `code` for Visual Studio Code
-- `cursor` for Cursor  
+- `cursor` for Cursor
 - `subl` for Sublime Text
 - Custom paths like `/Applications/Nova.app/Contents/MacOS/Nova`
 
@@ -343,13 +316,14 @@ Each project can override global settings to accommodate different structures or
 **Frontmatter Field Mappings**: Configure which frontmatter fields are used for specific purposes:
 
 - **Title Field**: Default `title`, controls file display names and special styling
-- **Date Field**: Default `["pubDate", "date", "publishedDate"]`, used for file sorting  
+- **Date Field**: Default `["pubDate", "date", "publishedDate"]`, used for file sorting
 - **Description Field**: Default `description`, gets enhanced textarea styling
 - **Draft Field**: Default `draft`, controls draft detection and filtering
 
 ### Settings Storage
 
 Settings are automatically saved to your system:
+
 - **Location**: `~/Library/Application Support/com.astroeditor.app/`
 - **Global Settings**: Shared across all projects
 - **Project Registry**: Remembers all opened projects and their individual settings
@@ -358,10 +332,6 @@ Settings are automatically saved to your system:
 Projects are identified by their `package.json` name and automatically migrate if you move the project folder.
 
 _[Screenshot needed: Preferences window showing global and project-specific settings]_
-
-## Crash Recovery & Project Settings
-
-[Explain how project settings are saved and how to recover from file loss.]
 
 ## Global Keyboard Shortcuts
 
@@ -372,7 +342,7 @@ These work anywhere in the application
 | `Cmd+S`  | Save File                | Save the currently open file                            |
 | `Cmd+N`  | New File                 | Create a new file in the selected collection            |
 | `Cmd+W`  | Close File               | Close the currently open file                           |
-| `Cmd+P`  | Command Palette          | Open the command palette to search and execute commands |
+| `Cmd+K`  | Command Palette          | Open the command palette to search and execute commands |
 | `Cmd+,`  | Preferences              | Open application preferences                            |
 | `Cmd+0`  | Focus Editor             | Focus the main editor from anywhere in the app          |
 | `Cmd+1`  | Toggle Sidebar           | Show/hide the left sidebar (file browser)               |
