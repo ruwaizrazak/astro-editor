@@ -6,7 +6,7 @@ The preferences system manages both global user settings and project-specific se
 
 ## File Storage
 
-- **Location**: `/Users/danny/Library/Application\ Support/com.astroeditor.app/`
+- **Location**: `/Users/danny/Library/Application\ Support/is.danny.astroeditor/`
 
 ### File Structure
 
@@ -161,16 +161,19 @@ await updateProjectSettings({
 When path overrides are configured, the application automatically uses them throughout:
 
 **Content Directory Override:**
+
 - **Collection Scanning**: Uses `scan_project_with_content_dir` Tauri command instead of default
 - **File Watching**: Uses `start_watching_project_with_content_dir` to watch the custom directory
 - **Default**: `src/content/` → **Override Example**: `content/` or `docs/`
 
 **Assets Directory Override:**
+
 - **Drag & Drop**: Uses `copy_file_to_assets_with_override` when files are dropped into editor
 - **File Processing**: Automatically copies files to the configured assets path
 - **Default**: `src/assets/` → **Override Example**: `public/images/` or `static/`
 
 **MDX Components Directory Override:**
+
 - **Reserved for Future**: Not currently used but structure is in place
 - **Default**: `src/components/mdx/`
 
@@ -179,23 +182,27 @@ When path overrides are configured, the application automatically uses them thro
 The application uses configured field mappings for enhanced functionality:
 
 **Published Date Field:**
+
 - **File Sorting**: Sidebar sorts files by the configured date field(s)
 - **Supports Multiple Fields**: Can specify array like `["pubDate", "date", "publishedDate"]`
 - **File List Display**: Shows formatted date under file titles
 - **Default**: `["pubDate", "date", "publishedDate"]` → **Override Example**: `"published"` or `["releaseDate"]`
 
 **Title Field:**
+
 - **File List Display**: Uses configured field for file titles in sidebar
 - **Frontmatter Panel**: Renders with special large, bold textarea styling
 - **Fallback**: Uses filename if frontmatter field is empty
 - **Default**: `"title"` → **Override Example**: `"heading"` or `"name"`
 
 **Description Field:**
+
 - **Frontmatter Panel**: Renders with larger textarea (3-16 rows)
 - **Special Styling**: Gets enhanced treatment for long-form content
 - **Default**: `"description"` → **Override Example**: `"summary"` or `"excerpt"`
 
 **Draft Field:**
+
 - **File List Indicators**: Shows "Draft" badge for files marked as draft
 - **Visual Styling**: Applies yellow background to draft files in sidebar
 - **Boolean Detection**: Checks if configured field equals `true`
@@ -204,6 +211,7 @@ The application uses configured field mappings for enhanced functionality:
 ### Implementation Details
 
 **Settings Resolution:**
+
 ```typescript
 // Application uses effective settings that merge global + project overrides
 const { pathOverrides, frontmatterMappings } = useEffectiveSettings()
@@ -218,10 +226,14 @@ if (contentDirectory && contentDirectory !== 'src/content') {
 
 // Frontmatter mapping example
 const title = getTitle(file, frontmatterMappings.title)
-const publishedDate = getPublishedDate(file.frontmatter, frontmatterMappings.publishedDate)
+const publishedDate = getPublishedDate(
+  file.frontmatter,
+  frontmatterMappings.publishedDate
+)
 ```
 
 **Backwards Compatibility:**
+
 - If no overrides are configured, uses default behavior exactly as before
 - Gradual fallback: project override → global default → hardcoded default
 - All existing projects continue working without configuration

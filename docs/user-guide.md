@@ -333,7 +333,7 @@ Each project can override global settings to accommodate different structures or
 
 Settings are automatically saved to your system:
 
-- **Location**: `~/Library/Application Support/com.astroeditor.app/`
+- **Location**: `~/Library/Application Support/is.danny.astroeditor/`
 - **Global Settings**: Shared across all projects
 - **Project Registry**: Remembers all opened projects and their individual settings
 - **Auto-Recovery**: Settings persist across app restarts and crashes

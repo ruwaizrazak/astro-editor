@@ -9,12 +9,13 @@
 This document provides a comprehensive technical implementation plan for adding auto-update functionality and professional release management to the Astro Editor. Based on extensive research into Tauri v2 best practices, GitHub Actions workflows, and 2025 code signing requirements, this plan balances functionality, security, and cost for a single-developer project.
 
 **Key Decisions Made:**
+
 - **Release Strategy**: Trunk-based development with semantic version tags
 - **Code Signing**: Start with ad-hoc (macOS) and unsigned (Windows), upgrade when justified
 - **Auto-Updates**: GitHub releases as update server with cryptographic verification
 - **CI/CD**: GitHub Actions with tauri-apps/tauri-action for multi-platform builds
 
-## Phase 1: Foundation Setup (Immediate - 1-2 hours)
+## Phase 1: Foundation Setup (Immediate - 1-2 hours) ✅ DONE
 
 ### 1.1 Generate Update Signing Keys
 
@@ -24,6 +25,7 @@ npm run tauri signer generate -w ~/.tauri/astro-editor.key
 ```
 
 This creates:
+
 - `astro-editor.key` (private key - never commit this)
 - `astro-editor.key.pub` (public key - embed in app)
 
@@ -42,7 +44,7 @@ Update `src-tauri/tauri.conf.json`:
 {
   "bundle": {
     "createUpdaterArtifacts": true,
-    "identifier": "com.astroeditor.app",
+    "identifier": "is.danny.astroeditor",
     "macOS": {
       "signingIdentity": "-",
       "minimumSystemVersion": "10.13"
@@ -52,7 +54,7 @@ Update `src-tauri/tauri.conf.json`:
     "updater": {
       "active": true,
       "endpoints": [
-        "https://github.com/YOUR_USERNAME/astro-editor/releases/latest/download/latest.json"
+        "https://github.com/dannysmith/astro-editor/releases/latest/download/latest.json"
       ],
       "dialog": true,
       "pubkey": "PASTE_PUBLIC_KEY_CONTENT_HERE"
@@ -70,6 +72,7 @@ npm install --save-dev semantic-release @semantic-release/changelog @semantic-re
 ```
 
 Create `.releaserc.json`:
+
 ```json
 {
   "branches": ["main"],
@@ -82,62 +85,62 @@ Create `.releaserc.json`:
 }
 ```
 
-## Phase 2: Frontend Integration (1 hour)
+## Phase 2: Frontend Integration (1 hour) ✅ DONE
 
 ### 2.1 Update Check Implementation
 
 Add to `src/components/layout/Layout.tsx` or main app component:
 
 ```typescript
-import { check } from '@tauri-apps/plugin-updater';
-import { relaunch } from '@tauri-apps/plugin-process';
-import { useEffect } from 'react';
+import { check } from '@tauri-apps/plugin-updater'
+import { relaunch } from '@tauri-apps/plugin-process'
+import { useEffect } from 'react'
 
 // Add inside your main component
 useEffect(() => {
   const checkForUpdates = async () => {
     try {
-      const update = await check();
+      const update = await check()
       if (update) {
-        console.log(`Update available: ${update.version}`);
-        
+        console.log(`Update available: ${update.version}`)
+
         // Show toast notification or modal
         const shouldUpdate = confirm(
           `Update available: ${update.version}\n\n${update.body}\n\nInstall now?`
-        );
-        
+        )
+
         if (shouldUpdate) {
-          let downloaded = 0;
-          
-          await update.downloadAndInstall((event) => {
+          let downloaded = 0
+
+          await update.downloadAndInstall(event => {
             switch (event.event) {
               case 'Started':
-                console.log(`Downloading ${event.data.contentLength} bytes`);
-                break;
+                console.log(`Downloading ${event.data.contentLength} bytes`)
+                break
               case 'Progress':
-                downloaded += event.data.chunkLength;
-                console.log(`Downloaded: ${downloaded} bytes`);
+                downloaded += event.data.chunkLength
+                console.log(`Downloaded: ${downloaded} bytes`)
                 // Update progress bar here
-                break;
+                break
               case 'Finished':
-                console.log('Download complete, installing...');
-                break;
+                console.log('Download complete, installing...')
+                break
             }
-          });
-          
-          await relaunch();
+          })
+
+          await relaunch()
         }
       }
     } catch (error) {
-      console.error('Update check failed:', error);
+      console.error('Update check failed:', error)
       // Show user-friendly error message
     }
-  };
+  }
 
   // Check for updates 5 seconds after app loads
-  const timer = setTimeout(checkForUpdates, 5000);
-  return () => clearTimeout(timer);
-}, []);
+  const timer = setTimeout(checkForUpdates, 5000)
+  return () => clearTimeout(timer)
+}, [])
 ```
 
 ### 2.2 Update Rust Main File
@@ -322,73 +325,79 @@ In your GitHub repository settings → Secrets and variables → Actions, add:
 
 ## Phase 4: Pre-Release Automation (1 hour)
 
+NOTE FOR CLAUDE: STOP BEFORE DOING THIS PHASE TO REWORK THE PLAN WITH THE USER
+
 ### 4.1 Version Coordination Script
 
 Create `scripts/prepare-release.js`:
 
 ```javascript
 #!/usr/bin/env node
-const fs = require('fs');
-const { execSync } = require('child_process');
+const fs = require('fs')
+const { execSync } = require('child_process')
 
 async function prepareRelease() {
-  const version = process.argv[2];
+  const version = process.argv[2]
   if (!version || !version.match(/^v?\d+\.\d+\.\d+$/)) {
-    console.error('❌ Usage: node scripts/prepare-release.js v1.0.0');
-    process.exit(1);
+    console.error('❌ Usage: node scripts/prepare-release.js v1.0.0')
+    process.exit(1)
   }
 
-  const cleanVersion = version.replace('v', '');
+  const cleanVersion = version.replace('v', '')
 
   try {
     // Run all checks first
-    console.log('🔍 Running pre-release checks...');
-    execSync('npm run check:all', { stdio: 'inherit' });
-    console.log('✅ All checks passed');
+    console.log('🔍 Running pre-release checks...')
+    execSync('npm run check:all', { stdio: 'inherit' })
+    console.log('✅ All checks passed')
 
     // Update package.json
-    console.log('📝 Updating package.json...');
-    const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-    pkg.version = cleanVersion;
-    fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+    console.log('📝 Updating package.json...')
+    const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'))
+    pkg.version = cleanVersion
+    fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n')
 
     // Update Cargo.toml
-    console.log('📝 Updating Cargo.toml...');
-    const cargoToml = fs.readFileSync('src-tauri/Cargo.toml', 'utf8');
+    console.log('📝 Updating Cargo.toml...')
+    const cargoToml = fs.readFileSync('src-tauri/Cargo.toml', 'utf8')
     const updatedCargo = cargoToml.replace(
       /version = "[^"]*"/,
       `version = "${cleanVersion}"`
-    );
-    fs.writeFileSync('src-tauri/Cargo.toml', updatedCargo);
+    )
+    fs.writeFileSync('src-tauri/Cargo.toml', updatedCargo)
 
     // Verify Tauri config has correct bundle identifier
-    console.log('🔍 Verifying Tauri configuration...');
-    const tauriConfig = JSON.parse(fs.readFileSync('src-tauri/tauri.conf.json', 'utf8'));
+    console.log('🔍 Verifying Tauri configuration...')
+    const tauriConfig = JSON.parse(
+      fs.readFileSync('src-tauri/tauri.conf.json', 'utf8')
+    )
     if (!tauriConfig.bundle?.createUpdaterArtifacts) {
-      console.warn('⚠️  Warning: createUpdaterArtifacts not enabled in tauri.conf.json');
+      console.warn(
+        '⚠️  Warning: createUpdaterArtifacts not enabled in tauri.conf.json'
+      )
     }
     if (!tauriConfig.plugins?.updater?.pubkey) {
-      console.warn('⚠️  Warning: Updater public key not configured');
+      console.warn('⚠️  Warning: Updater public key not configured')
     }
 
-    console.log(`✅ Ready for release ${version}!`);
-    console.log('\n📋 Next steps:');
-    console.log('1. git add .');
-    console.log(`2. git commit -m "chore: release ${version}"`);
-    console.log(`3. git tag ${version}`);
-    console.log('4. git push origin main --tags');
-    console.log('\n🚀 GitHub Actions will automatically build and release!');
-
+    console.log(`✅ Ready for release ${version}!`)
+    console.log('\n📋 Next steps:')
+    console.log('1. git add .')
+    console.log(`2. git commit -m "chore: release ${version}"`)
+    console.log(`3. git tag ${version}`)
+    console.log('4. git push origin main --tags')
+    console.log('\n🚀 GitHub Actions will automatically build and release!')
   } catch (error) {
-    console.error('❌ Pre-release checks failed:', error.message);
-    process.exit(1);
+    console.error('❌ Pre-release checks failed:', error.message)
+    process.exit(1)
   }
 }
 
-prepareRelease();
+prepareRelease()
 ```
 
 Make it executable:
+
 ```bash
 chmod +x scripts/prepare-release.js
 ```
@@ -411,6 +420,7 @@ Add to `package.json`:
 ### 5.1 Local Testing Setup
 
 1. **Test Update Generation**:
+
    ```bash
    npm run tauri build
    # Verify updater artifacts are created in src-tauri/target/release/bundle/
@@ -435,6 +445,7 @@ Add to `package.json`:
 ### 5.2 Pre-release Testing Workflow
 
 1. **Create test releases** using pre-release tags:
+
    ```bash
    npm run prepare-release v1.0.0-beta.1
    ```
@@ -443,79 +454,30 @@ Add to `package.json`:
 
 3. **Verify signature verification** by intentionally corrupting a signature
 
-## Phase 6: Enhanced Security (Future - when justified by user base)
-
-### 6.1 macOS Code Signing ($99/year)
-
-When ready to upgrade from ad-hoc signing:
-
-1. **Apple Developer Account**: Register and pay $99/year
-2. **Generate Certificate**: Create "Developer ID Application" certificate
-3. **Export Certificate**: Export as .p12 file with password
-4. **Update GitHub Secrets**:
-   - `APPLE_CERTIFICATE`: Base64-encoded .p12 file
-   - `APPLE_CERTIFICATE_PASSWORD`: Certificate password
-   - `APPLE_SIGNING_IDENTITY`: Certificate name
-5. **Update tauri.conf.json**:
-   ```json
-   {
-     "bundle": {
-       "macOS": {
-         "signingIdentity": "Developer ID Application: Your Name (TEAMID)"
-       }
-     }
-   }
-   ```
-
-### 6.2 Windows Code Signing (Complex - $400+/year)
-
-**2025 Reality**: Windows now requires Hardware Security Module (HSM) for new certificates.
-
-**Options**:
-1. **No signing**: Users get SmartScreen warnings (acceptable for small projects)
-2. **Azure Key Vault**: Requires self-hosted GitHub runners (~$50/month + certificate cost)
-3. **Traditional certificate**: Only if you already have one from before 2023
-
-**Recommendation**: Start unsigned, evaluate when user base grows significantly.
-
-## Phase 7: Monitoring and Maintenance (Ongoing)
-
-### 7.1 Release Monitoring
-
-1. **Monitor GitHub Actions** for build failures
-2. **Track update adoption** through application telemetry
-3. **Monitor error rates** after releases
-4. **Setup alerting** for critical issues
-
-### 7.2 Maintenance Tasks
-
-- **Quarterly**: Rotate update signing keys
-- **Monthly**: Review and update dependencies
-- **Per release**: Test auto-update flow manually
-- **As needed**: Handle user reports of update failures
-
 ## Cost Analysis
 
 ### Immediate Costs (Free)
+
 - ✅ GitHub Actions (2000 minutes/month free)
 - ✅ Ad-hoc signing for macOS
 - ✅ Unsigned Windows builds
 - ✅ GitHub releases hosting
 
 ### Optional Upgrades
+
 - **macOS signing**: $99/year (recommended when user base > 100)
-- **Windows signing**: $400+/year + infrastructure costs (when user base > 1000)
-- **CDN hosting**: $5-20/month (when download volume is significant)
 
 ## Security Considerations
 
 ### Critical Security Measures
+
 1. **Private key protection**: Never commit to git, use GitHub secrets only
 2. **HTTPS enforcement**: GitHub releases use HTTPS by default
 3. **Signature verification**: Handled automatically by Tauri updater
 4. **Update frequency limits**: Check on startup only, not continuously
 
 ### Security Threats Mitigated
+
 - **Man-in-the-middle attacks**: Cryptographic signatures
 - **Supply chain attacks**: Verified build pipeline
 - **Downgrade attacks**: Version comparison in updater
@@ -524,30 +486,35 @@ When ready to upgrade from ad-hoc signing:
 ## Implementation Checklist
 
 ### Phase 1 (Immediate)
-- [ ] Generate update signing keys
-- [ ] Install updater plugin
-- [ ] Configure tauri.conf.json
-- [ ] Test local build with updater artifacts
+
+- [x] Generate update signing keys
+- [x] Install updater plugin
+- [x] Configure tauri.conf.json
+- [x] Test local build with updater artifacts
 
 ### Phase 2 (Frontend)
-- [ ] Add update check to main component
-- [ ] Implement progress reporting
-- [ ] Add error handling and user feedback
-- [ ] Test update flow locally
+
+- [x] Add update check to main component
+- [x] Implement progress reporting
+- [x] Add error handling and user feedback
+- [x] Test update flow locally
 
 ### Phase 3 (CI/CD)
+
 - [ ] Create GitHub Actions workflow
 - [ ] Add TAURI_PRIVATE_KEY secret
 - [ ] Test workflow with pre-release tag
 - [ ] Verify multi-platform builds
 
 ### Phase 4 (Automation)
+
 - [ ] Create prepare-release script
 - [ ] Add npm scripts
 - [ ] Test full release workflow
 - [ ] Document release process
 
 ### Phase 5 (Testing)
+
 - [ ] Test update generation
 - [ ] Verify signature verification
 - [ ] Test error handling
@@ -558,46 +525,25 @@ When ready to upgrade from ad-hoc signing:
 ### Common Issues
 
 **"Failed to verify signature"**
+
 - Verify public key in tauri.conf.json matches private key
 - Ensure TAURI_PRIVATE_KEY secret is correctly set
 - Check that createUpdaterArtifacts is enabled
 
 **"Update check failed"**
+
 - Verify endpoint URL is correct
 - Check network connectivity
 - Ensure GitHub release has updater JSON files
 
 **Build failures in GitHub Actions**
+
 - Check Rust cache issues (clear cache)
 - Verify platform-specific dependencies
 - Review secret configuration
 
 **Version mismatches**
+
 - Ensure package.json and Cargo.toml versions match
 - Use prepare-release script for coordination
 - Verify git tags match version numbers
-
-## Success Metrics
-
-- **Technical**: 100% successful builds across all platforms
-- **User Experience**: <30 second update downloads for typical internet speeds
-- **Security**: Zero successful attacks on update mechanism
-- **Reliability**: >95% successful auto-update completion rate
-- **Adoption**: >50% of users on latest version within 1 week of release
-
-## Next Steps After Implementation
-
-1. **Monitor first few releases** closely for issues
-2. **Gather user feedback** on update experience
-3. **Consider beta channels** for pre-release testing
-4. **Evaluate upgrade to paid signing** based on user growth
-5. **Implement telemetry** to track update success rates
-6. **Add rollback capabilities** for critical issues
-
----
-
-**Implementation Timeline**: 1-2 days for full setup, ongoing maintenance
-**Complexity**: Medium (well-documented process with good tooling)
-**Risk Level**: Low (can start simple and upgrade incrementally)
-
-This comprehensive plan provides everything needed to implement professional-grade auto-updates and release management for the Astro Editor, with clear upgrade paths as the project grows.

@@ -16,20 +16,24 @@ When a save operation fails, the system automatically:
 ## Recovery File Locations
 
 ### macOS
-- **Recovery Files**: `~/Library/Application Support/com.astroeditor.app/recovery/`
-- **Crash Reports**: `~/Library/Application Support/com.astroeditor.app/crash-reports/`
+
+- **Recovery Files**: `~/Library/Application Support/is.danny.astroeditor/recovery/`
+- **Crash Reports**: `~/Library/Application Support/is.danny.astroeditor/crash-reports/`
 
 ### Windows
-- **Recovery Files**: `%APPDATA%\com.astroeditor.app\recovery\`
-- **Crash Reports**: `%APPDATA%\com.astroeditor.app\crash-reports\`
+
+- **Recovery Files**: `%APPDATA%\is.danny.astroeditor\recovery\`
+- **Crash Reports**: `%APPDATA%\is.danny.astroeditor\crash-reports\`
 
 ## File Naming Convention
 
 ### Recovery Files
+
 - **JSON**: `{timestamp}-{filename}.recovery.json` (complete state)
 - **Markdown**: `{timestamp}-{filename}.recovery.md` (content only)
 
 ### Crash Reports
+
 - **JSON**: `{timestamp}-crash.json` (debugging information)
 
 ## Recovery Process
@@ -60,6 +64,7 @@ When a save operation fails, the system automatically:
 ## When Recovery is Triggered
 
 Recovery files are created when:
+
 - File save operations fail due to permissions
 - Project directory is moved or unavailable
 - External storage devices are disconnected
