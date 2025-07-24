@@ -40,7 +40,7 @@ export const BooleanField: React.FC<BooleanFieldProps> = ({
 
   return (
     <div className="flex items-center justify-between">
-      <label className="text-sm font-medium text-gray-900 dark:text-white">
+      <label className="text-sm font-medium text-foreground">
         {label}
         {field && !field.optional && (
           <span className="text-destructive ml-1">*</span>

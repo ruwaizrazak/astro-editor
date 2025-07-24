@@ -20,7 +20,7 @@ export const ArrayField: React.FC<FieldProps> = ({ name, label, required }) => {
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium text-gray-900 dark:text-white">
+      <label className="text-sm font-medium text-foreground">
         {label}
         {required && (
           <span className="text-[var(--color-required)] ml-1">*</span>
