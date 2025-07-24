@@ -195,6 +195,8 @@ pub fn run() {
                 &[
                     &MenuItem::with_id(app, "about", "About Astro Editor", true, None::<&str>)?,
                     &PredefinedMenuItem::separator(app)?,
+                    &MenuItem::with_id(app, "preferences", "Preferences...", true, Some("Cmd+,"))?,
+                    &PredefinedMenuItem::separator(app)?,
                     &PredefinedMenuItem::hide(app, Some("Hide Astro Editor"))?,
                     &PredefinedMenuItem::hide_others(app, Some("Hide Others"))?,
                     &PredefinedMenuItem::show_all(app, Some("Show All"))?,
@@ -247,6 +249,9 @@ pub fn run() {
                 }
                 "about" => {
                     let _ = app.emit("menu-about", ());
+                }
+                "preferences" => {
+                    let _ = app.emit("menu-preferences", ());
                 }
                 "quit" => {
                     app.exit(0);

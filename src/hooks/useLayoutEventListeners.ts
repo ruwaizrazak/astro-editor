@@ -451,6 +451,9 @@ export function useLayoutEventListeners() {
             globalCommandRegistry.execute('formatHeading', 0)
           }
         }),
+        listen('menu-preferences', () => {
+          handleSetPreferencesOpen(true)
+        }),
       ])
 
       // Add all unlisteners to the array
