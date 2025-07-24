@@ -22,6 +22,12 @@ These tasks are necessary before releasing this "to the world".
 - [x] Clean up CLAUDE.md
 - [x] Add bare-bones `/.cursor` rules which reference CLAUDE.md
 
+## GitHub Config
+
+- [x] Migrate any outstanding features or known bugs to GitHub Issues
+- [x] Migrate Roadmap to GitHub Project
+- [x] Clean up any old issues/branches etc
+
 ## User Guide, Icons & README
 
 - [x] Add screenshorts etc to User Guide
@@ -30,11 +36,3 @@ These tasks are necessary before releasing this "to the world".
 
 - [ ] Create and add custom App icons (`src-tauri/icons`)
 - [ ] Add icon to About screen
-
-## GitHub Config
-
-- [x] Migrate any outstanding features or known bugs to GitHub Issues
-- [x] Migrate Roadmap to GitHub Project
-- [ ] Configure GitHub repo for proper dev, security, releases, issue tags etc
-- [ ] Configure sensible checks on PRs etc (BugBot etc)
-- [x] Clean up any old issues/branches etc
