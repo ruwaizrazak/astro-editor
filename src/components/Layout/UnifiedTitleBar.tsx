@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { useEditorStore } from '../../store/editorStore'
 import { useProjectStore } from '../../store/projectStore'
@@ -19,6 +19,7 @@ import { cn } from '../../lib/utils'
 
 export const UnifiedTitleBar: React.FC = () => {
   const { saveFile, isDirty, currentFile } = useEditorStore()
+  const [isWindowFocused, setIsWindowFocused] = useState(true)
 
   const { projectPath, selectedCollection } = useProjectStore()
 
@@ -73,6 +74,20 @@ export const UnifiedTitleBar: React.FC = () => {
     }
   }
 
+  // Handle window focus/blur for traffic lights
+  useEffect(() => {
+    const handleFocus = () => setIsWindowFocused(true)
+    const handleBlur = () => setIsWindowFocused(false)
+
+    window.addEventListener('focus', handleFocus)
+    window.addEventListener('blur', handleBlur)
+
+    return () => {
+      window.removeEventListener('focus', handleFocus)
+      window.removeEventListener('blur', handleBlur)
+    }
+  }, [])
+
   return (
     <div
       className={cn(
@@ -90,7 +105,12 @@ export const UnifiedTitleBar: React.FC = () => {
       {/* Left: Traffic lights + sidebar toggle + project name */}
       <div className="flex items-center gap-2 flex-1" data-tauri-drag-region>
         {/* Custom traffic lights - no drag region on these */}
-        <div className="flex items-center gap-2 mr-3">
+        <div
+          className={cn(
+            'traffic-lights-group mr-3',
+            !isWindowFocused && 'window-unfocused'
+          )}
+        >
           <button
             onClick={() => void handleClose()}
             className="traffic-light traffic-light-close"
@@ -107,7 +127,7 @@ export const UnifiedTitleBar: React.FC = () => {
             onClick={() => void handleToggleMaximize()}
             className="traffic-light traffic-light-maximize"
           >
-            <span className="symbol">+</span>
+            <span className="symbol">⤢</span>
           </button>
         </div>
 

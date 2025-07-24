@@ -471,7 +471,7 @@ export function useLayoutEventListeners() {
         }
       })
     }
-  }, [createNewFileWithQuery])
+  }, [createNewFileWithQuery, handleSetPreferencesOpen])
 
   return {
     preferencesOpen,

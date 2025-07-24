@@ -18,9 +18,7 @@ const SettingsField: React.FC<{
   description?: string
 }> = ({ label, children, description }) => (
   <div className="space-y-2">
-    <Label className="text-sm font-medium text-foreground">
-      {label}
-    </Label>
+    <Label className="text-sm font-medium text-foreground">{label}</Label>
     {children}
     {description && (
       <p className="text-sm text-muted-foreground">{description}</p>
@@ -34,9 +32,7 @@ const SettingsSection: React.FC<{
 }> = ({ title, children }) => (
   <div className="space-y-4">
     <div>
-      <h3 className="text-lg font-medium text-foreground">
-        {title}
-      </h3>
+      <h3 className="text-lg font-medium text-foreground">{title}</h3>
       <Separator className="mt-2" />
     </div>
     <div className="space-y-4">{children}</div>
@@ -47,42 +43,57 @@ export const GeneralPane: React.FC = () => {
   const { globalSettings, updateGlobal } = usePreferences()
   const { setTheme } = useTheme()
 
-  const handleIdeCommandChange = useCallback((value: string) => {
-    void updateGlobal({
-      general: {
-        ideCommand: value,
-        theme: globalSettings?.general?.theme || 'system',
-        highlights: globalSettings?.general?.highlights || {
-          nouns: true,
-          verbs: true,
-          adjectives: true,
-          adverbs: true,
-          conjunctions: true,
+  const handleIdeCommandChange = useCallback(
+    (value: string) => {
+      void updateGlobal({
+        general: {
+          ideCommand: value,
+          theme: globalSettings?.general?.theme || 'system',
+          highlights: globalSettings?.general?.highlights || {
+            nouns: true,
+            verbs: true,
+            adjectives: true,
+            adverbs: true,
+            conjunctions: true,
+          },
         },
-      },
-    })
-  }, [updateGlobal, globalSettings?.general?.theme, globalSettings?.general?.highlights])
+      })
+    },
+    [
+      updateGlobal,
+      globalSettings?.general?.theme,
+      globalSettings?.general?.highlights,
+    ]
+  )
 
-  const handleThemeChange = useCallback((value: 'light' | 'dark' | 'system') => {
-    // Update the theme provider immediately for live preview
-    setTheme(value)
-    
-    // Also save to global settings for persistence  
-    // Using current globalSettings state (not getState pattern here as we need the current subscription)
-    void updateGlobal({
-      general: {
-        ideCommand: globalSettings?.general?.ideCommand || '',
-        theme: value,
-        highlights: globalSettings?.general?.highlights || {
-          nouns: true,
-          verbs: true,
-          adjectives: true,
-          adverbs: true,
-          conjunctions: true,
+  const handleThemeChange = useCallback(
+    (value: 'light' | 'dark' | 'system') => {
+      // Update the theme provider immediately for live preview
+      setTheme(value)
+
+      // Also save to global settings for persistence
+      // Using current globalSettings state (not getState pattern here as we need the current subscription)
+      void updateGlobal({
+        general: {
+          ideCommand: globalSettings?.general?.ideCommand || '',
+          theme: value,
+          highlights: globalSettings?.general?.highlights || {
+            nouns: true,
+            verbs: true,
+            adjectives: true,
+            adverbs: true,
+            conjunctions: true,
+          },
         },
-      },
-    })
-  }, [setTheme, updateGlobal, globalSettings?.general?.ideCommand, globalSettings?.general?.highlights])
+      })
+    },
+    [
+      setTheme,
+      updateGlobal,
+      globalSettings?.general?.ideCommand,
+      globalSettings?.general?.highlights,
+    ]
+  )
 
   return (
     <div className="space-y-6">

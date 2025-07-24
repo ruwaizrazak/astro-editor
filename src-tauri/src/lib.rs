@@ -254,12 +254,10 @@ pub fn run() {
                         let package_info = app_handle.package_info();
                         let version = package_info.version.to_string();
                         let name = &package_info.name;
-                        
+
                         let message = format!(
-                            "{}\nVersion {}\n\nA native macOS markdown editor for Astro content collections.\n\nBuilt with Tauri and React.\n\nCopyright © 2025 Danny Smith. All rights reserved.",
-                            name, version
+                            "{name}\nVersion {version}\n\nA native macOS markdown editor for Astro content collections.\n\nBuilt with Tauri and React.\n\nCopyright © 2025 Danny Smith. All rights reserved."
                         );
-                        
                         let _ = app_handle.dialog()
                             .message(message)
                             .title("About Astro Editor")

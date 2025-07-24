@@ -19,9 +19,7 @@ const SettingsField: React.FC<{
   description?: string
 }> = ({ label, children, description }) => (
   <div className="space-y-2">
-    <Label className="text-sm font-medium text-foreground">
-      {label}
-    </Label>
+    <Label className="text-sm font-medium text-foreground">{label}</Label>
     {children}
     {description && (
       <p className="text-sm text-muted-foreground">{description}</p>
@@ -35,9 +33,7 @@ const SettingsSection: React.FC<{
 }> = ({ title, children }) => (
   <div className="space-y-4">
     <div>
-      <h3 className="text-lg font-medium text-foreground">
-        {title}
-      </h3>
+      <h3 className="text-lg font-medium text-foreground">{title}</h3>
       <Separator className="mt-2" />
     </div>
     <div className="space-y-4">{children}</div>
