@@ -719,6 +719,18 @@ The architecture is designed to support future plugins:
 4. **Export Formats**: Via new modules
 5. **Cloud Sync**: Via store middleware
 
+## Color System and Theming
+
+The app implements a comprehensive color system supporting both light and dark modes. See [`color-system.md`](./color-system.md) for detailed documentation including:
+
+- CSS variable-based theme tokens
+- Tailwind dark mode class usage
+- Component-specific color patterns
+- Traffic light button styling
+- Status color system for drafts and validation
+
+**Key Pattern**: Use CSS variables (`text-foreground`) for semantic colors, and Tailwind dark classes (`text-gray-900 dark:text-white`) for explicit light/dark styling where CSS variables don't provide sufficient control.
+
 ## Common Pitfalls to Avoid
 
 1. **Don't mix concerns**: Keep business logic out of components

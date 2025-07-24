@@ -79,7 +79,7 @@ export const UnifiedTitleBar: React.FC = () => {
         'w-full flex items-center justify-between px-3 py-1.5 select-none border-b',
         bothPanelsHidden
           ? 'bg-[var(--editor-color-background)] border-transparent'
-          : 'bg-background border-border',
+          : 'bg-muted/50 border-border',
         distractionFreeBarsHidden &&
           bothPanelsHidden &&
           'opacity-0 transition-opacity duration-300'
@@ -116,7 +116,7 @@ export const UnifiedTitleBar: React.FC = () => {
           onClick={toggleSidebar}
           variant="ghost"
           size="sm"
-          className="size-7 p-0 [&_svg]:transform-gpu [&_svg]:scale-100"
+          className="size-7 p-0 [&_svg]:transform-gpu [&_svg]:scale-100 text-gray-700 dark:text-gray-300"
           title={sidebarVisible ? 'Close Sidebar' : 'Open Sidebar'}
         >
           {sidebarVisible ? (
@@ -146,7 +146,7 @@ export const UnifiedTitleBar: React.FC = () => {
             onClick={handleNewFile}
             variant="ghost"
             size="sm"
-            className="size-7 p-0 [&_svg]:transform-gpu [&_svg]:scale-100"
+            className="size-7 p-0 [&_svg]:transform-gpu [&_svg]:scale-100 text-gray-700 dark:text-gray-300"
             title={`New ${selectedCollection} file`}
           >
             <Plus className="size-4" />
@@ -158,7 +158,7 @@ export const UnifiedTitleBar: React.FC = () => {
           onClick={handleToggleFocusMode}
           variant="ghost"
           size="sm"
-          className="size-7 p-0 [&_svg]:transform-gpu [&_svg]:scale-100"
+          className="size-7 p-0 [&_svg]:transform-gpu [&_svg]:scale-100 text-gray-700 dark:text-gray-300"
           title={focusModeEnabled ? 'Disable Focus Mode' : 'Enable Focus Mode'}
           aria-label={
             focusModeEnabled ? 'Disable Focus Mode' : 'Enable Focus Mode'
@@ -178,7 +178,7 @@ export const UnifiedTitleBar: React.FC = () => {
           size="sm"
           disabled={!currentFile || !isDirty}
           title={`Save${isDirty ? ' (unsaved changes)' : ''}`}
-          className="size-7 p-0 [&_svg]:transform-gpu [&_svg]:scale-100"
+          className="size-7 p-0 [&_svg]:transform-gpu [&_svg]:scale-100 text-gray-700 dark:text-gray-300"
         >
           <Save className="size-4" />
         </Button>
@@ -188,7 +188,7 @@ export const UnifiedTitleBar: React.FC = () => {
           onClick={toggleFrontmatterPanel}
           variant="ghost"
           size="sm"
-          className="size-7 p-0 [&_svg]:transform-gpu [&_svg]:scale-100"
+          className="size-7 p-0 [&_svg]:transform-gpu [&_svg]:scale-100 text-gray-700 dark:text-gray-300"
           title={
             frontmatterPanelVisible
               ? 'Close Frontmatter Panel'

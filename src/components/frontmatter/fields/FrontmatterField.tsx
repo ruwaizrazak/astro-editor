@@ -66,7 +66,7 @@ export const FrontmatterField: React.FC<FrontmatterFieldProps> = ({
       <TextareaField
         name={name}
         label={label}
-        className="text-lg font-bold"
+        className="text-lg font-bold text-gray-900 dark:text-white"
         minRows={1}
         maxRows={3}
         required={required}

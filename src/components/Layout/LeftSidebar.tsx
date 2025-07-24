@@ -343,7 +343,7 @@ export const LeftSidebar: React.FC = () => {
               onClick={handleBackClick}
               variant="ghost"
               size="sm"
-              className="size-6 p-0"
+              className="size-6 p-0 text-gray-700 dark:text-gray-300"
               title="Back to Collections"
             >
               <ArrowLeft className="size-4" />
@@ -354,13 +354,13 @@ export const LeftSidebar: React.FC = () => {
               onClick={() => void handleOpenProject()}
               variant="ghost"
               size="sm"
-              className="size-6 p-0"
+              className="size-6 p-0 text-gray-700 dark:text-gray-300"
               title="Open Project"
             >
               <FolderOpen className="size-4" />
             </Button>
           )}
-          <span className="text-sm font-medium text-foreground flex-1">
+          <span className="text-sm font-medium text-gray-900 dark:text-white flex-1">
             {headerTitle}
             {showDraftsOnly && (
               <span className="text-xs text-[var(--color-draft)] ml-2 font-normal">
@@ -374,7 +374,7 @@ export const LeftSidebar: React.FC = () => {
               variant="ghost"
               size="sm"
               className={cn(
-                'size-7 p-0 [&_svg]:transform-gpu [&_svg]:scale-100',
+                'size-7 p-0 [&_svg]:transform-gpu [&_svg]:scale-100 text-gray-700 dark:text-gray-300',
                 showDraftsOnly &&
                   'text-[var(--color-draft)] bg-[var(--color-draft-bg)] hover:bg-[var(--color-draft-bg)]/80'
               )}
@@ -405,7 +405,9 @@ export const LeftSidebar: React.FC = () => {
                   className="w-full text-left p-3 rounded-md hover:bg-accent transition-colors"
                 >
                   <div className="flex items-center justify-between w-full">
-                    <span className="font-medium">{collection.name}</span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {collection.name}
+                    </span>
                     <Badge variant="secondary" className="text-xs">
                       {fileCount} item{fileCount !== 1 ? 's' : ''}
                     </Badge>
@@ -452,7 +454,7 @@ export const LeftSidebar: React.FC = () => {
                 >
                   <div className="flex items-start justify-between w-full gap-2">
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium text-sm leading-tight truncate">
+                      <div className="font-medium text-sm leading-tight truncate text-gray-900 dark:text-white">
                         {title}
                       </div>
                       {publishedDate && (

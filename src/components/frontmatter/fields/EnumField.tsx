@@ -23,7 +23,7 @@ export const EnumField: React.FC<EnumFieldProps> = ({
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium">
+      <label className="text-sm font-medium text-gray-900 dark:text-white">
         {label}
         {required && (
           <span className="text-[var(--color-required)] ml-1">*</span>
