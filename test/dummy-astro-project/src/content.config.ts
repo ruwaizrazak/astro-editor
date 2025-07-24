@@ -15,8 +15,6 @@ const articles = defineCollection({
       coverAlt: z.string().optional(),
       tags: z.array(z.string()).optional(),
       platform: z.enum(['medium', 'external']).optional(),
-      redirectURL: z.string().url().optional(),
-      styleguide: z.boolean().optional(),
     }),
 });
 
@@ -30,7 +28,6 @@ const notes = defineCollection({
     description: z.string().optional(),
     pubDate: z.coerce.date(),
     tags: z.array(z.string()).optional(),
-    styleguide: z.boolean().optional(),
   }),
 });
 
