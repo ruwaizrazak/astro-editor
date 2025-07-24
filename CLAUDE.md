@@ -68,80 +68,13 @@ Current Task: `/docs/tasks-todo/task-7-copyedit-mode.md`
 
 ## Architecture Overview
 
-**See `docs/developer/architecture-guide.md` for comprehensive architectural patterns.**
+**See `docs/developer/architecture-guide.md` for comprehensive architectural patterns and detailed implementation guidance.**
 
-### State Management Philosophy
+### State Management (Essential Summary)
 
-#### Server State (TanStack Query)
-
-Use for: filesystem data, caching needs, loading states
-
-```typescript
-useCollectionsQuery(projectPath)
-useCollectionFilesQuery(projectPath, collectionName)
-useFileContentQuery(projectPath, fileId)
-```
-
-#### Client State (Zustand) - Decomposed Architecture
-
-**1. Editor Store** - File editing state:
-
-```typescript
-;(currentFile, editorContent, frontmatter, isDirty)
-// Actions: openFile, saveFile, setEditorContent, updateFrontmatterField
-```
-
-**2. Project Store** - Project-level state:
-
-```typescript
-;(projectPath, currentProjectId, selectedCollection, globalSettings)
-// Actions: setProject, loadPersistedProject, setSelectedCollection
-```
-
-**3. UI Store** - UI layout state:
-
-```typescript
-;(sidebarVisible, frontmatterPanelVisible)
-// Actions: toggleSidebar, toggleFrontmatterPanel
-```
-
-#### Local State
-
-Keep local for: UI presentation, derived state, component lifecycle
-
-### Data Flow
-
-1. TanStack Query fetches → caches results
-2. Query fetches content → updates Zustand editing state
-3. Direct store updates → auto-save → invalidate queries
-4. Mutations → automatic cache invalidation
-5. Command registry → CodeMirror transactions
-
-### Frontend Structure
-
-```
-src/
-├── components/
-│   ├── layout/              # App shell/layout only
-│   ├── editor/              # Editor domain
-│   ├── sidebar/             # File navigation
-│   ├── frontmatter/         # Frontmatter editing
-│   │   └── fields/          # Extracted field components
-│   ├── command-palette/     # Command palette
-│   └── ui/                  # shadcn/ui components (30+)
-├── lib/
-│   ├── editor/              # Extracted editor modules
-│   │   ├── commands/        # Command pattern
-│   │   ├── syntax/          # Custom highlighting
-│   │   └── [other modules]  # dragdrop, paste, urls, etc.
-│   ├── query-keys.ts        # TanStack Query keys factory
-│   └── toast.ts             # Toast notification API
-├── hooks/
-│   ├── editor/              # Editor-specific hooks
-│   ├── queries/             # TanStack Query hooks
-│   └── mutations/           # TanStack Mutation hooks
-└── store/                   # Zustand stores (decomposed)
-```
+- **Server State**: TanStack Query for filesystem data (`useCollectionsQuery`, `useCollectionFilesQuery`, `useFileContentQuery`)
+- **Client State**: Decomposed Zustand stores - `editorStore` (file editing), `projectStore` (project-level), `uiStore` (layout)
+- **Local State**: UI presentation, derived state, component lifecycle only
 
 ## Key Patterns
 
@@ -249,30 +182,14 @@ useHotkeys(
 
 ## Code Extraction Patterns
 
-### When to Extract to `lib/`
+**See `docs/developer/architecture-guide.md` for detailed extraction guidelines.**
 
-1. **Complexity**: 50+ lines of related logic
-2. **Reusability**: Used by 2+ components
-3. **Testability**: Needs unit tests
-4. **Domain Logic**: Business rules/algorithms
-5. **External Integration**: APIs, file system
+**Quick Reference**:
+- **Extract to `lib/`**: 50+ lines, 2+ components, business logic, testable modules
+- **Extract to `hooks/`**: React hooks, component lifecycle, side effects
+- **Process**: Single responsibility → minimal API → tests → index.ts exports
 
-### When to Extract to `hooks/`
-
-1. **Stateful Logic**: Uses React hooks
-2. **Component Logic**: React lifecycle
-3. **Shared Behavior**: Multiple components
-4. **Side Effects**: Subscriptions, timers
-
-### Extraction Process
-
-1. Identify single responsibility
-2. Define minimal public API
-3. Extract with tests
-4. Use index.ts for clean imports
-5. Add JSDoc comments
-
-## Development Commands
+## Development Commands & Organization
 
 ```bash
 npm run dev              # Start dev server
@@ -283,13 +200,7 @@ npm run test             # Watch mode
 npm run test:run         # Run once
 ```
 
-## Component Organization
-
-- **Directories:** `kebab-case`
-- **Components:** `PascalCase`
-- **UI Primitives:** `kebab-case` (shadcn)
-- **Barrel exports:** via `index.ts`
-- **Domain-based:** not technical grouping
+**Component Organization**: `kebab-case` directories, `PascalCase` components, `index.ts` barrel exports, domain-based grouping
 
 ## Editor System Architecture
 
@@ -318,33 +229,11 @@ export type CommandGroup = 'file' | 'navigation' | 'your-new-group'
 4. **Update Group Order** (`src/hooks/useCommandPalette.ts`)
 5. **Add Event Listener** if needed (in Layout.tsx)
 
-## Testing Strategy
+## Testing & Performance
 
-### Frontend (Vitest + React Testing Library)
+**Testing Strategy**: Unit tests for `lib/` modules, integration tests for hooks/workflows, component tests for user interactions. **See `docs/developer/architecture-guide.md` for detailed testing patterns.**
 
-- **Unit Tests**: Modules in `lib/` and complex field components
-- **Integration Tests**: Hooks and workflows
-- **Component Tests**: User interactions
-- **Store Tests**: Zustand actions
-- **Query Tests**: Mock with test utilities
-
-### Field Component Testing
-
-**Unit test when:** Complex validation, schema defaults, orchestration logic
-**Integration test when:** User workflows, happy paths
-
-## Performance Patterns
-
-```typescript
-// Memoization
-const sortedFiles = useMemo(() => files.sort(compareDates), [files])
-
-// Debouncing
-scheduleAutoSave: () => {
-  clearTimeout(timeoutId)
-  timeoutId = setTimeout(() => saveFile(), 2000)
-}
-```
+**Performance**: Use memoization, debouncing (2s auto-save), and the `getState()` pattern for callback dependencies. **See architecture guide for comprehensive performance patterns including render cascade prevention.**
 
 ## Best Practices
 

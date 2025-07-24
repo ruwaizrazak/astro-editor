@@ -18,9 +18,9 @@ These tasks are necessary before releasing this "to the world".
 - [x] Clean up `docs/archive` as needed
 - [x] Clean up `docs/developer` and add any missing guides.
 - [x] Add GEMINI.md which references CLAUDE.md
-- [ ]
-- [ ] Clean up CLAUDE.md
-- [ ] Add bare-bones `/.cursor` rules which reference CLAUDE.md
+- [x] Review all non-code files - any which can be removed?
+- [x] Clean up CLAUDE.md
+- [x] Add bare-bones `/.cursor` rules which reference CLAUDE.md
 
 ## User Guide, Icons & README
 
