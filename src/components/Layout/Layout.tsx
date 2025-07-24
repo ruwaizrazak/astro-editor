@@ -37,7 +37,7 @@ export const Layout: React.FC = () => {
   }, [globalSettings?.general?.theme, setTheme])
 
   return (
-    <div className="h-screen w-screen bg-background flex flex-col rounded-xl overflow-hidden">
+    <div className="h-screen w-screen bg-[var(--editor-color-background)] flex flex-col rounded-xl overflow-hidden">
       {/* Unified titlebar */}
       <UnifiedTitleBar />
 

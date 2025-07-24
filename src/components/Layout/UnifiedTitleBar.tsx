@@ -79,7 +79,7 @@ export const UnifiedTitleBar: React.FC = () => {
         'w-full flex items-center justify-between px-3 py-1.5 select-none border-b',
         bothPanelsHidden
           ? 'bg-[var(--editor-color-background)] border-transparent'
-          : 'bg-muted/50 border-border',
+          : 'bg-gray-50 dark:bg-black border-border',
         distractionFreeBarsHidden &&
           bothPanelsHidden &&
           'opacity-0 transition-opacity duration-300'

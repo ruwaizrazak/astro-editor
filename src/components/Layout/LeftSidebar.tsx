@@ -470,7 +470,7 @@ export const LeftSidebar: React.FC = () => {
                             onChange={e => setRenameValue(e.target.value)}
                             onKeyDown={e => handleRenameKeyDown(e, file)}
                             onBlur={() => void handleRenameSubmit(file)}
-                            className="bg-background border border-border rounded px-1 py-0.5 text-xs font-mono w-full"
+                            className="bg-background border border-border rounded px-1 py-0.5 text-xs font-mono w-full text-gray-900 dark:text-white"
                             autoFocus
                             onClick={e => e.stopPropagation()}
                           />

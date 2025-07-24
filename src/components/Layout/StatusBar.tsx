@@ -31,7 +31,7 @@ export const StatusBar: React.FC = () => {
         'flex justify-between items-center px-4 py-1 text-xs min-h-6 border-t',
         bothPanelsHidden
           ? 'bg-[var(--editor-color-background)] border-transparent text-muted-foreground/40'
-          : 'bg-muted/50 border-border text-muted-foreground',
+          : 'bg-gray-50 dark:bg-black border-border text-muted-foreground',
         distractionFreeBarsHidden &&
           bothPanelsHidden &&
           'opacity-0 transition-opacity duration-300'
