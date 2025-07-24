@@ -40,3 +40,6 @@ swc_ecma_visit = "14"
 
 [dev-dependencies]
 tempfile = "3.8"
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-updater = "2"
