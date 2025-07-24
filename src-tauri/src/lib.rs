@@ -9,6 +9,7 @@ use tauri::{
     menu::{Menu, MenuItem, PredefinedMenuItem, Submenu},
     Emitter, Manager,
 };
+use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
 
 #[cfg(target_os = "macos")]
 use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
@@ -248,7 +249,23 @@ pub fn run() {
                     }
                 }
                 "about" => {
-                    let _ = app.emit("menu-about", ());
+                    let app_handle = app.clone();
+                    tauri::async_runtime::spawn(async move {
+                        let package_info = app_handle.package_info();
+                        let version = package_info.version.to_string();
+                        let name = &package_info.name;
+                        
+                        let message = format!(
+                            "{}\nVersion {}\n\nA native macOS markdown editor for Astro content collections.\n\nBuilt with Tauri and React.\n\nCopyright © 2025 Danny Smith. All rights reserved.",
+                            name, version
+                        );
+                        
+                        let _ = app_handle.dialog()
+                            .message(message)
+                            .title("About Astro Editor")
+                            .kind(MessageDialogKind::Info)
+                            .blocking_show();
+                    });
                 }
                 "preferences" => {
                     let _ = app.emit("menu-preferences", ());
