@@ -23,7 +23,7 @@ jobs:
       matrix:
         include:
           - platform: 'macos-latest'
-            args: '--bundles dmg'
+            args: '--bundles app,dmg'
 
     runs-on: ${{ matrix.platform }}
     steps:
