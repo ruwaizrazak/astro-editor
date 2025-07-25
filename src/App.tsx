@@ -21,34 +21,36 @@ function App() {
 
           if (shouldUpdate) {
             try {
-              let downloaded = 0
-              alert('Starting download...')
-
+              // Download and install silently with only console logging
               await update.downloadAndInstall(event => {
                 switch (event.event) {
                   case 'Started':
                     // eslint-disable-next-line no-console
                     console.log(`Downloading ${event.data.contentLength} bytes`)
-                    alert(`Starting download: ${event.data.contentLength} bytes`)
                     break
                   case 'Progress':
-                    downloaded += event.data.chunkLength
                     // eslint-disable-next-line no-console
-                    console.log(`Downloaded: ${downloaded} bytes`)
+                    console.log(`Downloaded: ${event.data.chunkLength} bytes`)
                     break
                   case 'Finished':
                     // eslint-disable-next-line no-console
                     console.log('Download complete, installing...')
-                    alert('Download complete, installing and restarting...')
                     break
                 }
               })
 
-              await relaunch()
+              // Ask if user wants to restart now
+              const shouldRestart = confirm(
+                'Update completed successfully!\n\nWould you like to restart the app now to use the new version?'
+              )
+
+              if (shouldRestart) {
+                await relaunch()
+              }
             } catch (updateError) {
               // eslint-disable-next-line no-console
               console.error('Update installation failed:', updateError)
-              alert(`Update failed: ${updateError}`)
+              alert(`Update failed: There was a problem with the automatic download.\n\n${updateError}`)
             }
           }
         }
