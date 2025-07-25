@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-const fs = require('fs')
-const { execSync } = require('child_process')
-const readline = require('readline')
+import fs from 'fs'
+import { execSync } from 'child_process'
+import readline from 'readline'
 
 function exec(command, options = {}) {
   try {
@@ -161,6 +161,5 @@ async function prepareRelease() {
   }
 }
 
-if (require.main === module) {
-  prepareRelease()
-}
+// Run if this is the main module
+prepareRelease()
