@@ -23,6 +23,12 @@
     "fs:default",
     "fs:allow-remove",
     "dialog:default",
+    "updater:default",
+    "updater:allow-check",
+    "updater:allow-download",
+    "updater:allow-install",
+    "process:default",
+    "process:allow-restart",
     {
       "identifier": "shell:allow-execute",
       "allow": [

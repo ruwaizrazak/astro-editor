@@ -16,32 +16,40 @@ function App() {
 
           // Show toast notification or modal
           const shouldUpdate = confirm(
-            `Update available: ${update.version}\n\n${update.body}\n\nInstall now?`
+            `Update available: ${update.version}\n\nWould you like to install this update now?`
           )
 
           if (shouldUpdate) {
-            let downloaded = 0
+            try {
+              let downloaded = 0
+              alert('Starting download...')
 
-            await update.downloadAndInstall(event => {
-              switch (event.event) {
-                case 'Started':
-                  // eslint-disable-next-line no-console
-                  console.log(`Downloading ${event.data.contentLength} bytes`)
-                  break
-                case 'Progress':
-                  downloaded += event.data.chunkLength
-                  // eslint-disable-next-line no-console
-                  console.log(`Downloaded: ${downloaded} bytes`)
-                  // Update progress bar here
-                  break
-                case 'Finished':
-                  // eslint-disable-next-line no-console
-                  console.log('Download complete, installing...')
-                  break
-              }
-            })
+              await update.downloadAndInstall(event => {
+                switch (event.event) {
+                  case 'Started':
+                    // eslint-disable-next-line no-console
+                    console.log(`Downloading ${event.data.contentLength} bytes`)
+                    alert(`Starting download: ${event.data.contentLength} bytes`)
+                    break
+                  case 'Progress':
+                    downloaded += event.data.chunkLength
+                    // eslint-disable-next-line no-console
+                    console.log(`Downloaded: ${downloaded} bytes`)
+                    break
+                  case 'Finished':
+                    // eslint-disable-next-line no-console
+                    console.log('Download complete, installing...')
+                    alert('Download complete, installing and restarting...')
+                    break
+                }
+              })
 
-            await relaunch()
+              await relaunch()
+            } catch (updateError) {
+              // eslint-disable-next-line no-console
+              console.error('Update installation failed:', updateError)
+              alert(`Update failed: ${updateError}`)
+            }
           }
         }
       } catch (error) {
