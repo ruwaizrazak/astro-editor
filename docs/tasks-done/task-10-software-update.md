@@ -181,107 +181,92 @@ In your GitHub repository settings → Secrets and variables → Actions, add:
 
 **Security Note**: Never commit the private key to your repository.
 
-## Phase 4: Pre-Release Automation
+## Phase 4: Pre-Release Automation ✅ DONE
 
-### 4.1 Version Coordination Script
+### 4.1 Version Coordination Script ✅ DONE
 
-Okay, this script should:
+Created comprehensive `scripts/prepare-release.js` that:
 
-- Run all checks and fail if any problems.
-- Check that the working dir is clean in git.
-- Update the version in the three files: package.json, Cargo.toml and tauri.conf.json.
-- Run npm install and whatever build command is needed to update Cargo.lock
-- Check things are correct (see checks below)
-- Print out the git commands nececarry to make a release so I can run them.
+- Checks git working directory is clean
+- Runs all quality checks (`npm run check:all`)
+- Updates version in all three files: `package.json`, `Cargo.toml`, and `tauri.conf.json`
+- Updates lock files with `npm install`
+- Runs final build check with `npm run tauri:check`
+- Verifies updater configuration
+- Provides interactive option to execute git commands
+- Shows clear next steps and reminders
 
-We might actually want to build a little utility script which is Interactive and allows me to confirm the git commands just by pressing Enter, and then have the script run them. But only if we can do this without too much complexity. It should also include a reminder that this will create a draught release, so I'll need to manually publish it on github once the build is finished.
-
-Create `scripts/prepare-release.js`:
-
-```javascript
-#!/usr/bin/env node
-const fs = require('fs')
-const { execSync } = require('child_process')
-
-async function prepareRelease() {
-  const version = process.argv[2]
-  if (!version || !version.match(/^v?\d+\.\d+\.\d+$/)) {
-    console.error('❌ Usage: node scripts/prepare-release.js v1.0.0')
-    process.exit(1)
-  }
-
-  const cleanVersion = version.replace('v', '')
-
-  try {
-    // Run all checks first
-    console.log('🔍 Running pre-release checks...')
-    execSync('npm run check:all', { stdio: 'inherit' })
-    console.log('✅ All checks passed')
-
-    // Update package.json
-    console.log('📝 Updating package.json...')
-    const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'))
-    pkg.version = cleanVersion
-    fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n')
-
-    // Update Cargo.toml
-    console.log('📝 Updating Cargo.toml...')
-    const cargoToml = fs.readFileSync('src-tauri/Cargo.toml', 'utf8')
-    const updatedCargo = cargoToml.replace(
-      /version = "[^"]*"/,
-      `version = "${cleanVersion}"`
-    )
-    fs.writeFileSync('src-tauri/Cargo.toml', updatedCargo)
-
-    // Verify Tauri config has correct bundle identifier
-    console.log('🔍 Verifying Tauri configuration...')
-    const tauriConfig = JSON.parse(
-      fs.readFileSync('src-tauri/tauri.conf.json', 'utf8')
-    )
-    if (!tauriConfig.bundle?.createUpdaterArtifacts) {
-      console.warn(
-        '⚠️  Warning: createUpdaterArtifacts not enabled in tauri.conf.json'
-      )
-    }
-    if (!tauriConfig.plugins?.updater?.pubkey) {
-      console.warn('⚠️  Warning: Updater public key not configured')
-    }
-
-    console.log(`✅ Ready for release ${version}!`)
-    console.log('\n📋 Next steps:')
-    console.log('1. git add .')
-    console.log(`2. git commit -m "chore: release ${version}"`)
-    console.log(`3. git tag ${version}`)
-    console.log('4. git push origin main --tags')
-    console.log('\n🚀 GitHub Actions will automatically build and release!')
-  } catch (error) {
-    console.error('❌ Pre-release checks failed:', error.message)
-    process.exit(1)
-  }
-}
-
-prepareRelease()
-```
-
-Make it executable:
-
+**Usage:**
 ```bash
-chmod +x scripts/prepare-release.js
+npm run prepare-release v1.0.9
 ```
 
-### 4.2 Add to package.json Scripts
+The script will:
+1. Run comprehensive checks
+2. Update all version numbers consistently
+3. Optionally execute git commands interactively
+4. Provide clear guidance for GitHub release publishing
 
-Add to `package.json`:
+### 4.2 Package.json Scripts ✅ DONE
 
-```json
-{
-  "scripts": {
-    "prepare-release": "node scripts/prepare-release.js",
-    "check:all": "npm run type-check && npm run lint && cargo check --manifest-path src-tauri/Cargo.toml"
-  }
-}
+Added `prepare-release` script to package.json. The existing `check:all` script already covers all necessary checks.
+
+## Phase 5: Update docs ✅ DONE
+
+### 5.1 Release Process Documentation ✅ DONE
+
+The auto-update and release system is now fully implemented with the following capabilities:
+
+**For Developers (Release Process):**
+1. Use `npm run prepare-release v1.0.9` to prepare a new release
+2. Script handles all version updates and verification
+3. Interactive git command execution
+4. GitHub Actions automatically builds and creates draft release
+5. Manually publish the draft release on GitHub
+
+**For Users (Auto-Updates):**
+1. App checks for updates 5 seconds after launch
+2. Users receive native dialog with update details
+3. Download progress is shown during update
+4. App automatically restarts after update installation
+5. Updates are cryptographically verified using embedded public key
+
+**System Architecture:**
+- **Update Server**: GitHub Releases with `latest.json` endpoint
+- **Signing**: Tauri's built-in cryptographic verification
+- **Distribution**: Multi-platform builds via GitHub Actions
+- **Security**: Public key embedded in app, private key in GitHub Secrets
+
+### 5.2 Usage Instructions ✅ DONE
+
+**To create a new release:**
+```bash
+npm run prepare-release v1.0.9
 ```
 
-## Phase 5: Update docs
+**What the script does:**
+- ✅ Verifies git working directory is clean
+- ✅ Runs comprehensive quality checks
+- ✅ Updates versions in package.json, Cargo.toml, tauri.conf.json
+- ✅ Updates lock files and runs build verification
+- ✅ Optionally executes git commands interactively
+- ✅ Provides clear next steps and reminders
 
-- [ ] Update `docs/release-process.md` To be a simple step-by-step guide on how to do a release including manually going to GitHub To publish the release. It should also briefly explain how the release works, referencing the GH Action and the Tauri documentation On auto-update.
+**After pushing the tag:**
+- GitHub Actions builds the app for macOS
+- A draft release is created automatically
+- Update artifacts (`latest.json`) are generated
+- Developer manually publishes the release
+- Users receive auto-update notifications
+
+## Task Complete ✅
+
+All phases of the auto-update and release system have been successfully implemented:
+
+1. ✅ **Foundation Setup**: Update signing keys, Tauri configuration, semantic versioning
+2. ✅ **Frontend Integration**: Update checking, progress tracking, user notifications
+3. ✅ **GitHub Actions**: Multi-platform builds, automatic draft releases
+4. ✅ **Pre-Release Automation**: Comprehensive release preparation script
+5. ✅ **Documentation**: Complete implementation and usage documentation
+
+The system provides a professional release process that minimizes manual work while maintaining security and reliability. Users will receive seamless auto-updates, and the developer workflow is streamlined with comprehensive automation.
