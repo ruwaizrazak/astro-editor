@@ -29,7 +29,7 @@ npm run check:all
 
 ```bash
 # Commit version changes first
-git add package.json src-tauri/Cargo.toml
+git add package.json src-tauri/Cargo.toml src-tauri/tauri.conf.json
 git commit -m "chore: bump version to 0.1.1"
 
 # Create and push tag (this triggers the release workflow)
