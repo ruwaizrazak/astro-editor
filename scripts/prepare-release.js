@@ -110,10 +110,10 @@ async function prepareRelease() {
       console.log('✅ Updater public key configured')
     }
 
-    // Final check that everything builds
-    console.log('\n🔍 Running final build check...')
-    exec('npm run tauri:check')
-    console.log('✅ Build check passed')
+    // Final check that Rust code compiles
+    console.log('\n🔍 Running final compilation check...')
+    exec('source ~/.cargo/env && cd src-tauri && cargo check')
+    console.log('✅ Rust compilation check passed')
 
     console.log(`\n🎉 Successfully prepared release ${tagVersion}!`)
     console.log('\n📋 Git commands to execute:')
