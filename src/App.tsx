@@ -2,6 +2,7 @@ import { Layout } from './components/layout'
 import { ThemeProvider } from './lib/theme-provider'
 import { check } from '@tauri-apps/plugin-updater'
 import { relaunch } from '@tauri-apps/plugin-process'
+import { info, error } from '@tauri-apps/plugin-log'
 import { useEffect } from 'react'
 import './App.css'
 
@@ -11,8 +12,7 @@ function App() {
       try {
         const update = await check()
         if (update) {
-          // eslint-disable-next-line no-console
-          console.log(`Update available: ${update.version}`)
+          await info(`Update available: ${update.version}`)
 
           // Show toast notification or modal
           const shouldUpdate = confirm(
@@ -22,19 +22,16 @@ function App() {
           if (shouldUpdate) {
             try {
               // Download and install silently with only console logging
-              await update.downloadAndInstall(event => {
+              await update.downloadAndInstall(async event => {
                 switch (event.event) {
                   case 'Started':
-                    // eslint-disable-next-line no-console
-                    console.log(`Downloading ${event.data.contentLength} bytes`)
+                    await info(`Downloading ${event.data.contentLength} bytes`)
                     break
                   case 'Progress':
-                    // eslint-disable-next-line no-console
-                    console.log(`Downloaded: ${event.data.chunkLength} bytes`)
+                    await info(`Downloaded: ${event.data.chunkLength} bytes`)
                     break
                   case 'Finished':
-                    // eslint-disable-next-line no-console
-                    console.log('Download complete, installing...')
+                    await info('Download complete, installing...')
                     break
                 }
               })
@@ -48,15 +45,13 @@ function App() {
                 await relaunch()
               }
             } catch (updateError) {
-              // eslint-disable-next-line no-console
-              console.error('Update installation failed:', updateError)
+              await error(`Update installation failed: ${updateError}`)
               alert(`Update failed: There was a problem with the automatic download.\n\n${updateError}`)
             }
           }
         }
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('Update check failed:', error)
+      } catch (checkError) {
+        await error(`Update check failed: ${checkError}`)
         // Show user-friendly error message
       }
     }

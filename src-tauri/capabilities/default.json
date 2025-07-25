@@ -29,6 +29,7 @@
     "updater:allow-install",
     "process:default",
     "process:allow-restart",
+    "log:default",
     {
       "identifier": "shell:allow-execute",
       "allow": [

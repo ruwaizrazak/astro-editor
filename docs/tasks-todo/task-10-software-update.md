@@ -167,153 +167,11 @@ pub fn run() {
 }
 ```
 
-## Phase 3: GitHub Actions Workflow (2-3 hours)
+## Phase 3: GitHub Actions Workflow ✅ DONE
 
 ### 3.1 Create Release Workflow
 
-Create `.github/workflows/release.yml`:
-
-```yaml
-name: 'Release Astro Editor'
-
-on:
-  push:
-    tags: ['v*']
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Release version (e.g., v1.0.0)'
-        required: true
-        type: string
-
-env:
-  CARGO_TERM_COLOR: always
-  RUST_BACKTRACE: 1
-
-jobs:
-  create-release:
-    permissions:
-      contents: write
-    runs-on: ubuntu-latest
-    outputs:
-      release_id: ${{ steps.create-release.outputs.result }}
-
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 'lts/*'
-          cache: 'npm'
-
-      - name: Get version
-        run: echo "PACKAGE_VERSION=$(node -pe "require('./package.json').version")" >> $GITHUB_ENV
-
-      - name: Create release
-        id: create-release
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const { data } = await github.rest.repos.createRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag_name: `v${process.env.PACKAGE_VERSION}`,
-              name: `Astro Editor v${process.env.PACKAGE_VERSION}`,
-              body: `## 🚀 Astro Editor v${process.env.PACKAGE_VERSION}
-              
-              ### Installation Instructions
-              - **macOS**: Download the \`.dmg\` file and drag to Applications folder
-              - **Windows**: Download the \`.msi\` installer and run it
-              - **Linux**: Download the \`.AppImage\` or \`.deb\` file
-              
-              ### Auto-Updates
-              Existing users will receive automatic update notifications.
-              
-              **Full Changelog**: https://github.com/${{ github.repository }}/commits/v${process.env.PACKAGE_VERSION}`,
-              draft: true,
-              prerelease: false
-            })
-            return data.id
-
-  build-tauri:
-    needs: create-release
-    permissions:
-      contents: write
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: 'macos-latest'
-            args: '--target universal-apple-darwin'
-          - platform: 'ubuntu-22.04'
-            args: '--bundles deb,appimage'
-          - platform: 'windows-latest'
-            args: '--bundles msi'
-
-    runs-on: ${{ matrix.platform }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 'lts/*'
-          cache: 'npm'
-
-      - name: Install Rust stable
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.platform == 'macos-latest' && 'universal-apple-darwin' || '' }}
-
-      - name: Rust cache
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: './src-tauri -> target'
-
-      - name: Install Linux dependencies
-        if: matrix.platform == 'ubuntu-22.04'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libwebkit2gtk-4.1-dev \
-            libappindicator3-dev \
-            librsvg2-dev \
-            patchelf
-
-      - name: Install frontend dependencies
-        run: npm ci
-
-      - name: Build application
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-        with:
-          releaseId: ${{ needs.create-release.outputs.release_id }}
-          includeUpdaterJson: true
-          args: ${{ matrix.args }}
-
-  publish-release:
-    permissions:
-      contents: write
-    runs-on: ubuntu-latest
-    needs: [create-release, build-tauri]
-
-    steps:
-      - name: Publish release
-        id: publish-release
-        uses: actions/github-script@v7
-        env:
-          release_id: ${{ needs.create-release.outputs.release_id }}
-        with:
-          script: |
-            github.rest.repos.updateRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              release_id: process.env.release_id,
-              draft: false
-            })
-```
+- Create `.github/workflows/release.yml`:
 
 ### 3.2 Setup GitHub Secrets
 
@@ -323,11 +181,20 @@ In your GitHub repository settings → Secrets and variables → Actions, add:
 
 **Security Note**: Never commit the private key to your repository.
 
-## Phase 4: Pre-Release Automation (1 hour)
-
-NOTE FOR CLAUDE: STOP BEFORE DOING THIS PHASE TO REWORK THE PLAN WITH THE USER
+## Phase 4: Pre-Release Automation
 
 ### 4.1 Version Coordination Script
+
+Okay, this script should:
+
+- Run all checks and fail if any problems.
+- Check that the working dir is clean in git.
+- Update the version in the three files: package.json, Cargo.toml and tauri.conf.json.
+- Run npm install and whatever build command is needed to update Cargo.lock
+- Check things are correct (see checks below)
+- Print out the git commands nececarry to make a release so I can run them.
+
+We might actually want to build a little utility script which is Interactive and allows me to confirm the git commands just by pressing Enter, and then have the script run them. But only if we can do this without too much complexity. It should also include a reminder that this will create a draught release, so I'll need to manually publish it on github once the build is finished.
 
 Create `scripts/prepare-release.js`:
 
@@ -415,135 +282,4 @@ Add to `package.json`:
 }
 ```
 
-## Phase 5: Testing and Validation (2 hours)
-
-### 5.1 Local Testing Setup
-
-1. **Test Update Generation**:
-
-   ```bash
-   npm run tauri build
-   # Verify updater artifacts are created in src-tauri/target/release/bundle/
-   ```
-
-2. **Test Update Server**:
-   Create a simple local test by manually creating `latest.json`:
-   ```json
-   {
-     "version": "1.0.1",
-     "notes": "Test update",
-     "pub_date": "2025-07-24T10:00:00Z",
-     "platforms": {
-       "darwin-universal": {
-         "signature": "signature_here",
-         "url": "https://github.com/your-username/astro-editor/releases/download/v1.0.1/app-universal.dmg"
-       }
-     }
-   }
-   ```
-
-### 5.2 Pre-release Testing Workflow
-
-1. **Create test releases** using pre-release tags:
-
-   ```bash
-   npm run prepare-release v1.0.0-beta.1
-   ```
-
-2. **Test multi-platform builds** in GitHub Actions
-
-3. **Verify signature verification** by intentionally corrupting a signature
-
-## Cost Analysis
-
-### Immediate Costs (Free)
-
-- ✅ GitHub Actions (2000 minutes/month free)
-- ✅ Ad-hoc signing for macOS
-- ✅ Unsigned Windows builds
-- ✅ GitHub releases hosting
-
-### Optional Upgrades
-
-- **macOS signing**: $99/year (recommended when user base > 100)
-
-## Security Considerations
-
-### Critical Security Measures
-
-1. **Private key protection**: Never commit to git, use GitHub secrets only
-2. **HTTPS enforcement**: GitHub releases use HTTPS by default
-3. **Signature verification**: Handled automatically by Tauri updater
-4. **Update frequency limits**: Check on startup only, not continuously
-
-### Security Threats Mitigated
-
-- **Man-in-the-middle attacks**: Cryptographic signatures
-- **Supply chain attacks**: Verified build pipeline
-- **Downgrade attacks**: Version comparison in updater
-- **Unauthorized updates**: Private key requirement
-
-## Implementation Checklist
-
-### Phase 1 (Immediate)
-
-- [x] Generate update signing keys
-- [x] Install updater plugin
-- [x] Configure tauri.conf.json
-- [x] Test local build with updater artifacts
-
-### Phase 2 (Frontend)
-
-- [x] Add update check to main component
-- [x] Implement progress reporting
-- [x] Add error handling and user feedback
-- [x] Test update flow locally
-
-### Phase 3 (CI/CD)
-
-- [ ] Create GitHub Actions workflow
-- [ ] Add TAURI_PRIVATE_KEY secret
-- [ ] Test workflow with pre-release tag
-- [ ] Verify multi-platform builds
-
-### Phase 4 (Automation)
-
-- [ ] Create prepare-release script
-- [ ] Add npm scripts
-- [ ] Test full release workflow
-- [ ] Document release process
-
-### Phase 5 (Testing)
-
-- [ ] Test update generation
-- [ ] Verify signature verification
-- [ ] Test error handling
-- [ ] Validate all platforms
-
-## Troubleshooting Guide
-
-### Common Issues
-
-**"Failed to verify signature"**
-
-- Verify public key in tauri.conf.json matches private key
-- Ensure TAURI_PRIVATE_KEY secret is correctly set
-- Check that createUpdaterArtifacts is enabled
-
-**"Update check failed"**
-
-- Verify endpoint URL is correct
-- Check network connectivity
-- Ensure GitHub release has updater JSON files
-
-**Build failures in GitHub Actions**
-
-- Check Rust cache issues (clear cache)
-- Verify platform-specific dependencies
-- Review secret configuration
-
-**Version mismatches**
-
-- Ensure package.json and Cargo.toml versions match
-- Use prepare-release script for coordination
-- Verify git tags match version numbers
+## Phase 5: Update docs

@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
+import { info, warn, error } from '@tauri-apps/plugin-log'
 import { toast } from '../lib/toast'
 import {
   projectRegistryManager,
@@ -58,8 +59,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
         try {
           localStorage.setItem('astro-editor-last-project', path)
         } catch (error) {
-          // eslint-disable-next-line no-console
-          console.warn('Failed to persist project path:', error)
+          await warn(`Failed to persist project path: ${error}`)
         }
 
         await get().startFileWatcher()
@@ -68,8 +68,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
           description:
             error instanceof Error ? error.message : 'Unknown error occurred',
         })
-        // eslint-disable-next-line no-console
-        console.error('Failed to set project:', error)
+        await error(`Failed to set project: ${error}`)
       }
     })()
   },
@@ -118,8 +117,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       toast.warning('File watcher failed to start', {
         description: 'Changes to files may not be automatically detected.',
       })
-      // eslint-disable-next-line no-console
-      console.error('Failed to start file watcher:', error)
+      await error(`Failed to start file watcher: ${error}`)
     }
   },
 
@@ -133,8 +131,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       toast.warning('Failed to stop file watcher', {
         description: 'File watcher may still be running in the background.',
       })
-      // eslint-disable-next-line no-console
-      console.error('Failed to stop file watcher:', error)
+      await error(`Failed to stop file watcher: ${error}`)
     }
   },
 
@@ -233,8 +230,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
         description:
           error instanceof Error ? error.message : 'Unknown error occurred',
       })
-      // eslint-disable-next-line no-console
-      console.error('Failed to update global settings:', error)
+      await error(`Failed to update global settings: ${error}`)
     }
   },
 
@@ -258,8 +254,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
         description:
           error instanceof Error ? error.message : 'Unknown error occurred',
       })
-      // eslint-disable-next-line no-console
-      console.error('Failed to update project settings:', error)
+      await error(`Failed to update project settings: ${error}`)
     }
   },
 }))

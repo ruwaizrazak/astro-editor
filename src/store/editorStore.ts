@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { invoke } from '@tauri-apps/api/core'
+import { info, warn, error } from '@tauri-apps/plugin-log'
 import { queryClient } from '../lib/query-client'
 import { saveRecoveryData, saveCrashReport } from '../lib/recovery'
 import { toast } from '../lib/toast'
@@ -90,8 +91,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       toast.error('Failed to open file', {
         description: `Could not open ${file.name}: ${error instanceof Error ? error.message : 'Unknown error occurred'}`,
       })
-      // eslint-disable-next-line no-console
-      console.error('Failed to open file:', error)
+      await error(`Failed to open file ${file.path}: ${error}`)
 
       // Save crash report for critical file parsing failures
       await saveCrashReport(error as Error, {
@@ -228,10 +228,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       toast.error('Save failed', {
         description: `Could not save file: ${error instanceof Error ? error.message : 'Unknown error occurred'}. Recovery data has been saved.`,
       })
-      // eslint-disable-next-line no-console
-      console.error('Save failed:', error)
-      // eslint-disable-next-line no-console
-      console.log('Attempting to save recovery data...')
+      await error(`Save failed: ${error}`)
+      await info('Attempting to save recovery data...')
 
       // Save recovery data
       const state = get()

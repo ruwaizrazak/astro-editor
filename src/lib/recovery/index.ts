@@ -1,4 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
+import { info, error } from '@tauri-apps/plugin-log'
 import type { RecoveryData, CrashReport } from './types'
 
 export type { RecoveryData, CrashReport }
@@ -26,11 +27,9 @@ export const saveRecoveryData = async (data: {
 
   try {
     await invoke('save_recovery_data', { data: recoveryData })
-    // eslint-disable-next-line no-console
-    console.log(`Recovery data saved for ${recoveryData.fileName}`)
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Failed to save recovery data:', error)
+    await info(`Recovery data saved for ${recoveryData.fileName}`)
+  } catch (err) {
+    await error(`Failed to save recovery data: ${err}`)
   }
 }
 
@@ -55,10 +54,8 @@ export const saveCrashReport = async (
 
   try {
     await invoke('save_crash_report', { report })
-    // eslint-disable-next-line no-console
-    console.log('Crash report saved')
+    await info('Crash report saved')
   } catch (err) {
-    // eslint-disable-next-line no-console
-    console.error('Failed to save crash report:', err)
+    await error(`Failed to save crash report: ${err}`)
   }
 }
