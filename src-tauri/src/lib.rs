@@ -59,6 +59,7 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_process::init())
         .manage(commands::watcher::init_watcher_state())
         .setup(|app| {
             // Create menu state
