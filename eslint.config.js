@@ -16,6 +16,7 @@ export default tseslint.config(
       '*.config.{js,ts}',
       'vite.config.ts',
       'tailwind.config.js',
+      'scripts/**',
     ],
   },
   js.configs.recommended,

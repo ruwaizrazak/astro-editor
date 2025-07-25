@@ -5,7 +5,7 @@
  */
 
 import { invoke } from '@tauri-apps/api/core'
-import { info, error } from '@tauri-apps/plugin-log'
+import { error } from '@tauri-apps/plugin-log'
 import { ProjectRegistry, GlobalSettings, ProjectData } from './types'
 import { DEFAULT_PROJECT_REGISTRY, DEFAULT_GLOBAL_SETTINGS } from './defaults'
 
@@ -75,7 +75,7 @@ export async function saveProjectRegistry(
       content: JSON.stringify(registry, null, 2),
     })
   } catch (err) {
-    await error(`Failed to save project registry: ${err}`)
+    await error(`Failed to save project registry: ${String(err)}`)
     throw err
   }
 }
@@ -136,7 +136,7 @@ export async function saveGlobalSettings(
       content: JSON.stringify(settings, null, 2),
     })
   } catch (err) {
-    await error(`Failed to save global settings: ${err}`)
+    await error(`Failed to save global settings: ${String(err)}`)
     throw err
   }
 }
@@ -179,7 +179,7 @@ export async function saveProjectData(
       content: JSON.stringify(data, null, 2),
     })
   } catch (err) {
-    await error(`Failed to save project data: ${err}`)
+    await error(`Failed to save project data: ${String(err)}`)
     throw err
   }
 }

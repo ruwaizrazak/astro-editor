@@ -22,16 +22,16 @@ function App() {
           if (shouldUpdate) {
             try {
               // Download and install silently with only console logging
-              await update.downloadAndInstall(async event => {
+              await update.downloadAndInstall(event => {
                 switch (event.event) {
                   case 'Started':
-                    await info(`Downloading ${event.data.contentLength} bytes`)
+                    void info(`Downloading ${event.data.contentLength} bytes`)
                     break
                   case 'Progress':
-                    await info(`Downloaded: ${event.data.chunkLength} bytes`)
+                    void info(`Downloaded: ${event.data.chunkLength} bytes`)
                     break
                   case 'Finished':
-                    await info('Download complete, installing...')
+                    void info('Download complete, installing...')
                     break
                 }
               })
@@ -45,13 +45,15 @@ function App() {
                 await relaunch()
               }
             } catch (updateError) {
-              await error(`Update installation failed: ${updateError}`)
-              alert(`Update failed: There was a problem with the automatic download.\n\n${updateError}`)
+              await error(`Update installation failed: ${String(updateError)}`)
+              alert(
+                `Update failed: There was a problem with the automatic download.\n\n${String(updateError)}`
+              )
             }
           }
         }
       } catch (checkError) {
-        await error(`Update check failed: ${checkError}`)
+        await error(`Update check failed: ${String(checkError)}`)
         // Show user-friendly error message
       }
     }
