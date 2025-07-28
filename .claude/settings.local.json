@@ -33,7 +33,8 @@
       "Bash(true)",
       "Bash(rmdir:*)",
       "WebFetch(domain:ia.net)",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "WebFetch(domain:docs.anthropic.com)"
     ],
     "deny": []
   }

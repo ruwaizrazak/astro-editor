@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Current Task: `/docs/tasks-todo/task-7-copyedit-mode.md`
+Current Task: NONE
 
 ## Project Overview
 
@@ -51,6 +51,63 @@ Current Task: `/docs/tasks-todo/task-7-copyedit-mode.md`
 - **Context7 First**: Always use Context7 for framework docs before WebSearch
 - **Version Requirements**: Tauri v2.x, shadcn/ui v4.x, Tailwind v4.x, React 19.x, Zustand v5.x, CodeMirror v6.x, Vitest v3.x
 - **Progress Tracking**: Update current task in `docs/tasks-todo` after major work
+
+## Specialized Agents
+
+The project has six specialized agents to help with complex implementation challenges:
+
+### Project-Integrated Agents
+
+**1. macos-ui-engineer** - Use when:
+
+- Implementing native-feeling macOS UI patterns
+- Working on typography, spacing, or visual hierarchy
+- Creating or refining components that need to feel authentically Mac-like
+- Applying Apple HIG principles to interface design
+
+**2. react-performance-architect** - Use when:
+
+- Reviewing React components for performance issues
+- Implementing complex state management patterns
+- Addressing render cascades or unnecessary re-renders
+- Optimizing React hook usage and component architecture
+
+**3. rust-test-engineer** - Use when:
+
+- Writing comprehensive tests for Tauri backend code
+- Testing file operations, schema parsing, or Rust commands
+- Ensuring proper test coverage for business logic
+- Creating integration tests for Tauri-frontend communication
+
+**4. typescript-test-engineer** - Use when:
+
+- Writing tests for React components, hooks, or TypeScript modules
+- Testing Zustand stores, TanStack Query hooks, or complex business logic
+- Ensuring comprehensive test coverage for frontend code
+- Creating test utilities and fixtures
+
+### External Expert Consultants
+
+**5. tauri-v2-expert** - Call in when:
+
+- Facing complex Tauri v2 architectural decisions
+- Debugging difficult IPC or native integration issues
+- Implementing advanced Tauri features (plugins, multi-window, system integration)
+- Optimizing performance or solving platform-specific problems
+
+**6. codemirror-6-specialist** - Call in when:
+
+- Implementing complex CodeMirror extensions or customizations
+- Debugging editor state management or React integration issues
+- Building advanced editor features (collaborative editing, custom parsers, etc.)
+- Optimizing editor performance or solving rendering problems
+
+### Orchestration Guidelines
+
+- **Use project-integrated agents** for implementation work within established patterns
+- **Call external consultants** when facing novel problems or needing deep expertise
+- **Combine agents** when problems span multiple domains (e.g., performance + UI)
+- **Agents can collaborate** - one may recommend consulting another for specialized aspects
 
 ## Technology Stack
 
@@ -185,6 +242,7 @@ useHotkeys(
 **See `docs/developer/architecture-guide.md` for detailed extraction guidelines.**
 
 **Quick Reference**:
+
 - **Extract to `lib/`**: 50+ lines, 2+ components, business logic, testable modules
 - **Extract to `hooks/`**: React hooks, component lifecycle, side effects
 - **Process**: Single responsibility → minimal API → tests → index.ts exports
