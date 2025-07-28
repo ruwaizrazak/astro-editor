@@ -1,6 +1,7 @@
 import { invoke } from '@tauri-apps/api/core'
 import { ProcessedFile } from './types'
 import { useProjectStore } from '../../../store/projectStore'
+import { ASTRO_PATHS } from '../../constants'
 
 /**
  * Image file extensions that should be treated as images
@@ -87,7 +88,7 @@ export const processDroppedFile = async (
       currentProjectSettings?.pathOverrides?.assetsDirectory
 
     let newPath: string
-    if (assetsDirectory && assetsDirectory !== 'src/assets') {
+    if (assetsDirectory && assetsDirectory !== ASTRO_PATHS.ASSETS_DIR) {
       // Use the override
       newPath = await invoke<string>('copy_file_to_assets_with_override', {
         sourcePath: filePath,

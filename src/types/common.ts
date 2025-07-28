@@ -39,9 +39,6 @@ export interface FileSystemEntry {
   lastModified?: number
 }
 
-// Date field names commonly used in frontmatter
-export type DateFieldName = 'pubDate' | 'date' | 'publishedDate' | 'published'
-
 // Common event handler types
 export type ClickHandler = () => void
 export type ChangeHandler<T = string> = (value: T) => void

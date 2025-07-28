@@ -3,6 +3,7 @@ import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { warn, error as logError } from '@tauri-apps/plugin-log'
 import { toast } from '../lib/toast'
+import { ASTRO_PATHS } from '../lib/constants'
 import {
   projectRegistryManager,
   GlobalSettings,
@@ -86,7 +87,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       const contentDirectory =
         currentProjectSettings?.pathOverrides?.contentDirectory
 
-      if (contentDirectory && contentDirectory !== 'src/content') {
+      if (contentDirectory && contentDirectory !== ASTRO_PATHS.CONTENT_DIR) {
         await invoke('start_watching_project_with_content_dir', {
           projectPath,
           contentDirectory,

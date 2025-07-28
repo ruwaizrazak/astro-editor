@@ -4,6 +4,7 @@
 
 import { useProjectStore } from '../../store/projectStore'
 import { ProjectSettings } from './types'
+import { ASTRO_PATHS } from '../constants'
 
 /**
  * Hook to get effective project settings with overrides applied
@@ -14,9 +15,9 @@ export const useEffectiveSettings = () => {
 
   const getEffectivePathOverrides = () => {
     const defaults = {
-      contentDirectory: 'src/content',
-      assetsDirectory: 'src/assets',
-      mdxComponentsDirectory: 'src/components/mdx',
+      contentDirectory: ASTRO_PATHS.CONTENT_DIR,
+      assetsDirectory: ASTRO_PATHS.ASSETS_DIR,
+      mdxComponentsDirectory: ASTRO_PATHS.MDX_COMPONENTS_DIR,
     }
 
     const globalDefaults =
@@ -92,9 +93,9 @@ export const getEffectiveSettings = (
 } => {
   const defaults = {
     pathOverrides: {
-      contentDirectory: 'src/content',
-      assetsDirectory: 'src/assets',
-      mdxComponentsDirectory: 'src/components/mdx',
+      contentDirectory: ASTRO_PATHS.CONTENT_DIR,
+      assetsDirectory: ASTRO_PATHS.ASSETS_DIR,
+      mdxComponentsDirectory: ASTRO_PATHS.MDX_COMPONENTS_DIR,
     },
     frontmatterMappings: {
       publishedDate: ['pubDate', 'date', 'publishedDate'],

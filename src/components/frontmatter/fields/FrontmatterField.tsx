@@ -1,6 +1,6 @@
 import React from 'react'
 import { useEditorStore } from '../../../store/editorStore'
-import { useEffectiveSettings } from '../../../lib/project-registry/utils-effective'
+import { useEffectiveSettings } from '../../../lib/project-registry/effective-settings'
 import { getInputTypeForZodField, type ZodField } from '../../../lib/schema'
 import { StringField } from './StringField'
 import { TextareaField } from './TextareaField'

@@ -20,7 +20,7 @@ describe('useEditorHandlers', () => {
       name: string
       path: string
       extension: string
-      is_draft: boolean
+      isDraft: boolean
       collection: string
     } | null
     saveFile: ReturnType<typeof vi.fn>
@@ -36,7 +36,7 @@ describe('useEditorHandlers', () => {
     recentlySavedFile: string | null
     autoSaveTimeoutId: number | null
     updateFrontmatter: ReturnType<typeof vi.fn>
-    updateCurrentFilePath: ReturnType<typeof vi.fn>
+    updateCurrentFileAfterRename: ReturnType<typeof vi.fn>
   }
 
   beforeEach(() => {
@@ -49,7 +49,7 @@ describe('useEditorHandlers', () => {
         name: 'test.md',
         path: '/test/test.md',
         extension: 'md',
-        is_draft: false,
+        isDraft: false,
         collection: 'test-collection',
       },
       saveFile: vi.fn(),
@@ -65,7 +65,7 @@ describe('useEditorHandlers', () => {
       recentlySavedFile: null,
       autoSaveTimeoutId: null,
       updateFrontmatter: vi.fn(),
-      updateCurrentFilePath: vi.fn(),
+      updateCurrentFileAfterRename: vi.fn(),
     }
 
     mockGetState.mockReturnValue(mockStoreState)
@@ -211,7 +211,7 @@ describe('useEditorHandlers', () => {
         name: 'new.md',
         path: '/test/new.md',
         extension: 'md',
-        is_draft: false,
+        isDraft: false,
         collection: 'test-collection',
       }
       mockStoreState.isDirty = true
@@ -273,7 +273,7 @@ describe('useEditorHandlers', () => {
         name: 'new.md',
         path: '/test/new.md',
         extension: 'md',
-        is_draft: false,
+        isDraft: false,
         collection: 'test-collection',
       }
       mockStoreState.isDirty = true

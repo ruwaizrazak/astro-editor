@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { invoke } from '@tauri-apps/api/core'
 import { queryKeys } from '@/lib/query-keys'
 import { Collection } from '@/store' // Import type from store for now
+import { ASTRO_PATHS } from '@/lib/constants'
 
 // This is our actual data-fetching function. It's just a wrapper around invoke.
 const fetchCollections = async (
@@ -15,7 +16,7 @@ const fetchCollections = async (
     throw new Error('Project path is required to fetch collections.')
   }
 
-  if (contentDirectory && contentDirectory !== 'src/content') {
+  if (contentDirectory && contentDirectory !== ASTRO_PATHS.CONTENT_DIR) {
     return invoke('scan_project_with_content_dir', {
       projectPath,
       contentDirectory,

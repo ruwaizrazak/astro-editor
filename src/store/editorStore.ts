@@ -11,7 +11,7 @@ export interface FileEntry {
   path: string
   name: string
   extension: string
-  is_draft: boolean
+  isDraft: boolean
   collection: string
   last_modified?: number
   frontmatter?: Record<string, unknown>
@@ -47,7 +47,7 @@ interface EditorState {
   updateFrontmatter: (frontmatter: Record<string, unknown>) => void
   updateFrontmatterField: (key: string, value: unknown) => void
   scheduleAutoSave: () => void
-  updateCurrentFilePath: (newPath: string) => void
+  updateCurrentFileAfterRename: (newPath: string) => void
 }
 
 export const useEditorStore = create<EditorState>((set, get) => ({
@@ -302,7 +302,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     set({ autoSaveTimeoutId: timeoutId })
   },
 
-  updateCurrentFilePath: (newPath: string) => {
+  updateCurrentFileAfterRename: (newPath: string) => {
     const { currentFile } = get()
     if (currentFile) {
       set({

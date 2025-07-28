@@ -67,7 +67,7 @@ describe('FrontmatterPanel Component', () => {
       path: '/project/posts/test.md',
       name: 'test',
       extension: 'md',
-      is_draft: false,
+      isDraft: false,
       collection: 'posts',
     }
 
@@ -116,7 +116,7 @@ describe('FrontmatterPanel Component', () => {
       path: '/project/posts/test.md',
       name: 'test',
       extension: 'md',
-      is_draft: false,
+      isDraft: false,
       collection: 'posts',
     }
 
@@ -139,7 +139,7 @@ describe('FrontmatterPanel Component', () => {
       path: '/project/posts/test.md',
       name: 'test',
       extension: 'md',
-      is_draft: false,
+      isDraft: false,
       collection: 'posts',
     }
 
@@ -175,7 +175,7 @@ describe('FrontmatterPanel Component', () => {
       path: '/project/posts/test.md',
       name: 'test',
       extension: 'md',
-      is_draft: false,
+      isDraft: false,
       collection: 'posts',
     }
 
@@ -209,7 +209,7 @@ describe('FrontmatterPanel Component', () => {
       path: '/project/posts/test.md',
       name: 'test',
       extension: 'md',
-      is_draft: false,
+      isDraft: false,
       collection: 'posts',
     }
 
@@ -229,7 +229,7 @@ describe('FrontmatterPanel Component', () => {
       path: '/project/posts/test.md',
       name: 'test',
       extension: 'md',
-      is_draft: false,
+      isDraft: false,
       collection: 'posts',
     }
 
@@ -271,7 +271,7 @@ describe('FrontmatterPanel Component', () => {
       path: '/project/posts/test.md',
       name: 'test',
       extension: 'md',
-      is_draft: false,
+      isDraft: false,
       collection: 'posts',
     }
 
@@ -315,7 +315,7 @@ describe('FrontmatterPanel Component', () => {
       path: '/project/posts/test.md',
       name: 'test',
       extension: 'md',
-      is_draft: false,
+      isDraft: false,
       collection: 'posts',
     }
 
@@ -341,7 +341,7 @@ describe('FrontmatterPanel Component', () => {
       path: '/project/posts/test.md',
       name: 'test',
       extension: 'md',
-      is_draft: false,
+      isDraft: false,
       collection: 'posts',
     }
 
@@ -378,7 +378,7 @@ describe('FrontmatterPanel Component', () => {
       path: '/project/posts/test.md',
       name: 'test',
       extension: 'md',
-      is_draft: false,
+      isDraft: false,
       collection: 'posts',
     }
 
@@ -419,7 +419,7 @@ describe('FrontmatterPanel Component', () => {
       path: '/project/posts/test.md',
       name: 'test',
       extension: 'md',
-      is_draft: false,
+      isDraft: false,
       collection: 'posts',
     }
 
@@ -447,7 +447,7 @@ describe('FrontmatterPanel Component', () => {
       path: '/project/posts/test.md',
       name: 'test',
       extension: 'md',
-      is_draft: false,
+      isDraft: false,
       collection: 'posts',
     }
 

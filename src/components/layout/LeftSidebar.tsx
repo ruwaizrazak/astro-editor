@@ -16,7 +16,7 @@ import { Badge } from '../ui/badge'
 import { FolderOpen, ArrowLeft, FileText, Filter } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { FileContextMenu } from '../ui/context-menu'
-import { useEffectiveSettings } from '../../lib/project-registry/utils-effective'
+import { useEffectiveSettings } from '../../lib/project-registry/effective-settings'
 
 // Type-safe helper functions for file handling
 function formatDate(dateValue: unknown): string {
@@ -71,7 +71,8 @@ function getTitle(file: FileEntry, titleField: string): string {
 }
 
 export const LeftSidebar: React.FC = () => {
-  const { currentFile, openFile, updateCurrentFilePath } = useEditorStore()
+  const { currentFile, openFile, updateCurrentFileAfterRename } =
+    useEditorStore()
 
   const {
     selectedCollection,
@@ -256,7 +257,7 @@ export const LeftSidebar: React.FC = () => {
 
         // Update current file path if this is the current file
         if (currentFile && currentFile.path === file.path) {
-          updateCurrentFilePath(newPath)
+          updateCurrentFileAfterRename(newPath)
         }
       }
 
@@ -292,8 +293,7 @@ export const LeftSidebar: React.FC = () => {
     if (showDraftsOnly) {
       filesToSort = files.filter(file => {
         return (
-          file.is_draft ||
-          file.frontmatter?.[frontmatterMappings.draft] === true
+          file.isDraft || file.frontmatter?.[frontmatterMappings.draft] === true
         )
       })
     }
@@ -435,7 +435,7 @@ export const LeftSidebar: React.FC = () => {
               )
               const isMdx = file.extension === 'mdx'
               const isFileDraft =
-                file.is_draft ||
+                file.isDraft ||
                 file.frontmatter?.[frontmatterMappings.draft] === true
               const isSelected = currentFile?.id === file.id
 

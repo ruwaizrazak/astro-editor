@@ -6,7 +6,7 @@ import { renderWithProviders } from '../../../test/test-utils'
 import type { ZodField } from '../../../lib/schema'
 
 // Mock the project registry utils
-vi.mock('../../../../lib/project-registry/utils-effective', () => ({
+vi.mock('../../../../lib/project-registry/effective-settings', () => ({
   useEffectiveSettings: () => ({
     frontmatterMappings: {
       title: 'title',

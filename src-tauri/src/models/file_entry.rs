@@ -9,6 +9,7 @@ pub struct FileEntry {
     pub path: PathBuf,
     pub name: String,
     pub extension: String,
+    #[serde(rename = "isDraft")]
     pub is_draft: bool,
     pub collection: String,
     pub last_modified: Option<u64>,
