@@ -284,7 +284,9 @@ mod tests {
         // Should fail due to path traversal
         assert!(result.is_err());
         let error = result.unwrap_err();
-        assert!(error.contains("File outside project directory") || error.contains("Invalid file path"));
+        assert!(
+            error.contains("File outside project directory") || error.contains("Invalid file path")
+        );
 
         // Cleanup
         let _ = fs::remove_dir_all(&project_root);

@@ -5,7 +5,10 @@ import { invoke } from '@tauri-apps/api/core'
 import { queryKeys } from '@/lib/query-keys'
 import { MarkdownContent } from '@/store' // Import type from store for now
 
-const fetchFileContent = async (filePath: string, projectPath: string): Promise<MarkdownContent> => {
+const fetchFileContent = async (
+  filePath: string,
+  projectPath: string
+): Promise<MarkdownContent> => {
   if (!filePath) {
     throw new Error('File path is required to fetch content.')
   }

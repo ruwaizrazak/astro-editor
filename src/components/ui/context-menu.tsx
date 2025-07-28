@@ -124,7 +124,12 @@ export class FileContextMenu {
               const filename = duplicatePath.substring(lastSlashIndex + 1)
 
               // Create the duplicate file
-              await invoke('create_file', { directory, filename, content, projectRoot: projectPath })
+              await invoke('create_file', {
+                directory,
+                filename,
+                content,
+                projectRoot: projectPath,
+              })
 
               // Refresh the file list if callback is provided
               if (onRefresh) {

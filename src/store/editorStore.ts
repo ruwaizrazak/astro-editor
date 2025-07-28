@@ -5,6 +5,7 @@ import { queryClient } from '../lib/query-client'
 import { saveRecoveryData, saveCrashReport } from '../lib/recovery'
 import { toast } from '../lib/toast'
 import { queryKeys } from '../lib/query-keys'
+import { useProjectStore } from './projectStore'
 
 export interface FileEntry {
   id: string
@@ -63,18 +64,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
   // Actions
   openFile: async (file: FileEntry) => {
-    // Get project path from project store (will be accessed via custom events)
-    let projectPath: string | null = null
-    try {
-      // Dispatch event to get project path from project store
-      const projectPathEvent = new CustomEvent('get-project-path')
-      window.dispatchEvent(projectPathEvent)
-      // For now, we'll get it from localStorage as fallback
-      projectPath = localStorage.getItem('astro-editor-last-project')
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.warn('Could not get project path for open operation:', error)
-    }
+    // Get project path using direct store access pattern (architecture guide: performance patterns)
+    const { projectPath } = useProjectStore.getState()
 
     if (!projectPath) {
       throw new Error('No project path available')
@@ -142,18 +133,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const { currentFile, editorContent, frontmatter, imports } = get()
     if (!currentFile) return
 
-    // Get project path from project store (will be accessed via custom events)
-    let projectPath: string | null = null
-    try {
-      // Dispatch event to get project path from project store
-      const projectPathEvent = new CustomEvent('get-project-path')
-      window.dispatchEvent(projectPathEvent)
-      // For now, we'll get it from localStorage as fallback
-      projectPath = localStorage.getItem('astro-editor-last-project')
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.warn('Could not get project path for save operation:', error)
-    }
+    // Get project path using direct store access pattern (architecture guide: performance patterns)
+    const { projectPath } = useProjectStore.getState()
 
     if (!projectPath) {
       throw new Error('No project path available')

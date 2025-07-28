@@ -848,7 +848,9 @@ mod tests {
         // Should fail due to path traversal
         assert!(result.is_err());
         let error = result.unwrap_err();
-        assert!(error.contains("File outside project directory") || error.contains("Invalid file path"));
+        assert!(
+            error.contains("File outside project directory") || error.contains("Invalid file path")
+        );
 
         // Cleanup
         let _ = fs::remove_dir_all(&project_root);
@@ -917,7 +919,9 @@ mod tests {
 
         assert!(result.is_err());
         let error = result.unwrap_err();
-        assert!(error.contains("File outside project directory") || error.contains("Invalid file path"));
+        assert!(
+            error.contains("File outside project directory") || error.contains("Invalid file path")
+        );
 
         // Cleanup
         let _ = fs::remove_dir_all(&project_root);
@@ -1001,7 +1005,9 @@ mod tests {
 
         assert!(result.is_err());
         let error = result.unwrap_err();
-        assert!(error.contains("File outside project directory") || error.contains("Invalid file path"));
+        assert!(
+            error.contains("File outside project directory") || error.contains("Invalid file path")
+        );
 
         // Cleanup
         let _ = fs::remove_dir_all(&project_root);
@@ -1048,7 +1054,9 @@ mod tests {
 
         assert!(result.is_err());
         let error = result.unwrap_err();
-        assert!(error.contains("File outside project directory") || error.contains("Invalid file path"));
+        assert!(
+            error.contains("File outside project directory") || error.contains("Invalid file path")
+        );
 
         // Cleanup
         let _ = fs::remove_dir_all(&project_root);
@@ -1296,6 +1304,53 @@ Regular markdown content here."#;
         assert_eq!(lines[second_frontmatter_end + 1], "");
         // Should have imports next
         assert!(lines[second_frontmatter_end + 2].starts_with("import"));
+    }
+
+    #[test]
+    fn test_validate_app_data_path_valid() {
+        let temp_dir = std::env::temp_dir();
+        let app_data_dir = temp_dir.join("app_data");
+        let test_file = app_data_dir.join("preferences").join("settings.json");
+
+        // Create test structure
+        fs::create_dir_all(test_file.parent().unwrap()).unwrap();
+        fs::write(&test_file, "test content").unwrap();
+
+        let result = validate_app_data_path(
+            &test_file.to_string_lossy(),
+            &app_data_dir.to_string_lossy(),
+        );
+
+        assert!(result.is_ok());
+
+        // Cleanup
+        let _ = fs::remove_dir_all(&app_data_dir);
+    }
+
+    #[test]
+    fn test_validate_app_data_path_traversal_attack() {
+        let temp_dir = std::env::temp_dir();
+        let app_data_dir = temp_dir.join("app_data");
+        let malicious_path = app_data_dir.join("../../../etc/passwd");
+
+        // Create app data directory
+        fs::create_dir_all(&app_data_dir).unwrap();
+
+        let result = validate_app_data_path(
+            &malicious_path.to_string_lossy(),
+            &app_data_dir.to_string_lossy(),
+        );
+
+        // Should fail due to path traversal
+        assert!(result.is_err());
+        let error = result.unwrap_err();
+        assert!(
+            error.contains("File outside app data directory")
+                || error.contains("Invalid file path")
+        );
+
+        // Cleanup
+        let _ = fs::remove_dir_all(&app_data_dir);
     }
 
     #[test]
