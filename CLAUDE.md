@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Current Task: NONE
+@CLAUDE.local.md
 
 ## Project Overview
 
