@@ -25,7 +25,6 @@ export const Layout: React.FC = () => {
   const { setTheme } = useTheme()
   const { globalSettings } = useProjectStore()
 
-  // Extract all event listeners to custom hook
   const { preferencesOpen, setPreferencesOpen } = useLayoutEventListeners()
 
   // Sync stored theme preference with theme provider on app load

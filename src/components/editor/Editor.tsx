@@ -26,8 +26,6 @@ const EditorViewComponent: React.FC = () => {
   const currentFileId = useEditorStore(state => state.currentFile?.id)
   const focusModeEnabled = useUIStore(state => state.focusModeEnabled)
   const typewriterModeEnabled = useUIStore(state => state.typewriterModeEnabled)
-  // eslint-disable-next-line no-console
-  console.log('[WritingModes] Component render')
   const editorRef = useRef<HTMLDivElement>(null)
   const viewRef = useRef<EditorView | null>(null)
   const [isAltPressed, setIsAltPressed] = useState(false)
@@ -72,25 +70,13 @@ const EditorViewComponent: React.FC = () => {
       typewriterModeEnabled: currentTypewriterMode,
     } = useUIStore.getState()
 
-    // eslint-disable-next-line no-console
-    console.log(
-      '[WritingModes] Mode change handler - focusModeEnabled:',
-      currentFocusMode,
-      'typewriterModeEnabled:',
-      currentTypewriterMode
-    )
     if (viewRef.current) {
-      // eslint-disable-next-line no-console
-      console.log('[WritingModes] Dispatching effects to CodeMirror')
       viewRef.current.dispatch({
         effects: [
           toggleFocusMode.of(currentFocusMode),
           toggleTypewriterMode.of(currentTypewriterMode),
         ],
       })
-    } else {
-      // eslint-disable-next-line no-console
-      console.log('[WritingModes] WARNING: viewRef.current is null')
     }
   }, []) // Stable dependency array per architecture guide
 
@@ -104,7 +90,6 @@ const EditorViewComponent: React.FC = () => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.altKey && !isAltPressed) {
         setIsAltPressed(true)
-        // Update CodeMirror state
         if (viewRef.current) {
           viewRef.current.dispatch({
             effects: altKeyEffect.of(true),
@@ -116,7 +101,6 @@ const EditorViewComponent: React.FC = () => {
     const handleKeyUp = (e: KeyboardEvent) => {
       if (!e.altKey && isAltPressed) {
         setIsAltPressed(false)
-        // Update CodeMirror state
         if (viewRef.current) {
           viewRef.current.dispatch({
             effects: altKeyEffect.of(false),
@@ -128,7 +112,6 @@ const EditorViewComponent: React.FC = () => {
     // Handle window blur to reset Alt state
     const handleBlur = () => {
       setIsAltPressed(false)
-      // Update CodeMirror state
       if (viewRef.current) {
         viewRef.current.dispatch({
           effects: altKeyEffect.of(false),

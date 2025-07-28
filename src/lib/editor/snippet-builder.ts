@@ -25,7 +25,6 @@ export function buildSnippet(
         }
       }
 
-      // Use snippet placeholder with default value or empty
       // Make sure defaultValue is always a string
       return `${p.name}="\${${placeholderIndex++}:${defaultValue || ''}}"`
     })

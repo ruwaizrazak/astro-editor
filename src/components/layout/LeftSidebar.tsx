@@ -107,7 +107,6 @@ export const LeftSidebar: React.FC = () => {
 
   const [fileCounts, setFileCounts] = useState<Record<string, number>>({})
 
-  // Use TanStack Query to fetch collections
   const { data: collections = [] } = useCollectionsQuery(
     projectPath,
     currentProjectSettings?.pathOverrides?.contentDirectory
@@ -116,14 +115,12 @@ export const LeftSidebar: React.FC = () => {
   // Get the current collection
   const currentCollection = collections.find(c => c.name === selectedCollection)
 
-  // Use TanStack Query to fetch files for the selected collection
   const { data: files = [], refetch: refetchFiles } = useCollectionFilesQuery(
     projectPath,
     selectedCollection,
     currentCollection?.path || null
   )
 
-  // Use mutation for renaming files
   const renameMutation = useRenameFileMutation()
 
   // Load file counts for all collections
@@ -196,7 +193,6 @@ export const LeftSidebar: React.FC = () => {
       file,
       position: { x: event.clientX, y: event.clientY },
       onRefresh: () => {
-        // Refresh the file list using TanStack Query
         void refetchFiles()
       },
       onRename: handleRename,

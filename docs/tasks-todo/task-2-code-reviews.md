@@ -10,7 +10,7 @@ Review shadcn components for any which are unnececarry. We may wish to keep a fe
 
 Review all naming (components, methods, variables, functions, files etc) for better readability and consistency of naming convention accross the codebase.
 
-## 3 - Overly clever TS code
+## 3 - Overly clever TS code ✅
 
 - Refactor any overly "clever" TS code so it's easier to understand
 - Remove all unnececary `console.log` and code comments.
