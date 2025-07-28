@@ -15,6 +15,8 @@
 - Keyboard shortcuts for inline markdown formatting, toggling headings, etc. Pasting URLs over selected text inserts a link tag. Holding option makes URLs clickable. Multiple cursors à la VSCode.
 - Autosave & crash recovery.
 
+<iframe width="560" height="315" src="https://www.youtube.com/embed/Gyg2gKDZEWI?si=RpuNMtL1SAB82jdo" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
 ## Supported Astro Projects
 
 - Supported Astro Versions: > 5.x
