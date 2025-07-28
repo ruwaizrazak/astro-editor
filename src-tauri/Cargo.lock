@@ -183,6 +183,7 @@ name = "astro-editor"
 version = "0.1.9"
 dependencies = [
  "chrono",
+ "log",
  "notify",
  "regex",
  "rfd",

@@ -1,5 +1,4 @@
 import { invoke } from '@tauri-apps/api/core'
-import { Command } from '@tauri-apps/plugin-shell'
 import {
   FileText,
   FolderOpen,
@@ -305,17 +304,44 @@ export function generateCollectionCommands(
 }
 
 /**
- * Helper function to execute IDE commands
+ * Allowed IDE commands for display purposes (validation happens in Rust)
+ */
+export const ALLOWED_IDES = [
+  'cursor',
+  'code',
+  'vim',
+  'nvim',
+  'emacs',
+  'subl',
+] as const
+
+/**
+ * Helper function to execute IDE commands using secure Rust backend
  */
 async function executeIdeCommand(ideCommand: string, path: string) {
   try {
-    const command = Command.create(ideCommand, [path])
-    await command.execute()
+    // Call the secure Rust command handler
+    const result = await invoke<string>('open_path_in_ide', {
+      ideCommand,
+      filePath: path,
+    })
+
+    // eslint-disable-next-line no-console
+    console.log('IDE command result:', result)
     toast.success(`Opened in ${ideCommand}`)
   } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error occurred'
+    // eslint-disable-next-line no-console
+    console.error('Failed to execute IDE command:', {
+      ideCommand,
+      path,
+      error: errorMessage,
+      fullError: error,
+    })
+
     toast.error('Failed to open in IDE', {
-      description:
-        error instanceof Error ? error.message : 'Unknown error occurred',
+      description: errorMessage,
     })
   }
 }

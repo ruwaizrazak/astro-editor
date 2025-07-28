@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import {
@@ -11,6 +10,7 @@ import {
 } from '@/components/ui/select'
 import { usePreferences } from '../../../hooks/usePreferences'
 import { useTheme } from '../../../lib/theme-provider'
+import { useAvailableIdes } from '../../../hooks/useAvailableIdes'
 
 const SettingsField: React.FC<{
   label: string
@@ -42,6 +42,7 @@ const SettingsSection: React.FC<{
 export const GeneralPane: React.FC = () => {
   const { globalSettings, updateGlobal } = usePreferences()
   const { setTheme } = useTheme()
+  const { data: availableIdes = [], isLoading: ideLoading } = useAvailableIdes()
 
   const handleIdeCommandChange = useCallback(
     (value: string) => {
@@ -100,13 +101,42 @@ export const GeneralPane: React.FC = () => {
       <SettingsSection title="General">
         <SettingsField
           label="IDE Command"
-          description="Command to open files in your preferred IDE (e.g., 'code', 'cursor')"
+          description="Choose your preferred IDE for opening files and projects"
         >
-          <Input
+          <Select
             value={globalSettings?.general?.ideCommand || ''}
-            onChange={e => handleIdeCommandChange(e.target.value)}
-            placeholder="code"
-          />
+            onValueChange={handleIdeCommandChange}
+            disabled={ideLoading}
+          >
+            <SelectTrigger>
+              <SelectValue
+                placeholder={ideLoading ? 'Loading...' : 'Select IDE'}
+              />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">None</SelectItem>
+              {availableIdes.map(ide => {
+                const labels: Record<string, string> = {
+                  code: 'Visual Studio Code (code)',
+                  cursor: 'Cursor (cursor)',
+                  subl: 'Sublime Text (subl)',
+                  vim: 'Vim (vim)',
+                  nvim: 'Neovim (nvim)',
+                  emacs: 'Emacs (emacs)',
+                }
+                return (
+                  <SelectItem key={ide} value={ide}>
+                    {labels[ide] || `${ide} (${ide})`}
+                  </SelectItem>
+                )
+              })}
+              {availableIdes.length === 0 && !ideLoading && (
+                <SelectItem value="" disabled>
+                  No IDEs detected
+                </SelectItem>
+              )}
+            </SelectContent>
+          </Select>
         </SettingsField>
 
         <SettingsField

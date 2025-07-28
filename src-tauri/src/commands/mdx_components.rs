@@ -1,6 +1,6 @@
 use crate::models::{MdxComponent, PropInfo};
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::rc::Rc;
 use swc_common::sync::Lrc;
 use swc_common::{FileName, SourceMap};
@@ -10,15 +10,40 @@ use swc_ecma_parser::{parse_file_as_module, Syntax, TsSyntax};
 use swc_ecma_visit::{Visit, VisitWith};
 use walkdir::WalkDir;
 
+/// Validates that a file path is within the project boundaries
+///
+/// This function prevents path traversal attacks by ensuring all file operations
+/// stay within the current project root directory.
+fn validate_project_path(file_path: &Path, project_root: &Path) -> Result<PathBuf, String> {
+    // Resolve canonical paths to handle symlinks and .. traversal
+    let canonical_file = file_path
+        .canonicalize()
+        .map_err(|_| "Invalid file path".to_string())?;
+    let canonical_root = project_root
+        .canonicalize()
+        .map_err(|_| "Invalid project root".to_string())?;
+
+    // Ensure file is within project bounds
+    canonical_file
+        .strip_prefix(&canonical_root)
+        .map_err(|_| "File outside project directory".to_string())?;
+
+    Ok(canonical_file)
+}
+
 #[tauri::command]
 pub async fn scan_mdx_components(
     project_path: String,
     mdx_directory: Option<String>,
 ) -> Result<Vec<MdxComponent>, String> {
+    let project_root = Path::new(&project_path);
     let mdx_dir_path = mdx_directory.unwrap_or_else(|| "src/components/mdx".to_string());
-    let mdx_dir = Path::new(&project_path).join(mdx_dir_path);
+    let mdx_dir = project_root.join(mdx_dir_path);
 
-    if !mdx_dir.exists() {
+    // Validate the MDX directory is within project bounds
+    if mdx_dir.exists() {
+        let _validated_mdx_dir = validate_project_path(&mdx_dir, project_root)?;
+    } else {
         return Ok(vec![]);
     }
 
@@ -41,9 +66,19 @@ pub async fn scan_mdx_components(
             continue;
         }
 
-        match parse_astro_component(path, &project_path) {
-            Ok(component) => components.push(component),
-            Err(e) => eprintln!("Error parsing {}: {e}", path.display()),
+        // Validate each component file is within project bounds
+        match validate_project_path(path, project_root) {
+            Ok(_) => match parse_astro_component(path, &project_path) {
+                Ok(component) => components.push(component),
+                Err(e) => eprintln!("Error parsing {}: {e}", path.display()),
+            },
+            Err(e) => {
+                eprintln!(
+                    "Skipping file outside project directory: {}: {e}",
+                    path.display()
+                );
+                continue;
+            }
         }
     }
 
@@ -51,6 +86,10 @@ pub async fn scan_mdx_components(
 }
 
 fn parse_astro_component(path: &Path, project_root: &str) -> Result<MdxComponent, String> {
+    // Validate the component file path is within project bounds
+    let project_root_path = Path::new(project_root);
+    let _validated_path = validate_project_path(path, project_root_path)?;
+
     let content = fs::read_to_string(path).map_err(|e| format!("Failed to read file: {e}"))?;
 
     // Extract component name from filename
@@ -214,6 +253,45 @@ mod tests {
     use tempfile::TempDir;
 
     #[test]
+    fn test_validate_project_path_valid() {
+        let temp_dir = std::env::temp_dir();
+        let project_root = temp_dir.join("test_project");
+        let test_file = project_root.join("components").join("Alert.astro");
+
+        // Create test structure
+        fs::create_dir_all(test_file.parent().unwrap()).unwrap();
+        fs::write(&test_file, "test content").unwrap();
+
+        let result = validate_project_path(&test_file, &project_root);
+
+        assert!(result.is_ok());
+
+        // Cleanup
+        let _ = fs::remove_dir_all(&project_root);
+    }
+
+    #[test]
+    fn test_validate_project_path_traversal_attack() {
+        let temp_dir = std::env::temp_dir();
+        let project_root = temp_dir.join("test_project");
+        let malicious_path = project_root.join("../../../etc/passwd");
+
+        // Create project directory
+        fs::create_dir_all(&project_root).unwrap();
+
+        let result = validate_project_path(&malicious_path, &project_root);
+
+        // Should fail due to path traversal
+        assert!(result.is_err());
+        assert!(result
+            .unwrap_err()
+            .contains("File outside project directory"));
+
+        // Cleanup
+        let _ = fs::remove_dir_all(&project_root);
+    }
+
+    #[test]
     fn test_parse_props_from_typescript() {
         let typescript_code = r#"
             interface Props {
@@ -276,5 +354,23 @@ interface Props {
         assert_eq!(components[0].name, "Alert");
         assert_eq!(components[0].props.len(), 2);
         assert!(components[0].has_slot);
+    }
+
+    #[tokio::test]
+    async fn test_scan_mdx_components_path_traversal_protection() {
+        let temp_dir = TempDir::new().unwrap();
+        let project_root = temp_dir.path().join("project");
+        fs::create_dir_all(&project_root).unwrap();
+
+        // Try to scan outside the project directory
+        let result = scan_mdx_components(
+            project_root.to_str().unwrap().to_string(),
+            Some("../../../etc".to_string()),
+        )
+        .await;
+
+        // Should succeed but return empty results since the path doesn't exist within project bounds
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().len(), 0);
     }
 }

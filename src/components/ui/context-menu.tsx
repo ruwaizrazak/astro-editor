@@ -5,6 +5,7 @@ import { remove } from '@tauri-apps/plugin-fs'
 import { openPath } from '@tauri-apps/plugin-opener'
 import { ask } from '@tauri-apps/plugin-dialog'
 import type { FileEntry } from '../../store'
+import { useProjectStore } from '../../store/projectStore'
 
 interface ContextMenuOptions {
   file: FileEntry
@@ -21,6 +22,16 @@ export class FileContextMenu {
       title: 'Delete File',
       kind: 'warning',
     })
+  }
+
+  private static getIdeCommand(): string | null {
+    try {
+      // Access global settings directly from the store
+      const { globalSettings } = useProjectStore.getState()
+      return globalSettings?.general?.ideCommand || null
+    } catch {
+      return null
+    }
   }
 
   private static generateDuplicatePath(originalPath: string): string {
@@ -46,6 +57,9 @@ export class FileContextMenu {
     onRename,
   }: ContextMenuOptions): Promise<void> {
     try {
+      // Get current IDE setting from global preferences
+      const ideCommand = FileContextMenu.getIdeCommand()
+
       // Create menu items
       const revealItem = await MenuItem.new({
         id: 'reveal-in-finder',
@@ -132,6 +146,27 @@ export class FileContextMenu {
         },
       })
 
+      // Create "Open in IDE" menu item if IDE is configured
+      const openInIdeItem = ideCommand
+        ? await MenuItem.new({
+            id: 'open-in-ide',
+            text: `Open in ${ideCommand}`,
+            action: () => {
+              void (async () => {
+                try {
+                  await invoke('open_path_in_ide', {
+                    ideCommand,
+                    filePath: file.path,
+                  })
+                } catch (error) {
+                  // eslint-disable-next-line no-console
+                  console.error('Failed to open file in IDE:', error)
+                }
+              })()
+            },
+          })
+        : null
+
       const separator = await PredefinedMenuItem.new({
         text: 'separator',
         item: 'Separator',
@@ -162,15 +197,18 @@ export class FileContextMenu {
       })
 
       // Create and show the context menu
+      const menuItems = [
+        revealItem,
+        copyPathItem,
+        duplicateItem,
+        renameItem,
+        ...(openInIdeItem ? [openInIdeItem] : []),
+        separator,
+        deleteItem,
+      ]
+
       const menu = await Menu.new({
-        items: [
-          revealItem,
-          copyPathItem,
-          duplicateItem,
-          renameItem,
-          separator,
-          deleteItem,
-        ],
+        items: menuItems,
       })
 
       // Show the menu at the specified position

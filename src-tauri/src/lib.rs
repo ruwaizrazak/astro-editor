@@ -14,6 +14,9 @@ use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
 #[cfg(target_os = "macos")]
 use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
 
+// Import for PATH environment fix in production builds
+// use fix_path_env;
+
 // Store menu item references for later access
 struct MenuState {
     format_items: HashMap<String, MenuItem<tauri::Wry>>,
@@ -65,6 +68,12 @@ pub fn run() {
             .build())
         .manage(commands::watcher::init_watcher_state())
         .setup(|app| {
+            // Fix PATH environment variable for production builds
+            // This ensures shell commands can find executables like 'code', 'cursor', etc.
+            // if let Err(e) = fix_path_env::fix() {
+            //     eprintln!("Warning: Failed to fix PATH environment: {}", e);
+            // }
+
             // Create menu state
             let mut menu_state = MenuState::new();
 
@@ -333,7 +342,9 @@ pub fn run() {
             get_app_data_dir,
             read_file_content,
             write_file_content,
-            create_directory
+            create_directory,
+            open_path_in_ide,
+            get_available_ides
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

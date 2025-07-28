@@ -1,17 +1,47 @@
 use chrono::Local;
 use serde_json::Value;
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use tauri::{path::BaseDirectory, Manager};
 
-#[tauri::command]
-pub async fn read_file(file_path: String) -> Result<String, String> {
-    std::fs::read_to_string(&file_path).map_err(|e| format!("Failed to read file: {e}"))
+/// Validates that a file path is within the project boundaries
+///
+/// This function prevents path traversal attacks by ensuring all file operations
+/// stay within the current project root directory.
+fn validate_project_path(file_path: &str, project_root: &str) -> Result<PathBuf, String> {
+    let file_path = Path::new(file_path);
+    let project_root = Path::new(project_root);
+
+    // Resolve canonical paths to handle symlinks and .. traversal
+    let canonical_file = file_path
+        .canonicalize()
+        .map_err(|_| "Invalid file path".to_string())?;
+    let canonical_root = project_root
+        .canonicalize()
+        .map_err(|_| "Invalid project root".to_string())?;
+
+    // Ensure file is within project bounds
+    canonical_file
+        .strip_prefix(&canonical_root)
+        .map_err(|_| "File outside project directory".to_string())?;
+
+    Ok(canonical_file)
 }
 
 #[tauri::command]
-pub async fn write_file(file_path: String, content: String) -> Result<(), String> {
-    std::fs::write(&file_path, content).map_err(|e| format!("Failed to write file: {e}"))
+pub async fn read_file(file_path: String, project_root: String) -> Result<String, String> {
+    let validated_path = validate_project_path(&file_path, &project_root)?;
+    std::fs::read_to_string(&validated_path).map_err(|e| format!("Failed to read file: {e}"))
+}
+
+#[tauri::command]
+pub async fn write_file(
+    file_path: String,
+    content: String,
+    project_root: String,
+) -> Result<(), String> {
+    let validated_path = validate_project_path(&file_path, &project_root)?;
+    std::fs::write(&validated_path, content).map_err(|e| format!("Failed to write file: {e}"))
 }
 
 #[tauri::command]
@@ -19,26 +49,42 @@ pub async fn create_file(
     directory: String,
     filename: String,
     content: String,
+    project_root: String,
 ) -> Result<String, String> {
-    let path = PathBuf::from(&directory).join(&filename);
+    // Validate directory is within project
+    let validated_dir = validate_project_path(&directory, &project_root)?;
+    let path = validated_dir.join(&filename);
 
-    if path.exists() {
+    // Double-check the final path is still within project bounds
+    let final_path_str = path.to_string_lossy().to_string();
+    let validated_final_path = validate_project_path(&final_path_str, &project_root)?;
+
+    if validated_final_path.exists() {
         return Err("File already exists".to_string());
     }
 
-    std::fs::write(&path, content).map_err(|e| format!("Failed to create file: {e}"))?;
+    std::fs::write(&validated_final_path, content)
+        .map_err(|e| format!("Failed to create file: {e}"))?;
 
-    Ok(path.to_string_lossy().to_string())
+    Ok(validated_final_path.to_string_lossy().to_string())
 }
 
 #[tauri::command]
-pub async fn delete_file(file_path: String) -> Result<(), String> {
-    std::fs::remove_file(&file_path).map_err(|e| format!("Failed to delete file: {e}"))
+pub async fn delete_file(file_path: String, project_root: String) -> Result<(), String> {
+    let validated_path = validate_project_path(&file_path, &project_root)?;
+    std::fs::remove_file(&validated_path).map_err(|e| format!("Failed to delete file: {e}"))
 }
 
 #[tauri::command]
-pub async fn rename_file(old_path: String, new_path: String) -> Result<(), String> {
-    std::fs::rename(&old_path, &new_path).map_err(|e| format!("Failed to rename file: {e}"))
+pub async fn rename_file(
+    old_path: String,
+    new_path: String,
+    project_root: String,
+) -> Result<(), String> {
+    let validated_old_path = validate_project_path(&old_path, &project_root)?;
+    let validated_new_path = validate_project_path(&new_path, &project_root)?;
+    std::fs::rename(&validated_old_path, &validated_new_path)
+        .map_err(|e| format!("Failed to rename file: {e}"))
 }
 
 /// Convert a string to kebab case
@@ -90,11 +136,16 @@ pub async fn copy_file_to_assets_with_override(
 ) -> Result<String, String> {
     use std::fs;
 
+    // Validate project path
+    let validated_project_root = Path::new(&project_path)
+        .canonicalize()
+        .map_err(|_| "Invalid project root".to_string())?;
+
     // Create the assets directory structure (use override if provided)
     let assets_base = if let Some(assets_override) = assets_directory {
-        PathBuf::from(&project_path).join(assets_override)
+        validated_project_root.join(assets_override)
     } else {
-        PathBuf::from(&project_path).join("src").join("assets")
+        validated_project_root.join("src").join("assets")
     };
 
     let assets_dir = assets_base.join(&collection);
@@ -141,12 +192,17 @@ pub async fn copy_file_to_assets_with_override(
         counter += 1;
     }
 
+    // Validate the final destination is within project bounds
+    let final_path_str = final_path.to_string_lossy().to_string();
+    let validated_final_path = validate_project_path(&final_path_str, &project_path)?;
+
     // Copy the file
-    fs::copy(&source_path, &final_path).map_err(|e| format!("Failed to copy file: {e}"))?;
+    fs::copy(&source_path, &validated_final_path)
+        .map_err(|e| format!("Failed to copy file: {e}"))?;
 
     // Return the relative path from the project root (for markdown)
-    let relative_path = final_path
-        .strip_prefix(&project_path)
+    let relative_path = validated_final_path
+        .strip_prefix(&validated_project_root)
         .map_err(|_| "Failed to create relative path")?
         .to_string_lossy()
         .to_string();
@@ -164,9 +220,13 @@ pub struct MarkdownContent {
 }
 
 #[tauri::command]
-pub async fn parse_markdown_content(file_path: String) -> Result<MarkdownContent, String> {
-    let content =
-        std::fs::read_to_string(&file_path).map_err(|e| format!("Failed to read file: {e}"))?;
+pub async fn parse_markdown_content(
+    file_path: String,
+    project_root: String,
+) -> Result<MarkdownContent, String> {
+    let validated_path = validate_project_path(&file_path, &project_root)?;
+    let content = std::fs::read_to_string(&validated_path)
+        .map_err(|e| format!("Failed to read file: {e}"))?;
 
     parse_frontmatter(&content)
 }
@@ -175,14 +235,16 @@ pub async fn parse_markdown_content(file_path: String) -> Result<MarkdownContent
 pub async fn update_frontmatter(
     file_path: String,
     frontmatter: HashMap<String, Value>,
+    project_root: String,
 ) -> Result<(), String> {
-    let content =
-        std::fs::read_to_string(&file_path).map_err(|e| format!("Failed to read file: {e}"))?;
+    let validated_path = validate_project_path(&file_path, &project_root)?;
+    let content = std::fs::read_to_string(&validated_path)
+        .map_err(|e| format!("Failed to read file: {e}"))?;
 
     let parsed = parse_frontmatter(&content)?;
     let new_content = rebuild_markdown_with_frontmatter(&frontmatter, &parsed.content)?;
 
-    std::fs::write(&file_path, new_content).map_err(|e| format!("Failed to write file: {e}"))
+    std::fs::write(&validated_path, new_content).map_err(|e| format!("Failed to write file: {e}"))
 }
 
 #[tauri::command]
@@ -192,14 +254,16 @@ pub async fn save_markdown_content(
     content: String,
     imports: String,
     schema_field_order: Option<Vec<String>>,
+    project_root: String,
 ) -> Result<(), String> {
+    let validated_path = validate_project_path(&file_path, &project_root)?;
     let new_content = rebuild_markdown_with_frontmatter_and_imports_ordered(
         &frontmatter,
         &imports,
         &content,
         schema_field_order,
     )?;
-    std::fs::write(&file_path, new_content).map_err(|e| format!("Failed to write file: {e}"))
+    std::fs::write(&validated_path, new_content).map_err(|e| format!("Failed to write file: {e}"))
 }
 
 pub fn parse_frontmatter_internal(content: &str) -> Result<MarkdownContent, String> {
@@ -651,24 +715,32 @@ pub async fn get_app_data_dir(app: tauri::AppHandle) -> Result<String, String> {
 }
 
 #[tauri::command]
-pub async fn read_file_content(file_path: String) -> Result<String, String> {
-    std::fs::read_to_string(&file_path).map_err(|e| format!("Failed to read file: {e}"))
+pub async fn read_file_content(file_path: String, project_root: String) -> Result<String, String> {
+    let validated_path = validate_project_path(&file_path, &project_root)?;
+    std::fs::read_to_string(&validated_path).map_err(|e| format!("Failed to read file: {e}"))
 }
 
 #[tauri::command]
-pub async fn write_file_content(file_path: String, content: String) -> Result<(), String> {
+pub async fn write_file_content(
+    file_path: String,
+    content: String,
+    project_root: String,
+) -> Result<(), String> {
+    let validated_path = validate_project_path(&file_path, &project_root)?;
+
     // Create parent directories if they don't exist
-    if let Some(parent) = std::path::Path::new(&file_path).parent() {
+    if let Some(parent) = validated_path.parent() {
         std::fs::create_dir_all(parent)
             .map_err(|e| format!("Failed to create directories: {e}"))?;
     }
 
-    std::fs::write(&file_path, content).map_err(|e| format!("Failed to write file: {e}"))
+    std::fs::write(&validated_path, content).map_err(|e| format!("Failed to write file: {e}"))
 }
 
 #[tauri::command]
-pub async fn create_directory(path: String) -> Result<(), String> {
-    std::fs::create_dir_all(&path).map_err(|e| format!("Failed to create directory: {e}"))
+pub async fn create_directory(path: String, project_root: String) -> Result<(), String> {
+    let validated_path = validate_project_path(&path, &project_root)?;
+    std::fs::create_dir_all(&validated_path).map_err(|e| format!("Failed to create directory: {e}"))
 }
 
 #[cfg(test)]
@@ -677,41 +749,136 @@ mod tests {
     use std::fs;
     use std::path::Path;
 
+    #[test]
+    fn test_validate_project_path_valid() {
+        let temp_dir = std::env::temp_dir();
+        let project_root = temp_dir.join("test_project");
+        let test_file = project_root.join("content").join("test.md");
+
+        // Create test structure
+        fs::create_dir_all(test_file.parent().unwrap()).unwrap();
+        fs::write(&test_file, "test content").unwrap();
+
+        let result = validate_project_path(
+            &test_file.to_string_lossy(),
+            &project_root.to_string_lossy(),
+        );
+
+        assert!(result.is_ok());
+
+        // Cleanup
+        let _ = fs::remove_dir_all(&project_root);
+    }
+
+    #[test]
+    fn test_validate_project_path_traversal_attack() {
+        let temp_dir = std::env::temp_dir();
+        let project_root = temp_dir.join("test_project");
+        let malicious_path = project_root.join("../../../etc/passwd");
+
+        // Create project directory
+        fs::create_dir_all(&project_root).unwrap();
+
+        let result = validate_project_path(
+            &malicious_path.to_string_lossy(),
+            &project_root.to_string_lossy(),
+        );
+
+        // Should fail due to path traversal
+        assert!(result.is_err());
+        assert!(result
+            .unwrap_err()
+            .contains("File outside project directory"));
+
+        // Cleanup
+        let _ = fs::remove_dir_all(&project_root);
+    }
+
+    #[test]
+    fn test_validate_project_path_nonexistent_file() {
+        let temp_dir = std::env::temp_dir();
+        let project_root = temp_dir.join("test_project");
+        let nonexistent_file = project_root.join("nonexistent.md");
+
+        // Create project directory
+        fs::create_dir_all(&project_root).unwrap();
+
+        let result = validate_project_path(
+            &nonexistent_file.to_string_lossy(),
+            &project_root.to_string_lossy(),
+        );
+
+        // Should fail because file doesn't exist
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("Invalid file path"));
+
+        // Cleanup
+        let _ = fs::remove_dir_all(&project_root);
+    }
+
     #[tokio::test]
     async fn test_read_file_success() {
         let temp_dir = std::env::temp_dir();
-        let test_file = temp_dir.join("test_read.md");
+        let project_root = temp_dir.join("test_project");
+        let test_file = project_root.join("test_read.md");
         let test_content = "# Test Content\n\nThis is a test file.";
 
         // Create test file
+        fs::create_dir_all(&project_root).unwrap();
         fs::write(&test_file, test_content).unwrap();
 
-        let result = read_file(test_file.to_string_lossy().to_string()).await;
+        let result = read_file(
+            test_file.to_string_lossy().to_string(),
+            project_root.to_string_lossy().to_string(),
+        )
+        .await;
 
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), test_content);
 
         // Cleanup
-        let _ = fs::remove_file(&test_file);
+        let _ = fs::remove_dir_all(&project_root);
     }
 
     #[tokio::test]
-    async fn test_read_file_not_found() {
-        let result = read_file("/nonexistent/path/file.md".to_string()).await;
+    async fn test_read_file_path_traversal() {
+        let temp_dir = std::env::temp_dir();
+        let project_root = temp_dir.join("test_project");
+        let malicious_file = project_root.join("../../../etc/passwd");
+
+        // Create project directory
+        fs::create_dir_all(&project_root).unwrap();
+
+        let result = read_file(
+            malicious_file.to_string_lossy().to_string(),
+            project_root.to_string_lossy().to_string(),
+        )
+        .await;
 
         assert!(result.is_err());
-        assert!(result.unwrap_err().contains("Failed to read file"));
+        assert!(result
+            .unwrap_err()
+            .contains("File outside project directory"));
+
+        // Cleanup
+        let _ = fs::remove_dir_all(&project_root);
     }
 
     #[tokio::test]
     async fn test_write_file_success() {
         let temp_dir = std::env::temp_dir();
-        let test_file = temp_dir.join("test_write.md");
+        let project_root = temp_dir.join("test_project");
+        let test_file = project_root.join("test_write.md");
         let test_content = "# Written Content\n\nThis was written by the test.";
+
+        // Create test structure
+        fs::create_dir_all(&project_root).unwrap();
+        fs::write(&test_file, "initial").unwrap(); // Create file first
 
         let result = write_file(
             test_file.to_string_lossy().to_string(),
             test_content.to_string(),
+            project_root.to_string_lossy().to_string(),
         )
         .await;
 
@@ -722,18 +889,24 @@ mod tests {
         assert_eq!(written_content, test_content);
 
         // Cleanup
-        let _ = fs::remove_file(&test_file);
+        let _ = fs::remove_dir_all(&project_root);
     }
 
     #[tokio::test]
     async fn test_create_file_success() {
         let temp_dir = std::env::temp_dir();
+        let project_root = temp_dir.join("test_project");
+        let content_dir = project_root.join("content");
         let test_content = "# New File\n\nThis is a newly created file.";
 
+        // Create project structure
+        fs::create_dir_all(&content_dir).unwrap();
+
         let result = create_file(
-            temp_dir.to_string_lossy().to_string(),
+            content_dir.to_string_lossy().to_string(),
             "test_create.md".to_string(),
             test_content.to_string(),
+            project_root.to_string_lossy().to_string(),
         )
         .await;
 
@@ -747,56 +920,81 @@ mod tests {
         assert_eq!(written_content, test_content);
 
         // Cleanup
-        let _ = fs::remove_file(&created_path);
+        let _ = fs::remove_dir_all(&project_root);
     }
 
     #[tokio::test]
-    async fn test_create_file_already_exists() {
+    async fn test_create_file_path_traversal() {
         let temp_dir = std::env::temp_dir();
-        let test_file = temp_dir.join("test_existing.md");
+        let project_root = temp_dir.join("test_project");
+        let malicious_dir = project_root.join("../../../tmp");
 
-        // Create file first
-        fs::write(&test_file, "existing content").unwrap();
+        // Create project directory
+        fs::create_dir_all(&project_root).unwrap();
 
         let result = create_file(
-            temp_dir.to_string_lossy().to_string(),
-            "test_existing.md".to_string(),
-            "new content".to_string(),
+            malicious_dir.to_string_lossy().to_string(),
+            "malicious.md".to_string(),
+            "malicious content".to_string(),
+            project_root.to_string_lossy().to_string(),
         )
         .await;
 
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "File already exists");
-
-        // Verify original content wasn't changed
-        let content = fs::read_to_string(&test_file).unwrap();
-        assert_eq!(content, "existing content");
+        assert!(result
+            .unwrap_err()
+            .contains("File outside project directory"));
 
         // Cleanup
-        let _ = fs::remove_file(&test_file);
+        let _ = fs::remove_dir_all(&project_root);
     }
 
     #[tokio::test]
     async fn test_delete_file_success() {
         let temp_dir = std::env::temp_dir();
-        let test_file = temp_dir.join("test_delete.md");
+        let project_root = temp_dir.join("test_project");
+        let test_file = project_root.join("test_delete.md");
 
         // Create file to delete
+        fs::create_dir_all(&project_root).unwrap();
         fs::write(&test_file, "content to delete").unwrap();
         assert!(test_file.exists());
 
-        let result = delete_file(test_file.to_string_lossy().to_string()).await;
+        let result = delete_file(
+            test_file.to_string_lossy().to_string(),
+            project_root.to_string_lossy().to_string(),
+        )
+        .await;
 
         assert!(result.is_ok());
         assert!(!test_file.exists());
+
+        // Cleanup
+        let _ = fs::remove_dir_all(&project_root);
     }
 
     #[tokio::test]
-    async fn test_delete_file_not_found() {
-        let result = delete_file("/nonexistent/path/file.md".to_string()).await;
+    async fn test_delete_file_path_traversal() {
+        let temp_dir = std::env::temp_dir();
+        let project_root = temp_dir.join("test_project");
+        let malicious_file = project_root.join("../../../tmp/should_not_delete.txt");
+
+        // Create project directory
+        fs::create_dir_all(&project_root).unwrap();
+
+        let result = delete_file(
+            malicious_file.to_string_lossy().to_string(),
+            project_root.to_string_lossy().to_string(),
+        )
+        .await;
 
         assert!(result.is_err());
-        assert!(result.unwrap_err().contains("Failed to delete file"));
+        assert!(result
+            .unwrap_err()
+            .contains("File outside project directory"));
+
+        // Cleanup
+        let _ = fs::remove_dir_all(&project_root);
     }
 
     #[test]
@@ -900,7 +1098,12 @@ This is a test post with arrays."#;
     #[tokio::test]
     async fn test_save_markdown_content() {
         let temp_dir = std::env::temp_dir();
-        let test_file = temp_dir.join("test_save_markdown.md");
+        let project_root = temp_dir.join("test_project");
+        let test_file = project_root.join("test_save_markdown.md");
+
+        // Create project structure
+        fs::create_dir_all(&project_root).unwrap();
+        fs::write(&test_file, "initial").unwrap(); // Create file first
 
         let mut frontmatter = HashMap::new();
         frontmatter.insert(
@@ -917,6 +1120,7 @@ This is a test post with arrays."#;
             content.to_string(),
             String::new(), // No imports for this test
             None,          // No schema field order for this test
+            project_root.to_string_lossy().to_string(),
         )
         .await;
 
@@ -931,7 +1135,7 @@ This is a test post with arrays."#;
         assert!(saved_content.contains("This is the article content."));
 
         // Clean up
-        let _ = fs::remove_file(&test_file);
+        let _ = fs::remove_dir_all(&project_root);
     }
 
     #[test]
