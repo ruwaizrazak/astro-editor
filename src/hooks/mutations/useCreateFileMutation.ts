@@ -18,6 +18,7 @@ const createFile = (payload: CreateFilePayload) => {
     directory: payload.directory,
     filename: payload.filename,
     content: payload.content,
+    projectRoot: payload.projectPath,
   })
 }
 

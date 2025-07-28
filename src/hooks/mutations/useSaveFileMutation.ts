@@ -23,6 +23,7 @@ const saveFile = (payload: SaveFilePayload) => {
     content: payload.content,
     imports: payload.imports,
     schemaFieldOrder: payload.schemaFieldOrder,
+    projectRoot: payload.projectPath,
   })
 }
 

@@ -79,7 +79,7 @@ describe('Project Registry System', () => {
     mockInvoke.mockResolvedValueOnce(undefined) // create_directory (preferences)
     mockInvoke.mockResolvedValueOnce(undefined) // create_directory (projects)
     mockInvoke.mockResolvedValueOnce('/mock/app/data') // get_app_data_dir for save path
-    mockInvoke.mockResolvedValueOnce(undefined) // write_file_content (save registry)
+    mockInvoke.mockResolvedValueOnce(undefined) // write_app_data_file (save registry)
 
     const projectId = await manager.registerProject(mockProjectPath)
 
@@ -106,13 +106,13 @@ describe('Project Registry System', () => {
     const mockPackageJson = JSON.stringify({ name: 'test-project' })
 
     mockInvoke.mockResolvedValueOnce(mockPackageJson) // read_file_content (package.json)
-    mockInvoke.mockResolvedValueOnce(undefined) // write_file_content (save registry)
+    mockInvoke.mockResolvedValueOnce(undefined) // write_app_data_file (save registry)
 
     const projectId = await manager.registerProject(mockProjectPath)
 
     // Mock loading project data (no project-specific settings)
     mockInvoke.mockRejectedValueOnce(new Error('File not found')) // read_file_content (project data)
-    mockInvoke.mockResolvedValueOnce(undefined) // write_file_content (save project data)
+    mockInvoke.mockResolvedValueOnce(undefined) // write_app_data_file (save project data)
 
     const effectiveSettings = await manager.getEffectiveSettings(projectId)
 
@@ -137,7 +137,7 @@ describe('Project Registry System', () => {
     mockInvoke.mockResolvedValueOnce(undefined) // create_directory (preferences)
     mockInvoke.mockResolvedValueOnce(undefined) // create_directory (projects)
     mockInvoke.mockResolvedValueOnce('/mock/app/data') // get_app_data_dir for save path
-    mockInvoke.mockResolvedValueOnce(undefined) // write_file_content (save registry)
+    mockInvoke.mockResolvedValueOnce(undefined) // write_app_data_file (save registry)
 
     await manager.registerProject(originalPath)
 
@@ -151,7 +151,7 @@ describe('Project Registry System', () => {
     mockInvoke.mockResolvedValueOnce(undefined) // create_directory (preferences)
     mockInvoke.mockResolvedValueOnce(undefined) // create_directory (projects)
     mockInvoke.mockResolvedValueOnce('/mock/app/data') // get_app_data_dir for save path
-    mockInvoke.mockResolvedValueOnce(undefined) // write_file_content (save registry)
+    mockInvoke.mockResolvedValueOnce(undefined) // write_app_data_file (save registry)
 
     const newProjectId = await manager.registerProject(newPath)
 

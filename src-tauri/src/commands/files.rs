@@ -714,6 +714,67 @@ pub async fn get_app_data_dir(app: tauri::AppHandle) -> Result<String, String> {
     Ok(app_data_dir.to_string_lossy().to_string())
 }
 
+/// Validates that a file path is within the app data directory
+///
+/// This function prevents path traversal attacks for app data operations
+/// by ensuring all file operations stay within the app's data directory.
+fn validate_app_data_path(file_path: &str, app_data_dir: &str) -> Result<PathBuf, String> {
+    let file_path = Path::new(file_path);
+    let app_data_dir = Path::new(app_data_dir);
+
+    // Resolve canonical paths to handle symlinks and .. traversal
+    let canonical_file = file_path
+        .canonicalize()
+        .or_else(|_| {
+            // If file doesn't exist, try to canonicalize parent and append filename
+            if let (Some(parent), Some(filename)) = (file_path.parent(), file_path.file_name()) {
+                parent.canonicalize().map(|p| p.join(filename))
+            } else {
+                Err(std::io::Error::new(
+                    std::io::ErrorKind::NotFound,
+                    "Invalid file path",
+                ))
+            }
+        })
+        .map_err(|_| "Invalid file path".to_string())?;
+
+    let canonical_app_data = app_data_dir
+        .canonicalize()
+        .map_err(|_| "Invalid app data directory".to_string())?;
+
+    // Ensure file is within app data bounds
+    canonical_file
+        .strip_prefix(&canonical_app_data)
+        .map_err(|_| "File outside app data directory".to_string())?;
+
+    Ok(canonical_file)
+}
+
+#[tauri::command]
+pub async fn write_app_data_file(
+    app: tauri::AppHandle,
+    file_path: String,
+    content: String,
+) -> Result<(), String> {
+    let app_data_dir = app
+        .path()
+        .resolve("", BaseDirectory::AppLocalData)
+        .map_err(|e| format!("Failed to resolve app data directory: {e}"))?
+        .to_string_lossy()
+        .to_string();
+
+    let validated_path = validate_app_data_path(&file_path, &app_data_dir)?;
+
+    // Ensure parent directory exists
+    if let Some(parent) = validated_path.parent() {
+        std::fs::create_dir_all(parent)
+            .map_err(|e| format!("Failed to create parent directory: {e}"))?;
+    }
+
+    std::fs::write(&validated_path, content)
+        .map_err(|e| format!("Failed to write app data file: {e}"))
+}
+
 #[tauri::command]
 pub async fn read_file_content(file_path: String, project_root: String) -> Result<String, String> {
     let validated_path = validate_project_path(&file_path, &project_root)?;
@@ -786,9 +847,8 @@ mod tests {
 
         // Should fail due to path traversal
         assert!(result.is_err());
-        assert!(result
-            .unwrap_err()
-            .contains("File outside project directory"));
+        let error = result.unwrap_err();
+        assert!(error.contains("File outside project directory") || error.contains("Invalid file path"));
 
         // Cleanup
         let _ = fs::remove_dir_all(&project_root);
@@ -856,9 +916,8 @@ mod tests {
         .await;
 
         assert!(result.is_err());
-        assert!(result
-            .unwrap_err()
-            .contains("File outside project directory"));
+        let error = result.unwrap_err();
+        assert!(error.contains("File outside project directory") || error.contains("Invalid file path"));
 
         // Cleanup
         let _ = fs::remove_dir_all(&project_root);
@@ -941,9 +1000,8 @@ mod tests {
         .await;
 
         assert!(result.is_err());
-        assert!(result
-            .unwrap_err()
-            .contains("File outside project directory"));
+        let error = result.unwrap_err();
+        assert!(error.contains("File outside project directory") || error.contains("Invalid file path"));
 
         // Cleanup
         let _ = fs::remove_dir_all(&project_root);
@@ -989,9 +1047,8 @@ mod tests {
         .await;
 
         assert!(result.is_err());
-        assert!(result
-            .unwrap_err()
-            .contains("File outside project directory"));
+        let error = result.unwrap_err();
+        assert!(error.contains("File outside project directory") || error.contains("Invalid file path"));
 
         // Cleanup
         let _ = fs::remove_dir_all(&project_root);

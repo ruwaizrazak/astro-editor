@@ -53,6 +53,7 @@ export async function discoverProject(
     const packageJsonPath = `${projectPath}/package.json`
     const packageJsonContent = await invoke<string>('read_file_content', {
       filePath: packageJsonPath,
+      projectRoot: projectPath,
     })
 
     const packageJson = JSON.parse(packageJsonContent) as { name?: string }
@@ -94,6 +95,7 @@ export async function isSameProject(
     const packageJsonPath = `${newPath}/package.json`
     const packageJsonContent = await invoke<string>('read_file_content', {
       filePath: packageJsonPath,
+      projectRoot: newPath,
     })
 
     const packageJson = JSON.parse(packageJsonContent) as { name?: string }

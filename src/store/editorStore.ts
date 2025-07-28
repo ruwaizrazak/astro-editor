@@ -63,11 +63,29 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
   // Actions
   openFile: async (file: FileEntry) => {
+    // Get project path from project store (will be accessed via custom events)
+    let projectPath: string | null = null
+    try {
+      // Dispatch event to get project path from project store
+      const projectPathEvent = new CustomEvent('get-project-path')
+      window.dispatchEvent(projectPathEvent)
+      // For now, we'll get it from localStorage as fallback
+      projectPath = localStorage.getItem('astro-editor-last-project')
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.warn('Could not get project path for open operation:', error)
+    }
+
+    if (!projectPath) {
+      throw new Error('No project path available')
+    }
+
     try {
       const markdownContent = await invoke<MarkdownContent>(
         'parse_markdown_content',
         {
           filePath: file.path,
+          projectRoot: projectPath,
         }
       )
 
@@ -137,6 +155,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       console.warn('Could not get project path for save operation:', error)
     }
 
+    if (!projectPath) {
+      throw new Error('No project path available')
+    }
+
     try {
       // Get schema field order from collections data via custom event
       let schemaFieldOrder: string[] | null = null
@@ -194,6 +216,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         content: editorContent,
         imports,
         schemaFieldOrder,
+        projectRoot: projectPath,
       })
 
       // Clear auto-save timeout since we just saved

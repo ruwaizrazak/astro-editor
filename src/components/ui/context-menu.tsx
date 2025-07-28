@@ -60,6 +60,12 @@ export class FileContextMenu {
       // Get current IDE setting from global preferences
       const ideCommand = FileContextMenu.getIdeCommand()
 
+      // Get project path from store
+      const { projectPath } = useProjectStore.getState()
+      if (!projectPath) {
+        throw new Error('No project path available')
+      }
+
       // Create menu items
       const revealItem = await MenuItem.new({
         id: 'reveal-in-finder',
@@ -109,6 +115,7 @@ export class FileContextMenu {
               // Read the original file content
               const content = await invoke('read_file', {
                 filePath: file.path,
+                projectRoot: projectPath,
               })
 
               // Parse the duplicate path into directory and filename
@@ -117,7 +124,7 @@ export class FileContextMenu {
               const filename = duplicatePath.substring(lastSlashIndex + 1)
 
               // Create the duplicate file
-              await invoke('create_file', { directory, filename, content })
+              await invoke('create_file', { directory, filename, content, projectRoot: projectPath })
 
               // Refresh the file list if callback is provided
               if (onRefresh) {

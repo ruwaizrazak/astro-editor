@@ -16,6 +16,7 @@ const renameFile = (payload: RenameFilePayload) => {
   return invoke('rename_file', {
     oldPath: payload.oldPath,
     newPath: payload.newPath,
+    projectRoot: payload.projectPath,
   })
 }
 

@@ -34,7 +34,8 @@
       "Bash(rmdir:*)",
       "WebFetch(domain:ia.net)",
       "Bash(git mv:*)",
-      "WebFetch(domain:docs.anthropic.com)"
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(RUST_BACKTRACE=1 npm run rust:test)"
     ],
     "deny": []
   }

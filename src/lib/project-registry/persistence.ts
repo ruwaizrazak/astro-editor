@@ -70,7 +70,7 @@ export async function saveProjectRegistry(
     await ensurePreferencesDir()
     const { projectRegistryPath } = await getAppSupportPaths()
 
-    await invoke('write_file_content', {
+    await invoke('write_app_data_file', {
       filePath: projectRegistryPath,
       content: JSON.stringify(registry, null, 2),
     })
@@ -131,7 +131,7 @@ export async function saveGlobalSettings(
     await ensurePreferencesDir()
     const { globalSettingsPath } = await getAppSupportPaths()
 
-    await invoke('write_file_content', {
+    await invoke('write_app_data_file', {
       filePath: globalSettingsPath,
       content: JSON.stringify(settings, null, 2),
     })
@@ -174,7 +174,7 @@ export async function saveProjectData(
     const { projectsDir } = await getAppSupportPaths()
     const projectFilePath = `${projectsDir}/${projectId}.json`
 
-    await invoke('write_file_content', {
+    await invoke('write_app_data_file', {
       filePath: projectFilePath,
       content: JSON.stringify(data, null, 2),
     })
