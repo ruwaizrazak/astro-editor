@@ -1,16 +1,112 @@
 use crate::models::{Collection, FileEntry};
 use crate::parser::parse_astro_config;
+use log::warn;
+use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
+use tauri::Emitter;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct RustToastEvent {
+    r#type: String,
+    message: String,
+    description: Option<String>,
+    duration: Option<u64>,
+}
+
+/// Send a toast notification to the frontend
+fn send_toast_notification(
+    app: &tauri::AppHandle,
+    toast_type: &str,
+    message: &str,
+    description: Option<&str>,
+) -> Result<(), tauri::Error> {
+    let toast_event = RustToastEvent {
+        r#type: toast_type.to_string(),
+        message: message.to_string(),
+        description: description.map(|s| s.to_string()),
+        duration: None,
+    };
+
+    app.emit("rust-toast", toast_event)?;
+    Ok(())
+}
+
+/// Check if a directory path is in the blocked/dangerous list
+fn is_blocked_directory(path: &Path) -> bool {
+    let path_str = path.to_string_lossy();
+
+    // List of blocked directory patterns (matching our Tauri capabilities deny list)
+    let blocked_patterns = [
+        "/System/",
+        "/usr/",
+        "/etc/",
+        "/bin/",
+        "/sbin/",
+        "/Library/Frameworks/",
+        "/Library/Extensions/",
+        "/Library/Keychains/", // Should be ~/Library/Keychains/ but we'll catch both
+        "/.ssh/",
+        "/.aws/",
+        "/.docker/",
+    ];
+
+    for pattern in &blocked_patterns {
+        if path_str.starts_with(pattern) {
+            return true;
+        }
+    }
+
+    // Also check for home directory patterns
+    if let Some(home) = dirs::home_dir() {
+        let home_str = home.to_string_lossy();
+        let blocked_home_patterns = [
+            format!("{home_str}/Library/Keychains/"),
+            format!("{home_str}/.ssh/"),
+            format!("{home_str}/.aws/"),
+            format!("{home_str}/.docker/"),
+        ];
+
+        for pattern in &blocked_home_patterns {
+            if path_str.starts_with(pattern) {
+                return true;
+            }
+        }
+    }
+
+    false
+}
 
 #[tauri::command]
-pub async fn select_project_folder(_app: tauri::AppHandle) -> Result<Option<String>, String> {
+pub async fn select_project_folder(app: tauri::AppHandle) -> Result<Option<String>, String> {
     let file_dialog = rfd::AsyncFileDialog::new()
         .set_title("Select Astro Project Folder")
         .pick_folder()
         .await;
 
     match file_dialog {
-        Some(folder) => Ok(Some(folder.path().to_string_lossy().to_string())),
+        Some(folder) => {
+            let folder_path = folder.path();
+
+            // Check if the selected directory is in a blocked location
+            if is_blocked_directory(folder_path) {
+                let path_str = folder_path.to_string_lossy();
+                warn!("User attempted to open project in blocked directory: {path_str}");
+
+                // Send toast notification to user
+                let _ = send_toast_notification(
+                    &app,
+                    "error",
+                    "Cannot open project in this directory",
+                    Some("This directory is restricted for security reasons. Please choose a different location."),
+                );
+
+                return Err(format!(
+                    "Cannot open project in restricted directory: {path_str}"
+                ));
+            }
+
+            Ok(Some(folder_path.to_string_lossy().to_string()))
+        }
         None => Ok(None),
     }
 }

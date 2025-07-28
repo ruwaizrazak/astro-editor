@@ -59,6 +59,23 @@ my-astro-site
 
 The paths to the _Assets_, _Content_, and _MDX Components_ directories (relative to the project root) are configurable per project, but their internal structures are not.
 
+### Directory Restrictions
+
+For security reasons, Astro Editor cannot open projects located in certain system directories. If you attempt to open a project in one of these locations, you'll see an error message asking you to choose a different location.
+
+**Restricted directories:**
+- `/System/` - macOS system files
+- `/usr/` - Unix system resources  
+- `/etc/` - System configuration files
+- `/bin/` and `/sbin/` - System binaries
+- `/Library/Frameworks/` and `/Library/Extensions/` - System frameworks
+- `~/Library/Keychains/` - Keychain data
+- `~/.ssh/` - SSH keys and configuration
+- `~/.aws/` - AWS credentials
+- `~/.docker/` - Docker configuration
+
+These restrictions help protect sensitive system files while still allowing you to open Astro projects stored in typical development locations like `~/Documents/`, `~/Desktop/`, `~/Projects/`, or anywhere else outside the restricted areas.
+
 ### Quick Start
 
 Getting started with Astro Editor takes just a few steps. The application is designed to work with existing Astro projects that use content collections.

@@ -75,15 +75,11 @@ fn validate_file_path(path: &str) -> Result<(), String> {
 
 #[tauri::command]
 pub async fn open_path_in_ide(ide_command: String, file_path: String) -> Result<String, String> {
-    info!(
-        "Attempting to open path in IDE: {ide_command} -> {file_path}"
-    );
+    info!("Attempting to open path in IDE: {ide_command} -> {file_path}");
 
     // Validate IDE command
     if !validate_ide_command(&ide_command) {
-        let error_msg = format!(
-            "Invalid IDE command '{ide_command}'. Allowed: {ALLOWED_IDES:?}"
-        );
+        let error_msg = format!("Invalid IDE command '{ide_command}'. Allowed: {ALLOWED_IDES:?}");
         error!("{error_msg}");
         return Err(error_msg);
     }

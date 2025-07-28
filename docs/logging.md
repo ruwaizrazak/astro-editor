@@ -30,6 +30,33 @@ await warn('Warning messages')
 await error('Error messages')
 ```
 
+### Rust Backend Logging
+
+For logging from Rust commands, use the standard `log` crate which integrates with the Tauri log plugin:
+
+```rust
+use log::{debug, error, info, warn};
+
+// Usage in Tauri commands
+#[tauri::command]
+pub async fn my_command() -> Result<String, String> {
+    info!("Command started");
+    debug!("Debug information with variable: {}", some_var);
+    warn!("Warning about something: {warning_msg}");
+    error!("Error occurred: {error_msg}");
+    
+    Ok("Success".to_string())
+}
+```
+
+**Rust Log Levels:**
+- `debug!()` - Development debugging info
+- `info!()` - General information 
+- `warn!()` - Warning messages
+- `error!()` - Error messages
+
+**Note:** Use modern Rust formatting (`{variable}`) instead of old-style (`{}`, variable) to satisfy clippy linting.
+
 ## What Gets Logged
 
 **Auto-Updater:**
@@ -44,10 +71,19 @@ await error('Error messages')
 - Settings saves
 
 **File Operations:**
-- File opening failures
-- Save failures and recovery
-- Recovery data saves
-- Crash report saves
+- File opening failures (Rust backend)
+- Save failures and recovery (Rust backend)
+- Recovery data saves (Rust backend)  
+- Crash report saves (Rust backend)
+
+**IDE Integration:**
+- IDE command execution attempts (Rust backend)
+- PATH environment fixes (Rust backend)
+- Command failures and suggestions (Rust backend)
+
+**Security Operations:**
+- Blocked directory access attempts (Rust backend)
+- Path validation failures (Rust backend)
 
 ## Links
 
