@@ -13,14 +13,14 @@ Create a lightweight, floating note capture window that appears on top of all ot
 ### Window Behavior
 
 - Global keyboard shortcut activation (system-wide, works when app is closed)
-- Floating window that appears on top of all other applications
+- Floating window that appears on top of all other applications. Remains until manually dismissed
 - Compact, focused interface optimized for quick text entry
 - Auto-saves and closes when user presses designated save shortcut
 - Can be dismissed/canceled without saving
 
 ### Editor Features
 
-- Simplified markdown editor (subset of main editor features)
+- Simplified markdown editor (subset of main editor features) - should just do normal markdown highlighting. No need for slash commands and the like. Design based on current editor tho.
 - Basic frontmatter editing capabilities
 - Auto-completion for common fields
 - Real-time preview of markdown formatting
@@ -28,8 +28,6 @@ Create a lightweight, floating note capture window that appears on top of all ot
 ### Collection Management
 
 - User preference to set default "quick notes" collection
-- Option to switch between collections within the quick entry window
-- Remembers last-used collection for subsequent quick entries
 - Validates that selected collection exists and is accessible
 
 ### User Experience
@@ -38,6 +36,7 @@ Create a lightweight, floating note capture window that appears on top of all ot
 - Minimal UI chrome to maximize writing space
 - Clear visual indication of which collection will receive the note
 - Smooth animations for window appearance/dismissal
+- Global Keyboard shortcut can be customised in Preferences
 
 ## Technical Notes
 
