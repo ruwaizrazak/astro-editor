@@ -1,5 +1,7 @@
 # Task: Hanging Headers
 
+"Please take the time to investigate the best approach to this properly. If it is too hard to do, it's fine if we don't do it.You may use the codemirror specialist agent For research But I don't really think this is going to be solved well inside the CodeMirror editor. I would suggest very strongly that you begin by creating a simple implementation of our current CodeMirror Editor's styles, and try to build a proof of concept about how we could do this hanging headings thing. Remember to look carefully at the image I've uploaded. Once you have investigated potential approaches to this, write your findings into this document."
+
 https://github.com/dannysmith/astro-editor/issues/3
 
 Implement hanging headers in the markdown editor, displaying heading indicators (#, ##, ###) in the left margin similar to iA Writer's design.
