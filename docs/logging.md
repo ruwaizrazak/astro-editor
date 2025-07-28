@@ -41,7 +41,7 @@ use log::{debug, error, info, warn};
 #[tauri::command]
 pub async fn my_command() -> Result<String, String> {
     info!("Command started");
-    debug!("Debug information with variable: {}", some_var);
+    debug!("Debug information with variable: {some_var}");
     warn!("Warning about something: {warning_msg}");
     error!("Error occurred: {error_msg}");
     
