@@ -255,7 +255,13 @@ mod tests {
     #[test]
     fn test_validate_project_path_valid() {
         let temp_dir = std::env::temp_dir();
-        let project_root = temp_dir.join("test_project");
+        use std::time::{SystemTime, UNIX_EPOCH};
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let thread_id = std::thread::current().id();
+        let project_root = temp_dir.join(format!("test_project_{}_{:?}", timestamp, thread_id));
         let test_file = project_root.join("components").join("Alert.astro");
 
         // Create test structure
@@ -273,7 +279,13 @@ mod tests {
     #[test]
     fn test_validate_project_path_traversal_attack() {
         let temp_dir = std::env::temp_dir();
-        let project_root = temp_dir.join("test_project");
+        use std::time::{SystemTime, UNIX_EPOCH};
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let thread_id = std::thread::current().id();
+        let project_root = temp_dir.join(format!("test_project_{}_{:?}", timestamp, thread_id));
         let malicious_path = project_root.join("../../../etc/passwd");
 
         // Create project directory

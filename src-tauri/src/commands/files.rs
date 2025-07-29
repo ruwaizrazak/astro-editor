@@ -15,7 +15,19 @@ fn validate_project_path(file_path: &str, project_root: &str) -> Result<PathBuf,
     // Resolve canonical paths to handle symlinks and .. traversal
     let canonical_file = file_path
         .canonicalize()
+        .or_else(|_| {
+            // If file doesn't exist, try to canonicalize parent and append filename
+            if let (Some(parent), Some(filename)) = (file_path.parent(), file_path.file_name()) {
+                parent.canonicalize().map(|p| p.join(filename))
+            } else {
+                Err(std::io::Error::new(
+                    std::io::ErrorKind::NotFound,
+                    "Invalid file path",
+                ))
+            }
+        })
         .map_err(|_| "Invalid file path".to_string())?;
+
     let canonical_root = project_root
         .canonicalize()
         .map_err(|_| "Invalid project root".to_string())?;
@@ -831,7 +843,13 @@ mod tests {
     #[test]
     fn test_validate_project_path_valid() {
         let temp_dir = std::env::temp_dir();
-        let project_root = temp_dir.join("test_project");
+        use std::time::{SystemTime, UNIX_EPOCH};
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let thread_id = std::thread::current().id();
+        let project_root = temp_dir.join(format!("test_project_{}_{:?}", timestamp, thread_id));
         let test_file = project_root.join("content").join("test.md");
 
         // Create test structure
@@ -843,7 +861,7 @@ mod tests {
             &project_root.to_string_lossy(),
         );
 
-        assert!(result.is_ok());
+        assert!(result.is_ok(), "Failed with error: {:?}", result.err());
 
         // Cleanup
         let _ = fs::remove_dir_all(&project_root);
@@ -852,7 +870,13 @@ mod tests {
     #[test]
     fn test_validate_project_path_traversal_attack() {
         let temp_dir = std::env::temp_dir();
-        let project_root = temp_dir.join("test_project");
+        use std::time::{SystemTime, UNIX_EPOCH};
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let thread_id = std::thread::current().id();
+        let project_root = temp_dir.join(format!("test_project_{}_{:?}", timestamp, thread_id));
         let malicious_path = project_root.join("../../../etc/passwd");
 
         // Create project directory
@@ -877,7 +901,13 @@ mod tests {
     #[test]
     fn test_validate_project_path_nonexistent_file() {
         let temp_dir = std::env::temp_dir();
-        let project_root = temp_dir.join("test_project");
+        use std::time::{SystemTime, UNIX_EPOCH};
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let thread_id = std::thread::current().id();
+        let project_root = temp_dir.join(format!("test_project_{}_{:?}", timestamp, thread_id));
         let nonexistent_file = project_root.join("nonexistent.md");
 
         // Create project directory
@@ -888,9 +918,8 @@ mod tests {
             &project_root.to_string_lossy(),
         );
 
-        // Should fail because file doesn't exist
-        assert!(result.is_err());
-        assert!(result.unwrap_err().contains("Invalid file path"));
+        // Should succeed now that we allow non-existent files
+        assert!(result.is_ok(), "Failed with error: {:?}", result.err());
 
         // Cleanup
         let _ = fs::remove_dir_all(&project_root);
@@ -899,7 +928,13 @@ mod tests {
     #[tokio::test]
     async fn test_read_file_success() {
         let temp_dir = std::env::temp_dir();
-        let project_root = temp_dir.join("test_project");
+        use std::time::{SystemTime, UNIX_EPOCH};
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let thread_id = std::thread::current().id();
+        let project_root = temp_dir.join(format!("test_project_{}_{:?}", timestamp, thread_id));
         let test_file = project_root.join("test_read.md");
         let test_content = "# Test Content\n\nThis is a test file.";
 
@@ -913,7 +948,7 @@ mod tests {
         )
         .await;
 
-        assert!(result.is_ok());
+        assert!(result.is_ok(), "Failed with error: {:?}", result.err());
         assert_eq!(result.unwrap(), test_content);
 
         // Cleanup
@@ -923,7 +958,13 @@ mod tests {
     #[tokio::test]
     async fn test_read_file_path_traversal() {
         let temp_dir = std::env::temp_dir();
-        let project_root = temp_dir.join("test_project");
+        use std::time::{SystemTime, UNIX_EPOCH};
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let thread_id = std::thread::current().id();
+        let project_root = temp_dir.join(format!("test_project_{}_{:?}", timestamp, thread_id));
         let malicious_file = project_root.join("../../../etc/passwd");
 
         // Create project directory
@@ -948,7 +989,13 @@ mod tests {
     #[tokio::test]
     async fn test_write_file_success() {
         let temp_dir = std::env::temp_dir();
-        let project_root = temp_dir.join("test_project");
+        use std::time::{SystemTime, UNIX_EPOCH};
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let thread_id = std::thread::current().id();
+        let project_root = temp_dir.join(format!("test_project_{}_{:?}", timestamp, thread_id));
         let test_file = project_root.join("test_write.md");
         let test_content = "# Written Content\n\nThis was written by the test.";
 
@@ -963,7 +1010,7 @@ mod tests {
         )
         .await;
 
-        assert!(result.is_ok());
+        assert!(result.is_ok(), "Failed with error: {:?}", result.err());
 
         // Verify content was written
         let written_content = fs::read_to_string(&test_file).unwrap();
@@ -976,11 +1023,18 @@ mod tests {
     #[tokio::test]
     async fn test_create_file_success() {
         let temp_dir = std::env::temp_dir();
-        let project_root = temp_dir.join("test_project");
+        use std::time::{SystemTime, UNIX_EPOCH};
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let thread_id = std::thread::current().id();
+        let project_root = temp_dir.join(format!("test_project_{}_{:?}", timestamp, thread_id));
         let content_dir = project_root.join("content");
         let test_content = "# New File\n\nThis is a newly created file.";
 
-        // Create project structure
+        // Create project structure - ensure project_root exists first
+        fs::create_dir_all(&project_root).unwrap();
         fs::create_dir_all(&content_dir).unwrap();
 
         let result = create_file(
@@ -991,7 +1045,7 @@ mod tests {
         )
         .await;
 
-        assert!(result.is_ok());
+        assert!(result.is_ok(), "Failed with error: {:?}", result.err());
 
         let created_path = result.unwrap();
         assert!(Path::new(&created_path).exists());
@@ -1007,7 +1061,13 @@ mod tests {
     #[tokio::test]
     async fn test_create_file_path_traversal() {
         let temp_dir = std::env::temp_dir();
-        let project_root = temp_dir.join("test_project");
+        use std::time::{SystemTime, UNIX_EPOCH};
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let thread_id = std::thread::current().id();
+        let project_root = temp_dir.join(format!("test_project_{}_{:?}", timestamp, thread_id));
         let malicious_dir = project_root.join("../../../tmp");
 
         // Create project directory
@@ -1034,7 +1094,13 @@ mod tests {
     #[tokio::test]
     async fn test_delete_file_success() {
         let temp_dir = std::env::temp_dir();
-        let project_root = temp_dir.join("test_project");
+        use std::time::{SystemTime, UNIX_EPOCH};
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let thread_id = std::thread::current().id();
+        let project_root = temp_dir.join(format!("test_project_{}_{:?}", timestamp, thread_id));
         let test_file = project_root.join("test_delete.md");
 
         // Create file to delete
@@ -1048,7 +1114,7 @@ mod tests {
         )
         .await;
 
-        assert!(result.is_ok());
+        assert!(result.is_ok(), "Failed with error: {:?}", result.err());
         assert!(!test_file.exists());
 
         // Cleanup
@@ -1058,7 +1124,13 @@ mod tests {
     #[tokio::test]
     async fn test_delete_file_path_traversal() {
         let temp_dir = std::env::temp_dir();
-        let project_root = temp_dir.join("test_project");
+        use std::time::{SystemTime, UNIX_EPOCH};
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let thread_id = std::thread::current().id();
+        let project_root = temp_dir.join(format!("test_project_{}_{:?}", timestamp, thread_id));
         let malicious_file = project_root.join("../../../tmp/should_not_delete.txt");
 
         // Create project directory
@@ -1181,7 +1253,13 @@ This is a test post with arrays."#;
     #[tokio::test]
     async fn test_save_markdown_content() {
         let temp_dir = std::env::temp_dir();
-        let project_root = temp_dir.join("test_project");
+        use std::time::{SystemTime, UNIX_EPOCH};
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let thread_id = std::thread::current().id();
+        let project_root = temp_dir.join(format!("test_project_{}_{:?}", timestamp, thread_id));
         let test_file = project_root.join("test_save_markdown.md");
 
         // Create project structure
@@ -1207,7 +1285,7 @@ This is a test post with arrays."#;
         )
         .await;
 
-        assert!(result.is_ok());
+        assert!(result.is_ok(), "Failed with error: {:?}", result.err());
 
         // Verify the saved file
         let saved_content = fs::read_to_string(&test_file).unwrap();
@@ -1327,10 +1405,16 @@ Regular markdown content here."#;
     #[test]
     fn test_validate_app_data_path_valid() {
         let temp_dir = std::env::temp_dir();
-        let app_data_dir = temp_dir.join("app_data");
+        use std::time::{SystemTime, UNIX_EPOCH};
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let app_data_dir = temp_dir.join(format!("app_data_{}", timestamp));
         let test_file = app_data_dir.join("preferences").join("settings.json");
 
-        // Create test structure
+        // Create test structure - ensure app_data_dir exists first
+        fs::create_dir_all(&app_data_dir).unwrap();
         fs::create_dir_all(test_file.parent().unwrap()).unwrap();
         fs::write(&test_file, "test content").unwrap();
 
@@ -1339,7 +1423,7 @@ Regular markdown content here."#;
             &app_data_dir.to_string_lossy(),
         );
 
-        assert!(result.is_ok());
+        assert!(result.is_ok(), "Failed with error: {:?}", result.err());
 
         // Cleanup
         let _ = fs::remove_dir_all(&app_data_dir);
@@ -1348,7 +1432,12 @@ Regular markdown content here."#;
     #[test]
     fn test_validate_app_data_path_traversal_attack() {
         let temp_dir = std::env::temp_dir();
-        let app_data_dir = temp_dir.join("app_data");
+        use std::time::{SystemTime, UNIX_EPOCH};
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let app_data_dir = temp_dir.join(format!("app_data_{}", timestamp));
         let malicious_path = app_data_dir.join("../../../etc/passwd");
 
         // Create app data directory
@@ -1415,7 +1504,7 @@ Regular markdown content here."#;
         )
         .await;
 
-        assert!(result.is_ok());
+        assert!(result.is_ok(), "Failed with error: {:?}", result.err());
         let relative_path = result.unwrap();
 
         // Check the returned path format
@@ -1461,7 +1550,7 @@ Regular markdown content here."#;
         )
         .await;
 
-        assert!(result.is_ok());
+        assert!(result.is_ok(), "Failed with error: {:?}", result.err());
         let relative_path = result.unwrap();
 
         // Should have -1 suffix
@@ -1498,7 +1587,7 @@ Regular markdown content here."#;
         )
         .await;
 
-        assert!(result.is_ok());
+        assert!(result.is_ok(), "Failed with error: {:?}", result.err());
 
         // Directory should now exist
         assert!(assets_dir.exists());
