@@ -48,7 +48,7 @@ export const GeneralPane: React.FC = () => {
     (value: string) => {
       void updateGlobal({
         general: {
-          ideCommand: value,
+          ideCommand: value === 'none' ? '' : value,
           theme: globalSettings?.general?.theme || 'system',
           highlights: globalSettings?.general?.highlights || {
             nouns: true,
@@ -104,7 +104,7 @@ export const GeneralPane: React.FC = () => {
           description="Choose your preferred IDE for opening files and projects"
         >
           <Select
-            value={globalSettings?.general?.ideCommand || ''}
+            value={globalSettings?.general?.ideCommand || 'none'}
             onValueChange={handleIdeCommandChange}
             disabled={ideLoading}
           >
@@ -114,7 +114,7 @@ export const GeneralPane: React.FC = () => {
               />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">None</SelectItem>
+              <SelectItem value="none">None</SelectItem>
               {availableIdes.map(ide => {
                 const labels: Record<string, string> = {
                   code: 'Visual Studio Code (code)',
