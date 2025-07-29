@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
-import { warn, error as logError } from '@tauri-apps/plugin-log'
+import { error as logError } from '@tauri-apps/plugin-log'
 import { toast } from '../lib/toast'
 import { ASTRO_PATHS } from '../lib/constants'
 import {
@@ -56,12 +56,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
           currentProjectSettings: projectSettings,
         })
 
-        // Persist project path to localStorage as fallback
-        try {
-          localStorage.setItem('astro-editor-last-project', path)
-        } catch (error) {
-          await warn(`Failed to persist project path: ${String(error)}`)
-        }
+        // Project persistence is now handled by the project registry system
 
         await get().startFileWatcher()
       } catch (error) {
@@ -167,28 +162,12 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
         }
       }
 
-      // Fallback to localStorage if no registry data
-      if (!get().projectPath) {
-        const savedPath = localStorage.getItem('astro-editor-last-project')
-        if (savedPath) {
-          try {
-            await invoke('scan_project', {
-              projectPath: savedPath,
-            })
-            get().setProject(savedPath)
-          } catch (error) {
-            toast.info('Previous project no longer available', {
-              description: 'The last opened project could not be found.',
-            })
-            // eslint-disable-next-line no-console
-            console.warn(
-              'Saved project path no longer valid:',
-              savedPath,
-              error
-            )
-            localStorage.removeItem('astro-editor-last-project')
-          }
-        }
+      // Project persistence is now fully handled by the file-based project registry
+      // Clean up any legacy localStorage entries to prevent conflicts
+      try {
+        localStorage.removeItem('astro-editor-last-project')
+      } catch {
+        // Ignore errors - localStorage cleanup is optional
       }
     } catch (error) {
       // eslint-disable-next-line no-console

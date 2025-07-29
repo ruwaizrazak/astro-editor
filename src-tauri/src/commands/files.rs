@@ -776,6 +776,24 @@ pub async fn write_app_data_file(
 }
 
 #[tauri::command]
+pub async fn read_app_data_file(
+    app: tauri::AppHandle,
+    file_path: String,
+) -> Result<String, String> {
+    let app_data_dir = app
+        .path()
+        .resolve("", BaseDirectory::AppLocalData)
+        .map_err(|e| format!("Failed to resolve app data directory: {e}"))?
+        .to_string_lossy()
+        .to_string();
+
+    let validated_path = validate_app_data_path(&file_path, &app_data_dir)?;
+
+    std::fs::read_to_string(&validated_path)
+        .map_err(|e| format!("Failed to read app data file: {e}"))
+}
+
+#[tauri::command]
 pub async fn read_file_content(file_path: String, project_root: String) -> Result<String, String> {
     let validated_path = validate_project_path(&file_path, &project_root)?;
     std::fs::read_to_string(&validated_path).map_err(|e| format!("Failed to read file: {e}"))

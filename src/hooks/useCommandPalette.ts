@@ -45,8 +45,9 @@ export function useCommandPalette(searchValue = '') {
 
   // Get all available commands based on current context
   // Optimize dependencies to prevent unnecessary recalculations that could disrupt navigation
-  const commands = useMemo(
-    () => getAllCommands(context, searchValue),
+  // Note: We deliberately exclude searchValue from dependencies to prevent disrupting navigation
+  const baseCommands = useMemo(
+    () => getAllCommands(context, ''), // Pass empty string to get base commands only
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       context.currentFile?.id,
@@ -60,8 +61,28 @@ export function useCommandPalette(searchValue = '') {
       context.globalSettings?.general?.highlights?.adverbs,
       context.globalSettings?.general?.highlights?.conjunctions,
       context.collections.length, // Only react to collection count changes, not array reference
-      searchValue, // Add searchValue as dependency
     ]
+  )
+
+  // Generate search commands separately to avoid disrupting navigation
+  const searchCommands = useMemo(
+    () => {
+      if (!searchValue || searchValue.length < 2 || !context.projectPath) {
+        return []
+      }
+      // For search commands, we only need the collections and projectPath from context
+      return getAllCommands(context, searchValue).filter(
+        cmd => cmd.group === 'search'
+      )
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [searchValue, context.projectPath, context.collections.length]
+  )
+
+  // Combine base commands with search commands
+  const commands = useMemo(
+    () => [...searchCommands, ...baseCommands],
+    [searchCommands, baseCommands]
   )
 
   // Group commands by category

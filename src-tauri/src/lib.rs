@@ -341,6 +341,7 @@ pub fn run() {
             save_crash_report,
             get_app_data_dir,
             write_app_data_file,
+            read_app_data_file,
             read_file_content,
             write_file_content,
             create_directory,

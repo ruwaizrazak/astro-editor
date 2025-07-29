@@ -42,18 +42,19 @@ async function ensurePreferencesDir() {
 export async function loadProjectRegistry(): Promise<ProjectRegistry> {
   try {
     const { projectRegistryPath } = await getAppSupportPaths()
-    const content = await invoke<string>('read_file_content', {
+    const content = await invoke<string>('read_app_data_file', {
       filePath: projectRegistryPath,
     })
 
     const registry = JSON.parse(content) as ProjectRegistry
 
     // Validate and migrate if needed
-    return {
+    const finalRegistry = {
       ...DEFAULT_PROJECT_REGISTRY,
       ...registry,
       version: registry.version || 1,
     }
+    return finalRegistry
   } catch {
     // File doesn't exist or is invalid, return defaults
     return { ...DEFAULT_PROJECT_REGISTRY }
@@ -86,7 +87,7 @@ export async function saveProjectRegistry(
 export async function loadGlobalSettings(): Promise<GlobalSettings> {
   try {
     const { globalSettingsPath } = await getAppSupportPaths()
-    const content = await invoke<string>('read_file_content', {
+    const content = await invoke<string>('read_app_data_file', {
       filePath: globalSettingsPath,
     })
 
@@ -151,7 +152,7 @@ export async function loadProjectData(
     const { projectsDir } = await getAppSupportPaths()
     const projectFilePath = `${projectsDir}/${projectId}.json`
 
-    const content = await invoke<string>('read_file_content', {
+    const content = await invoke<string>('read_app_data_file', {
       filePath: projectFilePath,
     })
 
