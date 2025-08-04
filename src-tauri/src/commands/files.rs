@@ -849,7 +849,7 @@ mod tests {
             .unwrap()
             .as_nanos();
         let thread_id = std::thread::current().id();
-        let project_root = temp_dir.join(format!("test_project_{}_{:?}", timestamp, thread_id));
+        let project_root = temp_dir.join(format!("test_project_{timestamp}_{thread_id:?}"));
         let test_file = project_root.join("content").join("test.md");
 
         // Create test structure
@@ -876,7 +876,7 @@ mod tests {
             .unwrap()
             .as_nanos();
         let thread_id = std::thread::current().id();
-        let project_root = temp_dir.join(format!("test_project_{}_{:?}", timestamp, thread_id));
+        let project_root = temp_dir.join(format!("test_project_{timestamp}_{thread_id:?}"));
         let malicious_path = project_root.join("../../../etc/passwd");
 
         // Create project directory
@@ -907,7 +907,7 @@ mod tests {
             .unwrap()
             .as_nanos();
         let thread_id = std::thread::current().id();
-        let project_root = temp_dir.join(format!("test_project_{}_{:?}", timestamp, thread_id));
+        let project_root = temp_dir.join(format!("test_project_{timestamp}_{thread_id:?}"));
         let nonexistent_file = project_root.join("nonexistent.md");
 
         // Create project directory
@@ -934,7 +934,7 @@ mod tests {
             .unwrap()
             .as_nanos();
         let thread_id = std::thread::current().id();
-        let project_root = temp_dir.join(format!("test_project_{}_{:?}", timestamp, thread_id));
+        let project_root = temp_dir.join(format!("test_project_{timestamp}_{thread_id:?}"));
         let test_file = project_root.join("test_read.md");
         let test_content = "# Test Content\n\nThis is a test file.";
 
@@ -964,7 +964,7 @@ mod tests {
             .unwrap()
             .as_nanos();
         let thread_id = std::thread::current().id();
-        let project_root = temp_dir.join(format!("test_project_{}_{:?}", timestamp, thread_id));
+        let project_root = temp_dir.join(format!("test_project_{timestamp}_{thread_id:?}"));
         let malicious_file = project_root.join("../../../etc/passwd");
 
         // Create project directory
@@ -995,7 +995,7 @@ mod tests {
             .unwrap()
             .as_nanos();
         let thread_id = std::thread::current().id();
-        let project_root = temp_dir.join(format!("test_project_{}_{:?}", timestamp, thread_id));
+        let project_root = temp_dir.join(format!("test_project_{timestamp}_{thread_id:?}"));
         let test_file = project_root.join("test_write.md");
         let test_content = "# Written Content\n\nThis was written by the test.";
 
@@ -1029,7 +1029,7 @@ mod tests {
             .unwrap()
             .as_nanos();
         let thread_id = std::thread::current().id();
-        let project_root = temp_dir.join(format!("test_project_{}_{:?}", timestamp, thread_id));
+        let project_root = temp_dir.join(format!("test_project_{timestamp}_{thread_id:?}"));
         let content_dir = project_root.join("content");
         let test_content = "# New File\n\nThis is a newly created file.";
 
@@ -1067,7 +1067,7 @@ mod tests {
             .unwrap()
             .as_nanos();
         let thread_id = std::thread::current().id();
-        let project_root = temp_dir.join(format!("test_project_{}_{:?}", timestamp, thread_id));
+        let project_root = temp_dir.join(format!("test_project_{timestamp}_{thread_id:?}"));
         let malicious_dir = project_root.join("../../../tmp");
 
         // Create project directory
@@ -1100,7 +1100,7 @@ mod tests {
             .unwrap()
             .as_nanos();
         let thread_id = std::thread::current().id();
-        let project_root = temp_dir.join(format!("test_project_{}_{:?}", timestamp, thread_id));
+        let project_root = temp_dir.join(format!("test_project_{timestamp}_{thread_id:?}"));
         let test_file = project_root.join("test_delete.md");
 
         // Create file to delete
@@ -1130,7 +1130,7 @@ mod tests {
             .unwrap()
             .as_nanos();
         let thread_id = std::thread::current().id();
-        let project_root = temp_dir.join(format!("test_project_{}_{:?}", timestamp, thread_id));
+        let project_root = temp_dir.join(format!("test_project_{timestamp}_{thread_id:?}"));
         let malicious_file = project_root.join("../../../tmp/should_not_delete.txt");
 
         // Create project directory
@@ -1259,7 +1259,7 @@ This is a test post with arrays."#;
             .unwrap()
             .as_nanos();
         let thread_id = std::thread::current().id();
-        let project_root = temp_dir.join(format!("test_project_{}_{:?}", timestamp, thread_id));
+        let project_root = temp_dir.join(format!("test_project_{timestamp}_{thread_id:?}"));
         let test_file = project_root.join("test_save_markdown.md");
 
         // Create project structure
@@ -1410,7 +1410,7 @@ Regular markdown content here."#;
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_nanos();
-        let app_data_dir = temp_dir.join(format!("app_data_{}", timestamp));
+        let app_data_dir = temp_dir.join(format!("app_data_{timestamp}"));
         let test_file = app_data_dir.join("preferences").join("settings.json");
 
         // Create test structure - ensure app_data_dir exists first
@@ -1437,7 +1437,7 @@ Regular markdown content here."#;
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_nanos();
-        let app_data_dir = temp_dir.join(format!("app_data_{}", timestamp));
+        let app_data_dir = temp_dir.join(format!("app_data_{timestamp}"));
         let malicious_path = app_data_dir.join("../../../etc/passwd");
 
         // Create app data directory
