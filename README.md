@@ -55,23 +55,7 @@ See [User Guide](docs/user-guide.md)
 
 ## Disclaimer ⚠️
 
-If you're going to install this, you should know...
-
-I haven't written any JS/TS or React for ~5 years and never did much before that, so my understanding of React is shaky at best and it turns out I've forgotten a lot of JavaScript. I've **read** a bit of TypeScript recently, but I've basically never written it. I've never written a line of Rust in my life. I'd never heard of Tauri before starting this project. And I haven't written production code for a real product in ~8 years.
-
-This project started as an exercise in **learning**, the primary goal of which was to work heavily with Claude Code and Gemini for a few weeks to "mostly vibe code" an app which _just maybe_ might be useful to me at the end of it.
-
-So I'm not kidding when I say "vibe coded"...
-
-- I've hand-written < 1% of the code in this project.
-- I've read _in detail_ < 10% of it and have maybe skim-read 50-60%.
-- I've spent **a lot** of time writing detailed markdown instructions, reviewing and editing AI-generated technical plans, and course-correcting AI regarding technical approach & architecture as it works.
-- I've intentionally avoided giving instructions about the actual code. I've been more like _"No, stop, it feels like we've missed the root cause. That last error makes me think `isDirty` is being messed with somehow. Maybe add some logging to `EditorView.tsx` and we can look at the console? Or look online for reference implementations?"_
-- I intentionally broke my Number One Rule of New Projects: **always have a functioning walking skeleton and docs before you write features**. The test system, design patterns, UI component libraries, state management, linting & formatting tools, component architecture, docs, and AI instructions were all retrofitted **AFTER** AI built the core features. This was obviously a massive headache, but I wanted to learn how Claude Code behaved without all the guardrails those things provide.
-
-While I'm doing my best to keep this codebase somewhat sane, secure, performant & maintainable... the primary goal of this project is still **learn by mostly vibe coding**.
-
-So please... don't judge me on the code. And while I haven't had a problem yet, it's probably best to commit regularly in your Astro project if you're writing a lot of stuff in Astro Editor.
+This is a work in progress so it's probably best to commit regularly in your Astro project if you're writing a lot of stuff in Astro Editor.
 
 ## Feature Requests & Bug Reports
 
