@@ -79,7 +79,7 @@ base64 -i astro-editor-cert.p12 | pbcopy
 | `APPLE_CERTIFICATE_PASSWORD` | Your .p12 password                | Certificate export password                      |
 | `APPLE_API_KEY`              | Key ID (10 chars)                 | From App Store Connect                           |
 | `APPLE_API_ISSUER`           | Issuer ID (UUID)                  | From App Store Connect                           |
-| `APPLE_API_KEY_PATH`         | **Content of .p8 file**           | Private key content (workflow creates temp file) |
+| `APPLE_API_KEY_PATH`         | **Content of .p8 file**           | Private key content (workflow creates temp file in ./private_keys) |
 
 ### Tauri Update Signing Secrets (if not already set)
 
