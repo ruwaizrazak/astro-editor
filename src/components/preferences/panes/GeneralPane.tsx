@@ -251,6 +251,25 @@ export const GeneralPane: React.FC = () => {
           </div>
         </SettingsField>
       </SettingsSection>
+
+      <SettingsSection title="Editor">
+        <SettingsField
+          label="Auto Save Delay"
+          description="Time in seconds before auto-saving changes"
+        >
+          <Select defaultValue="2">
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1">1 second</SelectItem>
+              <SelectItem value="2">2 seconds</SelectItem>
+              <SelectItem value="5">5 seconds</SelectItem>
+              <SelectItem value="10">10 seconds</SelectItem>
+            </SelectContent>
+          </Select>
+        </SettingsField>
+      </SettingsSection>
     </div>
   )
 }

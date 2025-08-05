@@ -122,7 +122,7 @@ export const PreferencesDialog: React.FC<PreferencesDialogProps> = ({
             </SidebarContent>
           </Sidebar>
 
-          <main className="flex flex-1 flex-col overflow-hidden">
+          <main className="flex flex-1 flex-col overflow-hidden max-h-[600px]">
             <header className="flex h-16 shrink-0 items-center gap-2">
               <div className="flex items-center gap-2 px-4">
                 <Breadcrumb>
@@ -141,10 +141,12 @@ export const PreferencesDialog: React.FC<PreferencesDialogProps> = ({
               </div>
             </header>
 
-            <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 pt-0">
-              {activePane === 'general' && <GeneralPane />}
-              {activePane === 'project' && <ProjectSettingsPane />}
-              {activePane === 'frontmatter' && <FrontmatterMappingsPane />}
+            <div className="flex-1 overflow-y-auto p-4 pt-0">
+              <div className="space-y-6">
+                {activePane === 'general' && <GeneralPane />}
+                {activePane === 'project' && <ProjectSettingsPane />}
+                {activePane === 'frontmatter' && <FrontmatterMappingsPane />}
+              </div>
             </div>
           </main>
         </SidebarProvider>
