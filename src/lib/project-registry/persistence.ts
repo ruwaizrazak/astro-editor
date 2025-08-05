@@ -101,6 +101,14 @@ export async function loadGlobalSettings(): Promise<GlobalSettings> {
         ...DEFAULT_GLOBAL_SETTINGS.general,
         ...(settings.general || {}),
       },
+      appearance: {
+        ...DEFAULT_GLOBAL_SETTINGS.appearance,
+        ...(settings.appearance || {}),
+        headingColor: {
+          ...DEFAULT_GLOBAL_SETTINGS.appearance.headingColor,
+          ...(settings.appearance?.headingColor || {}),
+        },
+      },
       defaultProjectSettings: {
         ...DEFAULT_GLOBAL_SETTINGS.defaultProjectSettings,
         ...(settings.defaultProjectSettings || {}),

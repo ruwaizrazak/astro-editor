@@ -31,6 +31,12 @@ export const DEFAULT_GLOBAL_SETTINGS: GlobalSettings = {
       conjunctions: true,
     },
   },
+  appearance: {
+    headingColor: {
+      light: '#191919', // Use default text color
+      dark: '#cccccc', // Use default text color
+    },
+  },
   defaultProjectSettings: DEFAULT_PROJECT_SETTINGS,
   version: 1,
 }

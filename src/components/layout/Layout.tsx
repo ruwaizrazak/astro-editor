@@ -35,6 +35,36 @@ export const Layout: React.FC = () => {
     }
   }, [globalSettings?.general?.theme, setTheme])
 
+  // Update heading color CSS variables when appearance settings change
+  useEffect(() => {
+    const root = window.document.documentElement
+    const isDark = root.classList.contains('dark')
+    const headingColors = globalSettings?.appearance?.headingColor
+
+    if (headingColors) {
+      const color = isDark ? headingColors.dark : headingColors.light
+      root.style.setProperty('--editor-color-heading', color)
+    }
+  }, [globalSettings?.appearance?.headingColor])
+
+  // Also update heading color when theme changes (system theme changes)
+  useEffect(() => {
+    const root = window.document.documentElement
+    const headingColors = globalSettings?.appearance?.headingColor
+
+    if (headingColors) {
+      const observer = new MutationObserver(() => {
+        const isDark = root.classList.contains('dark')
+        const color = isDark ? headingColors.dark : headingColors.light
+        root.style.setProperty('--editor-color-heading', color)
+      })
+
+      observer.observe(root, { attributes: true, attributeFilter: ['class'] })
+
+      return () => observer.disconnect()
+    }
+  }, [globalSettings?.appearance?.headingColor])
+
   return (
     <div className="h-screen w-screen bg-[var(--editor-color-background)] flex flex-col rounded-xl overflow-hidden">
       {/* Unified titlebar */}

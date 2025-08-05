@@ -57,6 +57,12 @@ export interface GlobalSettings {
       conjunctions: boolean
     }
   }
+  appearance: {
+    headingColor: {
+      light: string
+      dark: string
+    }
+  }
   // Default settings that apply to new projects
   defaultProjectSettings: ProjectSettings
   version: number

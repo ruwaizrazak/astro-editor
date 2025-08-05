@@ -8,6 +8,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import { usePreferences } from '../../../hooks/usePreferences'
 import { useTheme } from '../../../lib/theme-provider'
 import { useAvailableIdes } from '../../../hooks/useAvailableIdes'
@@ -58,13 +60,15 @@ export const GeneralPane: React.FC = () => {
             conjunctions: true,
           },
         },
+        appearance: globalSettings?.appearance || {
+          headingColor: {
+            light: '#191919',
+            dark: '#cccccc',
+          },
+        },
       })
     },
-    [
-      updateGlobal,
-      globalSettings?.general?.theme,
-      globalSettings?.general?.highlights,
-    ]
+    [updateGlobal, globalSettings?.general, globalSettings?.appearance]
   )
 
   const handleThemeChange = useCallback(
@@ -73,7 +77,6 @@ export const GeneralPane: React.FC = () => {
       setTheme(value)
 
       // Also save to global settings for persistence
-      // Using current globalSettings state (not getState pattern here as we need the current subscription)
       void updateGlobal({
         general: {
           ideCommand: globalSettings?.general?.ideCommand || '',
@@ -86,14 +89,54 @@ export const GeneralPane: React.FC = () => {
             conjunctions: true,
           },
         },
+        appearance: globalSettings?.appearance || {
+          headingColor: {
+            light: '#191919',
+            dark: '#cccccc',
+          },
+        },
       })
     },
     [
       setTheme,
       updateGlobal,
-      globalSettings?.general?.ideCommand,
-      globalSettings?.general?.highlights,
+      globalSettings?.general,
+      globalSettings?.appearance,
     ]
+  )
+
+  const handleHeadingColorChange = useCallback(
+    (mode: 'light' | 'dark', color: string) => {
+      void updateGlobal({
+        general: globalSettings?.general || {
+          ideCommand: '',
+          theme: 'system',
+          highlights: {
+            nouns: true,
+            verbs: true,
+            adjectives: true,
+            adverbs: true,
+            conjunctions: true,
+          },
+        },
+        appearance: {
+          headingColor: {
+            light: globalSettings?.appearance?.headingColor?.light || '#191919',
+            dark: globalSettings?.appearance?.headingColor?.dark || '#cccccc',
+            [mode]: color,
+          },
+        },
+      })
+    },
+    [updateGlobal, globalSettings?.general, globalSettings?.appearance]
+  )
+
+  const handleResetHeadingColor = useCallback(
+    (mode: 'light' | 'dark') => {
+      const defaultColor = mode === 'light' ? '#191919' : '#cccccc'
+      handleHeadingColorChange(mode, defaultColor)
+    },
+    [handleHeadingColorChange]
   )
 
   return (
@@ -156,6 +199,56 @@ export const GeneralPane: React.FC = () => {
               <SelectItem value="system">System</SelectItem>
             </SelectContent>
           </Select>
+        </SettingsField>
+      </SettingsSection>
+
+      <SettingsSection title="Appearance">
+        <SettingsField
+          label="Heading Color (Light Mode)"
+          description="Choose the color for markdown headings in light mode"
+        >
+          <div className="flex items-center gap-2">
+            <Input
+              type="color"
+              value={
+                globalSettings?.appearance?.headingColor?.light || '#191919'
+              }
+              onChange={e => handleHeadingColorChange('light', e.target.value)}
+              className="w-20 h-9 cursor-pointer"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleResetHeadingColor('light')}
+              className="text-xs"
+            >
+              Reset
+            </Button>
+          </div>
+        </SettingsField>
+
+        <SettingsField
+          label="Heading Color (Dark Mode)"
+          description="Choose the color for markdown headings in dark mode"
+        >
+          <div className="flex items-center gap-2">
+            <Input
+              type="color"
+              value={
+                globalSettings?.appearance?.headingColor?.dark || '#cccccc'
+              }
+              onChange={e => handleHeadingColorChange('dark', e.target.value)}
+              className="w-20 h-9 cursor-pointer"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleResetHeadingColor('dark')}
+              className="text-xs"
+            >
+              Reset
+            </Button>
+          </div>
         </SettingsField>
       </SettingsSection>
     </div>

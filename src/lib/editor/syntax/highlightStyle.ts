@@ -8,34 +8,40 @@ import { markdownTags } from './markdownTags'
  */
 export const comprehensiveHighlightStyle = HighlightStyle.define([
   // === MARKDOWN-SPECIFIC TAGS ===
-  // Headings - inherit base size, just make bold
+  // Headings - inherit base size, just make bold and customizable color
   {
     tag: markdownTags.heading1,
     fontWeight: 'var(--editor-font-weight-bold)',
+    color: 'var(--editor-color-heading)',
   },
   {
     tag: markdownTags.heading2,
     fontWeight: 'var(--editor-font-weight-bold)',
+    color: 'var(--editor-color-heading)',
   },
   {
     tag: markdownTags.heading3,
     fontWeight: 'var(--editor-font-weight-bold)',
+    color: 'var(--editor-color-heading)',
   },
   {
     tag: markdownTags.heading4,
     fontWeight: 'var(--editor-font-weight-bold)',
+    color: 'var(--editor-color-heading)',
   },
   {
     tag: markdownTags.heading5,
     fontWeight: 'var(--editor-font-weight-bold)',
+    color: 'var(--editor-color-heading)',
   },
   {
     tag: markdownTags.heading6,
     fontWeight: 'var(--editor-font-weight-bold)',
+    color: 'var(--editor-color-heading)',
   },
   {
     tag: markdownTags.headingMark,
-    color: 'var(--editor-color-text)',
+    color: 'var(--editor-color-heading)',
     fontWeight: 'var(--editor-font-weight-bold)',
   },
 
@@ -261,29 +267,36 @@ export const comprehensiveHighlightStyle = HighlightStyle.define([
   {
     tag: tags.heading,
     fontWeight: 'var(--editor-font-weight-bold)',
+    color: 'var(--editor-color-heading)',
   },
   {
     tag: tags.heading1,
     fontWeight: 'var(--editor-font-weight-bold)',
+    color: 'var(--editor-color-heading)',
   },
   {
     tag: tags.heading2,
     fontWeight: 'var(--editor-font-weight-bold)',
+    color: 'var(--editor-color-heading)',
   },
   {
     tag: tags.heading3,
     fontWeight: 'var(--editor-font-weight-bold)',
+    color: 'var(--editor-color-heading)',
   },
   {
     tag: tags.heading4,
     fontWeight: 'var(--editor-font-weight-bold)',
+    color: 'var(--editor-color-heading)',
   },
   {
     tag: tags.heading5,
     fontWeight: 'var(--editor-font-weight-bold)',
+    color: 'var(--editor-color-heading)',
   },
   {
     tag: tags.heading6,
     fontWeight: 'var(--editor-font-weight-bold)',
+    color: 'var(--editor-color-heading)',
   },
 ])
