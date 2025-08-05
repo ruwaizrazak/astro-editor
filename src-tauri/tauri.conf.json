@@ -73,7 +73,6 @@
       "frameworks": [],
       "minimumSystemVersion": "10.15",
       "signingIdentity": null,
-      "providerShortName": "XT349SJG9U",
       "hardenedRuntime": true,
       "entitlements": null,
       "exceptionDomain": ""
