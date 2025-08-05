@@ -56,16 +56,17 @@ jobs:
       - name: Create API Key file
         if: matrix.platform == 'macos-14'
         run: |
-          # Create directory for API key
-          mkdir -p ./private_keys
+          # Create directory for API key in home directory (absolute path)
+          mkdir -p ~/private_keys
           
           # Create API key file with proper content and permissions
-          echo "${{ secrets.APPLE_API_KEY_PATH }}" > ./private_keys/AuthKey_${{ secrets.APPLE_API_KEY }}.p8
-          chmod 600 ./private_keys/AuthKey_${{ secrets.APPLE_API_KEY }}.p8
+          echo "${{ secrets.APPLE_API_KEY_PATH }}" > ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY }}.p8
+          chmod 600 ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY }}.p8
           
           # Debug: Verify file exists and has correct permissions
-          ls -la ./private_keys/
-          echo "API key file size: $(wc -c < ./private_keys/AuthKey_${{ secrets.APPLE_API_KEY }}.p8) bytes"
+          ls -la ~/private_keys/
+          echo "API key file size: $(wc -c < ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY }}.p8) bytes"
+          echo "API key file path: $HOME/private_keys/AuthKey_${{ secrets.APPLE_API_KEY }}.p8"
 
       - name: Build and release
         uses: tauri-apps/tauri-action@v0.5.22
@@ -80,7 +81,7 @@ jobs:
           # Apple notarization via API key (no password needed!)
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
           APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
-          APPLE_API_KEY_PATH: ./private_keys/AuthKey_${{ secrets.APPLE_API_KEY }}.p8
+          APPLE_API_KEY_PATH: ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY }}.p8
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         with:
           tagName: ${{ github.ref_name || inputs.version }}
