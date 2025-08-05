@@ -73,7 +73,7 @@
       "frameworks": [],
       "minimumSystemVersion": "10.15",
       "signingIdentity": null,
-      "providerShortName": null,
+      "providerShortName": "Danny Smith",
       "entitlements": null,
       "exceptionDomain": ""
     }
