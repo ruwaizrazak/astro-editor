@@ -53,17 +53,13 @@
     "copyright": "Copyright © 2025 Danny Smith. All rights reserved.",
     "fileAssociations": [
       {
-        "ext": [
-          "md"
-        ],
+        "ext": ["md"],
         "name": "Markdown Document",
         "description": "Markdown document",
         "role": "Editor"
       },
       {
-        "ext": [
-          "mdx"
-        ],
+        "ext": ["mdx"],
         "name": "MDX Document",
         "description": "MDX document with React components",
         "role": "Editor"
@@ -73,7 +69,8 @@
       "frameworks": [],
       "minimumSystemVersion": "10.15",
       "signingIdentity": null,
-      "providerShortName": "Danny Smith",
+      "providerShortName": "XT349SJG9U",
+      "hardenedRuntime": true,
       "entitlements": null,
       "exceptionDomain": ""
     }

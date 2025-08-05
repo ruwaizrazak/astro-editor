@@ -87,6 +87,7 @@ jobs:
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
           APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
           APPLE_API_KEY_PATH: ./private_keys/AuthKey_${{ secrets.APPLE_API_KEY }}.p8
+          APPLE_PROVIDER_SHORT_NAME: ${{ secrets.APPLE_TEAM_ID }}
         with:
           tagName: ${{ github.ref_name || inputs.version }}
           releaseName: 'Astro Editor ${{ github.ref_name || inputs.version }}'
