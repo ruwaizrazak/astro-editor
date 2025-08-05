@@ -73,13 +73,13 @@ Add these **Repository Secrets**:
 base64 -i astro-editor-cert.p12 | pbcopy
 ```
 
-| Secret Name                  | Value                             | Description                 |
-| ---------------------------- | --------------------------------- | --------------------------- |
-| `APPLE_CERTIFICATE`          | Base64 content from above command | Your .p12 certificate       |
-| `APPLE_CERTIFICATE_PASSWORD` | Your .p12 password                | Certificate export password |
-| `APPLE_API_KEY`              | Key ID (10 chars)                 | From App Store Connect      |
-| `APPLE_API_ISSUER`           | Issuer ID (UUID)                  | From App Store Connect      |
-| `APPLE_API_KEY_PATH`         | Content of .p8 file               | Private key content         |
+| Secret Name                  | Value                             | Description                                      |
+| ---------------------------- | --------------------------------- | ------------------------------------------------ |
+| `APPLE_CERTIFICATE`          | Base64 content from above command | Your .p12 certificate                            |
+| `APPLE_CERTIFICATE_PASSWORD` | Your .p12 password                | Certificate export password                      |
+| `APPLE_API_KEY`              | Key ID (10 chars)                 | From App Store Connect                           |
+| `APPLE_API_ISSUER`           | Issuer ID (UUID)                  | From App Store Connect                           |
+| `APPLE_API_KEY_PATH`         | **Content of .p8 file**           | Private key content (workflow creates temp file) |
 
 ### Tauri Update Signing Secrets (if not already set)
 
