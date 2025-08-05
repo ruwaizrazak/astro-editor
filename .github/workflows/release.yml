@@ -56,29 +56,24 @@ jobs:
       - name: Create API Key file
         if: matrix.platform == 'macos-14'
         run: |
-          # Create directory for API key in home directory (absolute path)
+          # Create directory for API key
           mkdir -p ~/private_keys
-          
+
           # Create API key file with proper content and permissions
           echo "${{ secrets.APPLE_API_KEY_PATH }}" > ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY }}.p8
           chmod 600 ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY }}.p8
-          
-          # Debug: Verify file exists and has correct permissions
-          ls -la ~/private_keys/
-          echo "API key file size: $(wc -c < ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY }}.p8) bytes"
-          echo "API key file path: $HOME/private_keys/AuthKey_${{ secrets.APPLE_API_KEY }}.p8"
 
       - name: Build and release
         uses: tauri-apps/tauri-action@v0.5.22
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CI: true
-          # Apple code signing - CRITICAL: Must specify the identity!
-          APPLE_SIGNING_IDENTITY: "Developer ID Application: Daniel Smith (XT349SJG9U)"
+          # Apple code signing
+          APPLE_SIGNING_IDENTITY: 'Developer ID Application: Daniel Smith (XT349SJG9U)'
           # Tauri updater signing (separate from Apple signing)
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-          # Apple notarization via API key (no password needed!)
+          # Apple notarization via API key
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
           APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
           APPLE_API_KEY_PATH: ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY }}.p8
@@ -87,14 +82,11 @@ jobs:
           tagName: ${{ github.ref_name || inputs.version }}
           releaseName: 'Astro Editor ${{ github.ref_name || inputs.version }}'
           releaseBody: |
-            ## 🚀 Astro Editor ${{ github.ref_name || inputs.version }}
-            
+            ## Astro Editor ${{ github.ref_name || inputs.version }}
+
             ### Installation Instructions
-            - **macOS**: Download the `.dmg` file and drag to Applications folder
-            
-            ### Auto-Updates
-            Existing users will receive automatic update notifications.
-            
+            - **macOS**: Download the `.dmg` file and drag Astro Editor to the Applications folder.
+
             **Full Changelog**: https://github.com/${{ github.repository }}/commits/${{ github.ref_name || inputs.version }}
           releaseDraft: true
           prerelease: false
