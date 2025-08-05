@@ -214,6 +214,7 @@ export function useLayoutEventListeners() {
               globalSettings?.general?.highlights?.conjunctions ?? true,
             [partOfSpeech]: !currentValue,
           },
+          autoSaveDelay: globalSettings?.general?.autoSaveDelay || 2,
         },
       }
 
@@ -247,6 +248,7 @@ export function useLayoutEventListeners() {
             adverbs: newValue,
             conjunctions: newValue,
           },
+          autoSaveDelay: globalSettings?.general?.autoSaveDelay || 2,
         },
       }
 

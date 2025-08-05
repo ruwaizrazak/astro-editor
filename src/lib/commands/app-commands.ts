@@ -321,13 +321,11 @@ export const ALLOWED_IDES = [
 async function executeIdeCommand(ideCommand: string, path: string) {
   try {
     // Call the secure Rust command handler
-    const result = await invoke<string>('open_path_in_ide', {
+    await invoke<string>('open_path_in_ide', {
       ideCommand,
       filePath: path,
     })
 
-    // eslint-disable-next-line no-console
-    console.log('IDE command result:', result)
     toast.success(`Opened in ${ideCommand}`)
   } catch (error) {
     const errorMessage =

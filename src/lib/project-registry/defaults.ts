@@ -30,6 +30,7 @@ export const DEFAULT_GLOBAL_SETTINGS: GlobalSettings = {
       adverbs: true,
       conjunctions: true,
     },
+    autoSaveDelay: 2,
   },
   appearance: {
     headingColor: {

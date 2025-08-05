@@ -100,6 +100,10 @@ export async function loadGlobalSettings(): Promise<GlobalSettings> {
       general: {
         ...DEFAULT_GLOBAL_SETTINGS.general,
         ...(settings.general || {}),
+        highlights: {
+          ...DEFAULT_GLOBAL_SETTINGS.general.highlights,
+          ...(settings.general?.highlights || {}),
+        },
       },
       appearance: {
         ...DEFAULT_GLOBAL_SETTINGS.appearance,

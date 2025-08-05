@@ -298,10 +298,14 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       clearTimeout(store.autoSaveTimeoutId)
     }
 
+    // Get auto-save delay from global settings (default to 2 seconds)
+    const globalSettings = useProjectStore.getState().globalSettings
+    const autoSaveDelay = globalSettings?.general?.autoSaveDelay || 2
+
     // Schedule new auto-save (without toast)
     const timeoutId = setTimeout(() => {
       void store.saveFile(false)
-    }, 2000)
+    }, autoSaveDelay * 1000) // Convert from seconds to milliseconds
 
     set({ autoSaveTimeoutId: timeoutId })
   },

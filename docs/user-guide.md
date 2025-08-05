@@ -116,7 +116,7 @@ The editor window shows the entire contents of your markdown or MDX files with t
 
 ### Auto-Save
 
-Astro Editor automatically saves your work every 2 seconds while you're editing. You'll see a brief "Saved" notification in the status bar when auto-save occurs. You can also manually save at any time using `Cmd+S`.
+Astro Editor automatically saves your work while you're editing (configurable in preferences, default is 2 seconds). You'll see a brief "Saved" notification in the status bar when auto-save occurs. You can also manually save at any time using `Cmd+S`.
 
 ### Editor Keyboard Shortcuts
 

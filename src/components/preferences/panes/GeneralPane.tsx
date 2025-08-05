@@ -59,6 +59,7 @@ export const GeneralPane: React.FC = () => {
             adverbs: true,
             conjunctions: true,
           },
+          autoSaveDelay: globalSettings?.general?.autoSaveDelay || 2,
         },
         appearance: globalSettings?.appearance || {
           headingColor: {
@@ -88,6 +89,7 @@ export const GeneralPane: React.FC = () => {
             adverbs: true,
             conjunctions: true,
           },
+          autoSaveDelay: globalSettings?.general?.autoSaveDelay || 2,
         },
         appearance: globalSettings?.appearance || {
           headingColor: {
@@ -108,16 +110,17 @@ export const GeneralPane: React.FC = () => {
   const handleHeadingColorChange = useCallback(
     (mode: 'light' | 'dark', color: string) => {
       void updateGlobal({
-        general: globalSettings?.general || {
-          ideCommand: '',
-          theme: 'system',
-          highlights: {
+        general: {
+          ideCommand: globalSettings?.general?.ideCommand || '',
+          theme: globalSettings?.general?.theme || 'system',
+          highlights: globalSettings?.general?.highlights || {
             nouns: true,
             verbs: true,
             adjectives: true,
             adverbs: true,
             conjunctions: true,
           },
+          autoSaveDelay: globalSettings?.general?.autoSaveDelay || 2,
         },
         appearance: {
           headingColor: {
@@ -137,6 +140,32 @@ export const GeneralPane: React.FC = () => {
       handleHeadingColorChange(mode, defaultColor)
     },
     [handleHeadingColorChange]
+  )
+
+  const handleAutoSaveDelayChange = useCallback(
+    (value: string) => {
+      void updateGlobal({
+        general: {
+          ideCommand: globalSettings?.general?.ideCommand || '',
+          theme: globalSettings?.general?.theme || 'system',
+          highlights: globalSettings?.general?.highlights || {
+            nouns: true,
+            verbs: true,
+            adjectives: true,
+            adverbs: true,
+            conjunctions: true,
+          },
+          autoSaveDelay: parseInt(value, 10),
+        },
+        appearance: globalSettings?.appearance || {
+          headingColor: {
+            light: '#191919',
+            dark: '#cccccc',
+          },
+        },
+      })
+    },
+    [updateGlobal, globalSettings?.general, globalSettings?.appearance]
   )
 
   return (
@@ -257,7 +286,10 @@ export const GeneralPane: React.FC = () => {
           label="Auto Save Delay"
           description="Time in seconds before auto-saving changes"
         >
-          <Select defaultValue="2">
+          <Select
+            value={String(globalSettings?.general?.autoSaveDelay || 2)}
+            onValueChange={handleAutoSaveDelayChange}
+          >
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>

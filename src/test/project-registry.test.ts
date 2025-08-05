@@ -50,6 +50,11 @@ describe('Project Registry System', () => {
     expect(globalSettings.general).toBeDefined()
     expect(globalSettings.general.ideCommand).toBe('')
     expect(globalSettings.general.theme).toBe('system')
+    expect(globalSettings.general.autoSaveDelay).toBe(2) // Check auto-save delay default
+    expect(globalSettings.appearance).toBeDefined()
+    expect(globalSettings.appearance.headingColor).toBeDefined()
+    expect(globalSettings.appearance.headingColor.light).toBe('#191919') // Check heading color defaults
+    expect(globalSettings.appearance.headingColor.dark).toBe('#cccccc')
     expect(globalSettings.defaultProjectSettings).toBeDefined()
     expect(globalSettings.defaultProjectSettings.pathOverrides).toBeDefined()
     expect(

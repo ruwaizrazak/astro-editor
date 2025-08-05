@@ -56,6 +56,7 @@ export interface GlobalSettings {
       adverbs: boolean
       conjunctions: boolean
     }
+    autoSaveDelay: number
   }
   appearance: {
     headingColor: {
