@@ -160,19 +160,15 @@
         class="mx-auto flex max-w-7xl items-center justify-between px-6 py-6"
       >
         <a href="#" class="flex items-center gap-3">
-          <span
-            class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600/20 ring-1 ring-inset ring-brand-400/30 shadow-glow"
-          >
-            <img
-              src="./icon.png"
-              alt="Astro Editor logo"
-              width="20"
-              height="20"
-              class="h-5 w-5 object-contain"
-              decoding="async"
-              loading="eager"
-            />
-          </span>
+          <img
+            src="./icon.png"
+            alt="Astro Editor logo"
+            width="36"
+            height="36"
+            class="h-9 w-9 rounded-lg object-contain shadow-glow"
+            decoding="async"
+            loading="eager"
+          />
           <span class="text-lg font-semibold tracking-tight">Astro Editor</span>
         </a>
         <div class="hidden items-center gap-8 md:flex">
@@ -183,11 +179,18 @@
             >How it works</a
           >
           <a
+            href="https://github.com/dannysmith/astro-editor/blob/main/docs/user-guide.md"
+            target="_blank"
+            rel="noreferrer"
+            class="text-white/80 hover:text-white transition"
+            >Docs</a
+          >
+          <a
             href="https://github.com/dannysmith/astro-editor"
             target="_blank"
             rel="noreferrer"
             class="text-white/80 hover:text-white transition"
-            >
+          >
             <svg
               width="20"
               height="20"
@@ -229,9 +232,10 @@
               The CMS experience your Astro content deserves
             </h1>
             <p class="mx-auto mt-5 max-w-2xl text-lg text-white/70">
-              Astro Editor reads your Zod schemas and transforms frontmatter into
-              smart forms. Get validation, proper field types, and MDX component
-              insertion — all in a beautiful interface inspired by iA Writer.
+              Astro Editor reads your Zod schemas and transforms frontmatter
+              into smart forms. Get validation, proper field types, and MDX
+              component insertion — all in a beautiful interface inspired by iA
+              Writer.
             </p>
             <div
               class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row"
@@ -262,88 +266,168 @@
               </a>
             </div>
           </div>
-
         </div>
       </section>
 
-      <section id="screenshots" class="relative border-t border-white/10">
+      <section class="relative border-t border-white/10">
         <div class="mx-auto max-w-7xl px-6 py-24">
-          <div class="mx-auto max-w-2xl text-center">
-            <h2 class="text-3xl font-bold sm:text-4xl">Screenshots</h2>
+          <div class="mx-auto max-w-2xl text-center mb-12">
+            <h2 class="text-3xl font-bold sm:text-4xl">See it in action</h2>
             <p class="mt-4 text-white/70">
-              A closer look at Astro Editor in action.
+              Schema-aware frontmatter forms meet distraction-free writing. Your
+              content collections, beautifully organized.
             </p>
           </div>
-          <div
-            id="screenshotsGrid"
-            class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
-          >
-            <figure
-              class="glass rounded-2xl overflow-hidden ring-1 ring-inset ring-white/10"
+          <div class="relative">
+            <div
+              class="absolute -inset-x-10 -top-10 bottom-0 opacity-20 blur-3xl"
+              aria-hidden
             >
-              <img
-                src="../docs/assets/header.png"
-                alt="Astro Editor hero view"
-                class="h-64 w-full object-cover bg-slate-900/40"
-                loading="lazy"
-                decoding="async"
-              />
-            </figure>
-            <figure
-              class="glass rounded-2xl overflow-hidden ring-1 ring-inset ring-white/10"
-            >
-              <img
-                src="../docs/assets/Overview.png"
-                alt="Overview layout"
-                class="h-64 w-full object-cover bg-slate-900/40"
-                loading="lazy"
-                decoding="async"
-              />
-            </figure>
-            <figure
-              class="glass rounded-2xl overflow-hidden ring-1 ring-inset ring-white/10"
-            >
-              <img
-                src="../docs/assets/Overview 2.png"
-                alt="Overview with file open"
-                class="h-64 w-full object-cover bg-slate-900/40"
-                loading="lazy"
-                decoding="async"
-              />
-            </figure>
-            <figure
-              class="glass rounded-2xl overflow-hidden ring-1 ring-inset ring-white/10"
-            >
-              <img
-                src="../docs/assets/Editor-mode.png"
-                alt="Editor with copyedit highlighting"
-                class="h-64 w-full object-cover bg-slate-900/40"
-                loading="lazy"
-                decoding="async"
-              />
-            </figure>
-            <figure
-              class="glass rounded-2xl overflow-hidden ring-1 ring-inset ring-white/10"
-            >
-              <img
-                src="../docs/assets/sidebar.png"
-                alt="Sidebar and file list"
-                class="h-64 w-full object-cover bg-slate-900/40"
-                loading="lazy"
-                decoding="async"
-              />
-            </figure>
-            <figure
-              class="glass rounded-2xl overflow-hidden ring-1 ring-inset ring-white/10"
-            >
-              <img
-                src="../docs/assets/Preferences.png"
-                alt="Preferences window"
-                class="h-64 w-full object-cover bg-slate-900/40"
-                loading="lazy"
-                decoding="async"
-              />
-            </figure>
+              <div
+                class="mx-auto h-full max-w-6xl bg-gradient-to-b from-brand-600/30 via-blue-500/20 to-purple-500/20"
+              ></div>
+            </div>
+            <div class="relative mx-auto max-w-6xl">
+              <div class="glass rounded-2xl p-2 shadow-glass">
+                <img
+                  src="./overview.png"
+                  alt="Astro Editor interface showing file sidebar, markdown editor, and schema-aware frontmatter forms"
+                  class="w-full rounded-xl"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <div class="mt-8 grid gap-4 sm:grid-cols-3 text-center text-sm">
+                <div>
+                  <div class="text-white/50 mb-1">File Sidebar</div>
+                  <div class="text-white/80">
+                    Collections & drafts organized by date
+                  </div>
+                </div>
+                <div>
+                  <div class="text-white/50 mb-1">Clean Editor</div>
+                  <div class="text-white/80">
+                    Markdown without the YAML clutter
+                  </div>
+                </div>
+                <div>
+                  <div class="text-white/50 mb-1">Smart Forms</div>
+                  <div class="text-white/80">
+                    Auto-generated from your Zod schemas
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="relative">
+        <div class="mx-auto max-w-7xl px-6 py-24">
+          <div class="grid gap-12 lg:gap-16">
+            <!-- Focus Mode -->
+            <div class="grid gap-8 lg:grid-cols-2 items-center">
+              <div>
+                <h3 class="text-2xl font-semibold mb-4">Focus mode</h3>
+                <p class="text-lg text-white/70 mb-4">
+                  Eliminate distractions with focus mode. Only your current
+                  sentence stays bright while everything else fades away.
+                </p>
+                <p class="text-white/60">
+                  Perfect for deep writing sessions when you need to concentrate
+                  on one thought at a time.
+                </p>
+              </div>
+              <div class="glass rounded-2xl p-3">
+                <img
+                  src="./focus-mode.png"
+                  alt="Focus mode highlighting only the current sentence"
+                  class="w-full rounded-xl"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+            </div>
+
+            <!-- Copyedit Mode -->
+            <div class="grid gap-8 lg:grid-cols-2 items-center">
+              <div class="lg:order-2">
+                <h3 class="text-2xl font-semibold mb-4">
+                  Copyedit highlighting
+                </h3>
+                <p class="text-lg text-white/70 mb-4">
+                  Analyze your writing with color-coded parts of speech. Spot
+                  overused adverbs, check verb consistency, and improve your
+                  prose.
+                </p>
+                <p class="text-white/60">
+                  Toggle individual highlights for nouns, verbs, adjectives,
+                  adverbs, and conjunctions.
+                </p>
+              </div>
+              <div class="glass rounded-2xl p-3 lg:order-1">
+                <img
+                  src="./editor-mode.png"
+                  alt="Editor with copyedit highlighting showing different parts of speech in colors"
+                  class="w-full rounded-xl"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+            </div>
+
+            <!-- MDX Component Insertion -->
+            <div class="grid gap-8 lg:grid-cols-2 items-center">
+              <div>
+                <h3 class="text-2xl font-semibold mb-4">
+                  MDX component insertion
+                </h3>
+                <p class="text-lg text-white/70 mb-4">
+                  Press Cmd+/ in MDX files to instantly insert Astro components.
+                  Configure props visually, then tab through to fill values.
+                </p>
+                <p class="text-white/60">
+                  Reads your component props automatically from your project's
+                  MDX component directory.
+                </p>
+              </div>
+              <div class="glass rounded-2xl p-3">
+                <img
+                  src="./mdx-insert-panel.png"
+                  alt="MDX component insertion panel showing component props configuration"
+                  class="w-full rounded-xl"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+            </div>
+
+            <!-- Dark Mode Interface -->
+            <div class="grid gap-8 lg:grid-cols-2 items-center">
+              <div class="lg:order-2">
+                <h3 class="text-2xl font-semibold mb-4">
+                  Beautiful dark interface
+                </h3>
+                <p class="text-lg text-white/70 mb-4">
+                  Inspired by iA Writer's clean aesthetics. Custom syntax
+                  highlighting makes your markdown beautiful without
+                  overwhelming your content.
+                </p>
+                <p class="text-white/60">
+                  Light and dark themes with thoughtful typography designed for
+                  long writing sessions.
+                </p>
+              </div>
+              <div class="glass rounded-2xl p-3 lg:order-1">
+                <img
+                  src="./dark-mode.png"
+                  alt="Dark mode interface showing clean editor with syntax highlighting"
+                  class="w-full rounded-xl"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -382,8 +466,8 @@
               </div>
               <h3 class="text-lg font-semibold">Schema-aware frontmatter</h3>
               <p class="mt-2 text-sm text-white/70">
-                Reads your Zod schemas from content.config.ts. Dates become
-                date pickers, enums become dropdowns, arrays become tag inputs.
+                Reads your Zod schemas from content.config.ts. Dates become date
+                pickers, enums become dropdowns, arrays become tag inputs.
               </p>
             </div>
             <div class="glass rounded-2xl p-6">
@@ -408,7 +492,8 @@
               <h3 class="text-lg font-semibold">Smart image handling</h3>
               <p class="mt-2 text-sm text-white/70">
                 Drag images into your editor. They're automatically copied to
-                your assets folder with web-safe names and proper markdown links.
+                your assets folder with web-safe names and proper markdown
+                links.
               </p>
             </div>
             <div class="glass rounded-2xl p-6">
@@ -459,7 +544,8 @@
               <h3 class="text-lg font-semibold">Command palette</h3>
               <p class="mt-2 text-sm text-white/70">
                 Press Cmd+K for instant access. Fuzzy search files across
-                collections, execute commands, switch projects — all keyboard-driven.
+                collections, execute commands, switch projects — all
+                keyboard-driven.
               </p>
             </div>
             <div class="glass rounded-2xl p-6">
@@ -520,61 +606,59 @@
 
       <section id="how" class="relative border-t border-white/10">
         <div class="mx-auto max-w-7xl px-6 py-24">
-          <div class="grid items-start gap-10 lg:grid-cols-2">
-            <div>
-              <h2 class="text-3xl font-bold sm:text-4xl">How it works</h2>
-              <ol class="mt-6 space-y-6">
-                <li class="glass rounded-xl p-5">
-                  <div class="flex items-start gap-4">
-                    <span
-                      class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-brand-600/30 text-sm font-semibold ring-1 ring-inset ring-brand-400/40"
-                      >1</span
-                    >
-                    <div>
-                      <h3 class="font-semibold">Open your Astro project</h3>
-                      <p class="mt-1 text-white/70">
-                        Point to any Astro 5+ project with content collections.
-                        Schemas are read from your content.config.ts automatically.
-                      </p>
-                    </div>
+          <h2 class="text-3xl font-bold sm:text-4xl mb-10">How it works</h2>
+          <div class="grid gap-10 lg:grid-cols-2">
+            <ol class="space-y-6">
+              <li class="glass rounded-xl p-5">
+                <div class="flex items-start gap-4">
+                  <span
+                    class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-600/30 text-sm font-semibold ring-1 ring-inset ring-brand-400/40"
+                    >1</span
+                  >
+                  <div>
+                    <h3 class="font-semibold">Open your Astro project</h3>
+                    <p class="mt-1 text-white/70">
+                      Point to any Astro 5+ project with content collections.
+                      Schemas are read from your content.config.ts
+                      automatically.
+                    </p>
                   </div>
-                </li>
-                <li class="glass rounded-xl p-5">
-                  <div class="flex items-start gap-4">
-                    <span
-                      class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-brand-600/30 text-sm font-semibold ring-1 ring-inset ring-brand-400/40"
-                      >2</span
-                    >
-                    <div>
-                      <h3 class="font-semibold">Write without friction</h3>
-                      <p class="mt-1 text-white/70">
-                        Frontmatter fields become smart forms. YAML stays hidden.
-                        Focus purely on your content.
-                      </p>
-                    </div>
+                </div>
+              </li>
+              <li class="glass rounded-xl p-5">
+                <div class="flex items-start gap-4">
+                  <span
+                    class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-600/30 text-sm font-semibold ring-1 ring-inset ring-brand-400/40"
+                    >2</span
+                  >
+                  <div>
+                    <h3 class="font-semibold">Write without friction</h3>
+                    <p class="mt-1 text-white/70">
+                      Frontmatter fields become smart forms. YAML stays hidden.
+                      Focus purely on your content.
+                    </p>
                   </div>
-                </li>
-                <li class="glass rounded-xl p-5">
-                  <div class="flex items-start gap-4">
-                    <span
-                      class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-brand-600/30 text-sm font-semibold ring-1 ring-inset ring-brand-400/40"
-                      >3</span
-                    >
-                    <div>
-                      <h3 class="font-semibold">Stay in your workflow</h3>
-                      <p class="mt-1 text-white/70">
-                        Use your IDE for code, terminal for git. Astro Editor
-                        handles the writing. Each tool does what it does best.
-                      </p>
-                    </div>
+                </div>
+              </li>
+              <li class="glass rounded-xl p-5">
+                <div class="flex items-start gap-4">
+                  <span
+                    class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-600/30 text-sm font-semibold ring-1 ring-inset ring-brand-400/40"
+                    >3</span
+                  >
+                  <div>
+                    <h3 class="font-semibold">Stay in your workflow</h3>
+                    <p class="mt-1 text-white/70">
+                      Use your IDE for code, terminal for git. Astro Editor
+                      handles the writing. Each tool does what it does best.
+                    </p>
                   </div>
-                </li>
-              </ol>
-            </div>
+                </div>
+              </li>
+            </ol>
             <div class="rounded-2xl border border-white/10 bg-white/[.03] p-6">
-              <div class="text-sm text-white/70">Astro content config</div>
               <pre
-                class="mt-3 overflow-auto rounded-lg bg-slate-900/70 p-5 text-[12px] leading-relaxed ring-1 ring-inset ring-white/10"
+                class="overflow-auto rounded-lg bg-slate-900/70 p-5 text-[12px] leading-relaxed ring-1 ring-inset ring-white/10"
               ><code>import { defineCollection, z } from "astro:content";
 
 const posts = defineCollection({
@@ -590,13 +674,13 @@ const posts = defineCollection({
 
 export const collections = { posts };</code></pre>
               <p class="mt-3 text-xs text-white/50">
-                Your schemas define the editing experience. No configuration needed.
+                Your schemas define the editing experience. No configuration
+                needed.
               </p>
             </div>
           </div>
         </div>
       </section>
-
     </main>
 
     <footer class="relative border-t border-white/10">
@@ -605,24 +689,27 @@ export const collections = { posts };</code></pre>
           class="flex flex-col items-center justify-between gap-6 sm:flex-row"
         >
           <div class="flex items-center gap-3">
-            <span
-              class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600/20 ring-1 ring-inset ring-brand-400/30"
-            >
-              <img
-                src="./icon.png"
-                alt="Astro Editor logo"
-                width="16"
-                height="16"
-                class="h-4 w-4 object-contain"
-                decoding="async"
-                loading="eager"
-              />
-            </span>
+            <img
+              src="./icon.png"
+              alt="Astro Editor logo"
+              width="32"
+              height="32"
+              class="h-8 w-8 rounded-lg object-contain"
+              decoding="async"
+              loading="eager"
+            />
             <span class="text-sm font-medium">Astro Editor</span>
           </div>
           <nav class="flex items-center gap-6 text-sm text-white/70">
             <a href="#features" class="hover:text-white">Features</a>
             <a href="#how" class="hover:text-white">How it works</a>
+            <a
+              href="https://github.com/dannysmith/astro-editor/blob/main/docs/user-guide.md"
+              target="_blank"
+              rel="noreferrer"
+              class="hover:text-white"
+              >Docs</a
+            >
             <a
               href="https://github.com/dannysmith/astro-editor"
               target="_blank"
@@ -643,7 +730,7 @@ export const collections = { posts };</code></pre>
             </a>
           </nav>
           <p class="text-xs text-white/50">
-            © <span id="year"></span> Astro Editor
+            © <span id="year"></span> Danny Smith
           </p>
         </div>
       </div>
