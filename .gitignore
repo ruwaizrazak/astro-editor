@@ -25,5 +25,8 @@ dist-ssr
 *.sln
 *.sw?
 
+# MCPs
+.playwright-mcp/
+
 # Test data (temporary project for manual testing)
 temp-dummy-astro-project/
