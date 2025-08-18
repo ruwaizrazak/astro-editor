@@ -39,7 +39,8 @@
       "Bash(RUST_BACKTRACE=1 cargo test test_validate_project_path_valid -- --nocapture)",
       "WebFetch(domain:v1.tauri.app)",
       "WebFetch(domain:bundlephobia.com)",
-      "WebFetch(domain:bundlephobia.com)"
+      "WebFetch(domain:bundlephobia.com)",
+      "Bash(gh run list:*)"
     ],
     "deny": []
   }

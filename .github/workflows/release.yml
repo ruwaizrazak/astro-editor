@@ -117,3 +117,11 @@ jobs:
           git add website/astro-editor-latest.dmg
           git commit -m "chore: update latest DMG for ${{ github.ref_name || inputs.version }}" || echo "No changes to commit"
           git push origin HEAD:main || echo "Failed to push, continuing..."
+
+      - name: Trigger website deployment
+        if: matrix.platform == 'macos-14'
+        run: |
+          echo "Triggering website deployment..."
+          gh workflow run deploy-website.yml || echo "Failed to trigger website deployment, continuing..."
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
