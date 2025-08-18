@@ -40,7 +40,9 @@
       "WebFetch(domain:v1.tauri.app)",
       "WebFetch(domain:bundlephobia.com)",
       "WebFetch(domain:bundlephobia.com)",
-      "Bash(gh run list:*)"
+      "Bash(gh run list:*)",
+      "Bash(npm outdated)",
+      "Bash(cargo:*)"
     ],
     "deny": []
   }
