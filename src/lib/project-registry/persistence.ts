@@ -38,10 +38,12 @@ async function ensurePreferencesDir() {
       filePath: `${projectsDir}/.init`,
       content: 'directory initialized',
     })
-    
+
     // Clean up the init files
     try {
-      await invoke('read_app_data_file', { filePath: `${preferencesDir}/.init` })
+      await invoke('read_app_data_file', {
+        filePath: `${preferencesDir}/.init`,
+      })
       await invoke('read_app_data_file', { filePath: `${projectsDir}/.init` })
     } catch {
       // Files might not exist, that's fine

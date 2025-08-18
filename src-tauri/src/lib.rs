@@ -77,7 +77,7 @@ pub fn run() {
             log::info!("Astro Editor v{} starting up", package_info.version);
             log::info!("Platform: {}", std::env::consts::OS);
             log::info!("Architecture: {}", std::env::consts::ARCH);
-            
+
             // Fix PATH environment variable for production builds
             // This ensures shell commands can find executables like 'code', 'cursor', etc.
             // if let Err(e) = fix_path_env::fix() {

@@ -216,11 +216,15 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
   initializeProjectRegistry: async () => {
     try {
-      await info('Astro Editor [PROJECT_REGISTRY] Initializing project registry')
+      await info(
+        'Astro Editor [PROJECT_REGISTRY] Initializing project registry'
+      )
       await projectRegistryManager.initialize()
       const globalSettings = projectRegistryManager.getGlobalSettings()
       set({ globalSettings })
-      await info('Astro Editor [PROJECT_REGISTRY] Project registry initialized successfully')
+      await info(
+        'Astro Editor [PROJECT_REGISTRY] Project registry initialized successfully'
+      )
     } catch (error) {
       const errorMsg = formatErrorForLogging(
         'PROJECT_REGISTRY',
@@ -236,9 +240,11 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
           error instanceof Error ? error.message : 'Unknown error occurred',
       })
       await logError(errorMsg)
-      
+
       // Don't throw - allow app to continue without registry if needed
-      await info('Astro Editor [PROJECT_REGISTRY] Continuing without registry - some features may be limited')
+      await info(
+        'Astro Editor [PROJECT_REGISTRY] Continuing without registry - some features may be limited'
+      )
     }
   },
 
