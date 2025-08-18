@@ -4,26 +4,34 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>Astro Editor — A beautiful Markdown editor for Astro content</title>
+    <title>Astro Editor — Schema-Aware Markdown Editor for Astro Content Collections</title>
     <meta
       name="description"
-      content="Astro Editor is a modern, CMS‑like Markdown/MDX editor made for Astro content collections. Edit frontmatter with forms, drop in images, and write distraction‑free—all in one delightful app."
+      content="Transform your Astro content workflow with schema-aware frontmatter forms. Astro Editor reads your Zod schemas and creates intelligent editing interfaces for distraction-free markdown writing. Download for macOS."
     />
+    <meta name="keywords" content="astro editor, markdown editor, content collections, zod schema, frontmatter editor, mdx editor, astro cms, content management, technical writing, developer tools" />
+    <meta name="author" content="Danny Smith" />
+    <link rel="canonical" href="https://astroeditor.danny.is/" />
     <meta name="theme-color" content="#0b1020" />
     <meta
       property="og:title"
-      content="Astro Editor — A beautiful Markdown editor for Astro content"
+      content="Astro Editor — Schema-Aware Markdown Editor for Astro Content Collections"
     />
     <meta
       property="og:description"
-      content="Edit Astro content with a delightful, CMS‑like UI. Frontmatter forms, image drag & drop, and a clean writing experience."
+      content="Transform your Astro content workflow with schema-aware frontmatter forms. Reads your Zod schemas and creates intelligent editing interfaces for distraction-free writing."
     />
+    <meta property="og:url" content="https://astroeditor.danny.is/" />
+    <meta property="og:site_name" content="Astro Editor" />
     <meta property="og:type" content="website" />
     <meta
       property="og:image"
       content="https://opengraph.githubassets.com/astro-editor/cover.png"
     />
     <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:title" content="Astro Editor — Schema-Aware Markdown Editor" />
+    <meta property="twitter:description" content="Transform your Astro content workflow with schema-aware frontmatter forms and distraction-free writing." />
+    <meta property="twitter:creator" content="@dannysmith" />
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="./favicon.ico" />
@@ -150,6 +158,39 @@
         );
       }
     </style>
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Astro Editor",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "macOS",
+      "description": "Schema-aware markdown editor for Astro content collections with intelligent frontmatter forms",
+      "url": "https://astroeditor.danny.is/",
+      "author": {
+        "@type": "Person",
+        "name": "Danny Smith",
+        "url": "https://danny.is"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "downloadUrl": "https://astroeditor.danny.is/astro-editor-latest.dmg",
+      "screenshot": "https://astroeditor.danny.is/overview.png",
+      "featureList": [
+        "Schema-aware frontmatter forms",
+        "MDX component insertion",
+        "Focus and typewriter modes",
+        "Command palette",
+        "Auto-save and crash recovery",
+        "Smart image handling"
+      ]
+    }
+    </script>
   </head>
 
   <body class="bg-night-900 text-white antialiased">
