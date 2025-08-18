@@ -24,12 +24,3 @@ https://getdarkmatter.dev/
 
 - One-pager
 - Responsive design for desktop and mobile users
-
-## Next Tasks
-
-- [x] Download link working
-- [x] Add simple analytics
-- [ ] Favicon
-- [ ] Clean up code
-- [ ] Better SEO
-- [ ] Test github Action with patch release
