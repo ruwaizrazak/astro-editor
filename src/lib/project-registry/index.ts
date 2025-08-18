@@ -32,6 +32,27 @@ export class ProjectRegistryManager {
    * Initialize the registry manager
    */
   async initialize(): Promise<void> {
+    // Proactively ensure app data directory structure exists
+    try {
+      await safeLog.info('Astro Editor [PROJECT_REGISTRY] Ensuring app data directories exist')
+      
+      // This will trigger directory creation through validate_app_data_path
+      const { invoke } = await import('@tauri-apps/api/core')
+      const appDataDir = await invoke<string>('get_app_data_dir')
+      await safeLog.debug(`Astro Editor [PROJECT_REGISTRY] App data directory: ${appDataDir}`)
+      
+      // Trigger directory creation by attempting to create a test file structure
+      await invoke('write_app_data_file', {
+        filePath: `${appDataDir}/preferences/.ensure-dirs`,
+        content: 'initialization check',
+      })
+      
+      await safeLog.info('Astro Editor [PROJECT_REGISTRY] App data directories verified')
+    } catch (error) {
+      await safeLog.error(`Astro Editor [PROJECT_REGISTRY] Failed to ensure directories: ${String(error)}`)
+      // Continue anyway - the subsequent operations will also attempt directory creation
+    }
+
     this.registry = await loadProjectRegistry()
     this.globalSettings = await loadGlobalSettings()
   }

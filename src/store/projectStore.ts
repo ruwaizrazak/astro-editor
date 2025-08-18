@@ -216,16 +216,29 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
   initializeProjectRegistry: async () => {
     try {
+      await info('Astro Editor [PROJECT_REGISTRY] Initializing project registry')
       await projectRegistryManager.initialize()
       const globalSettings = projectRegistryManager.getGlobalSettings()
       set({ globalSettings })
+      await info('Astro Editor [PROJECT_REGISTRY] Project registry initialized successfully')
     } catch (error) {
+      const errorMsg = formatErrorForLogging(
+        'PROJECT_REGISTRY',
+        'Failed to initialize project registry',
+        {
+          error: error instanceof Error ? error : String(error),
+          step: 'Registry Initialization',
+        }
+      )
+
       toast.error('Failed to initialize project registry', {
         description:
           error instanceof Error ? error.message : 'Unknown error occurred',
       })
-      // eslint-disable-next-line no-console
-      console.error('Failed to initialize project registry:', error)
+      await logError(errorMsg)
+      
+      // Don't throw - allow app to continue without registry if needed
+      await info('Astro Editor [PROJECT_REGISTRY] Continuing without registry - some features may be limited')
     }
   },
 
