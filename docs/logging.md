@@ -6,10 +6,18 @@ Astro Editor uses [Tauri's log plugin](https://v2.tauri.app/plugin/log) to integ
 
 **For Support Issues:**
 
+**Option 1: Complete Log File (Recommended)**
+1. Open Finder and navigate to: `~/Library/Logs/is.danny.astroeditor/`
+2. Copy the file `Astro Editor.log` 
+3. Send this file along with a description of your issue
+
+**Option 2: Console.app for Live Monitoring**
 1. Open Console.app (`/Applications/Utilities/Console.app`)
 2. Search for "Astro Editor" to see all app logs
 3. For project setup issues specifically, search for "Astro Editor [PROJECT_SETUP]"
 4. Copy the relevant logs and send them to support
+
+**Note:** The complete log file contains all historical logs and is usually more helpful for debugging than individual Console.app entries.
 
 **Common Search Terms:**
 
@@ -31,14 +39,17 @@ Astro Editor uses [Tauri's log plugin](https://v2.tauri.app/plugin/log) to integ
 **Terminal:**
 
 ```bash
-# View live logs
+# View complete log file (most helpful)
+cat "~/Library/Logs/is.danny.astroeditor/Astro Editor.log"
+
+# View recent log file entries
+tail -50 "~/Library/Logs/is.danny.astroeditor/Astro Editor.log"
+
+# Search log file for specific issues
+grep "[PROJECT_SETUP]" "~/Library/Logs/is.danny.astroeditor/Astro Editor.log"
+
+# Live system logs (less detailed than log file)
 log stream --predicate 'process == "astro-editor"'
-
-# View recent logs
-log show --last 1h --predicate 'process == "astro-editor"'
-
-# Filter for specific issues
-log show --last 1h --predicate 'process == "astro-editor" AND message CONTAINS "[PROJECT_SETUP]"'
 ```
 
 ## Available Log Levels

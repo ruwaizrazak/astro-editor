@@ -366,16 +366,24 @@ If you're experiencing issues with Astro Editor, you can collect detailed logs t
 
 ### Getting Diagnostic Logs
 
-Astro Editor automatically logs important information to the macOS Console, which can help diagnose setup problems or crashes.
+Astro Editor automatically logs detailed information to help diagnose setup problems, crashes, or other issues.
 
 **To collect logs for support:**
 
+**Method 1: Complete Log File (Recommended)**
+1. **Open Finder** and navigate to: `~/Library/Logs/is.danny.astroeditor/`
+2. **Copy the file** `Astro Editor.log`
+3. **Send this file** along with a description of your issue
+
+**Method 2: Console.app for Live Monitoring**
 1. **Open Console.app** (Applications > Utilities > Console)
 2. **Search for "Astro Editor"** in the search bar
 3. **Reproduce the issue** you're experiencing (try opening the project again, etc.)
 4. **Filter the results** by typing "Astro Editor" to see only relevant log entries
 5. **Select and copy** the relevant log entries
 6. **Send the logs** along with a description of your issue
+
+**Note:** The complete log file (Method 1) contains all historical application logs and is usually more helpful for debugging than individual Console.app entries.
 
 **Useful search terms in Console.app:**
 
