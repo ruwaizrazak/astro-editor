@@ -54,7 +54,6 @@ function App() {
         }
       } catch (checkError) {
         await error(`Update check failed: ${String(checkError)}`)
-        // Show user-friendly error message
       }
     }
 
