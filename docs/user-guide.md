@@ -64,8 +64,9 @@ The paths to the _Assets_, _Content_, and _MDX Components_ directories (relative
 For security reasons, Astro Editor cannot open projects located in certain system directories. If you attempt to open a project in one of these locations, you'll see an error message asking you to choose a different location.
 
 **Restricted directories:**
+
 - `/System/` - macOS system files
-- `/usr/` - Unix system resources  
+- `/usr/` - Unix system resources
 - `/etc/` - System configuration files
 - `/bin/` and `/sbin/` - System binaries
 - `/Library/Frameworks/` and `/Library/Extensions/` - System frameworks
@@ -358,6 +359,32 @@ Settings are automatically saved to your system:
 Projects are identified by their `package.json` name and automatically migrate if you move the project folder.
 
 _[Screenshot needed: Preferences window showing global and project-specific settings]_
+
+## Troubleshooting & Support
+
+If you're experiencing issues with Astro Editor, you can collect detailed logs to help with troubleshooting.
+
+### Getting Diagnostic Logs
+
+Astro Editor automatically logs important information to the macOS Console, which can help diagnose setup problems or crashes.
+
+**To collect logs for support:**
+
+1. **Open Console.app** (Applications > Utilities > Console)
+2. **Search for "Astro Editor"** in the search bar
+3. **Reproduce the issue** you're experiencing (try opening the project again, etc.)
+4. **Filter the results** by typing "Astro Editor" to see only relevant log entries
+5. **Select and copy** the relevant log entries
+6. **Send the logs** along with a description of your issue
+
+**Useful search terms in Console.app:**
+
+- `Astro Editor [PROJECT_SETUP]` - Project opening and setup issues
+- `Astro Editor [PROJECT_SCAN]` - Collection and file discovery problems
+- `Astro Editor [PROJECT_REGISTRY]` - Project registration and management
+- `Astro Editor [PROJECT_DISCOVERY]` - Project metadata detection
+
+The logs contain no personal content - only technical information about file paths, app operations, and error details needed for debugging.
 
 ## Global Keyboard Shortcuts
 

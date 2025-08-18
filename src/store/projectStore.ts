@@ -1,9 +1,10 @@
 import { create } from 'zustand'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
-import { error as logError } from '@tauri-apps/plugin-log'
+import { error as logError, info, debug } from '@tauri-apps/plugin-log'
 import { toast } from '../lib/toast'
 import { ASTRO_PATHS } from '../lib/constants'
+import { formatErrorForLogging } from '../lib/diagnostics'
 import {
   projectRegistryManager,
   GlobalSettings,
@@ -43,10 +44,21 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   setProject: (path: string) => {
     void (async () => {
       try {
+        await info(
+          `Astro Editor [PROJECT_SETUP] Starting project setup: ${path}`
+        )
+
         // Register the project and get its ID
+        await info(`Astro Editor [PROJECT_SETUP] Registering project: ${path}`)
         const projectId = await projectRegistryManager.registerProject(path)
+        await debug(
+          `Astro Editor [PROJECT_SETUP] Project ID generated: ${projectId}`
+        )
 
         // Load project settings
+        await info(
+          `Astro Editor [PROJECT_SETUP] Loading project settings for: ${projectId}`
+        )
         const projectSettings =
           await projectRegistryManager.getEffectiveSettings(projectId)
 
@@ -58,13 +70,28 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
         // Project persistence is now handled by the project registry system
 
+        await info(`Astro Editor [PROJECT_SETUP] Starting file watcher`)
         await get().startFileWatcher()
+
+        await info(
+          `Astro Editor [PROJECT_SETUP] Project setup completed successfully: ${projectId}`
+        )
       } catch (error) {
+        const errorMsg = formatErrorForLogging(
+          'PROJECT_SETUP',
+          'Failed during project setup',
+          {
+            projectPath: path,
+            step: 'Project Setup',
+            error: error instanceof Error ? error : String(error),
+          }
+        )
+
         toast.error('Failed to set project', {
           description:
             error instanceof Error ? error.message : 'Unknown error occurred',
         })
-        await logError(`Failed to set project: ${String(error)}`)
+        await logError(errorMsg)
       }
     })()
   },
@@ -110,10 +137,16 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       // Store the unlisten function for cleanup (though we don't currently clean it up)
       void unlistenFileChanged
     } catch (error) {
+      const errorMsg = formatErrorForLogging(
+        'PROJECT_SETUP',
+        'File watcher failed to start',
+        { projectPath, error: error instanceof Error ? error : String(error) }
+      )
+
       toast.warning('File watcher failed to start', {
         description: 'Changes to files may not be automatically detected.',
       })
-      await logError(`Failed to start file watcher: ${String(error)}`)
+      await logError(errorMsg)
     }
   },
 
@@ -124,10 +157,16 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     try {
       await invoke('stop_watching_project', { projectPath })
     } catch (error) {
+      const errorMsg = formatErrorForLogging(
+        'PROJECT_SETUP',
+        'Failed to stop file watcher',
+        { projectPath, error: error instanceof Error ? error : String(error) }
+      )
+
       toast.warning('Failed to stop file watcher', {
         description: 'File watcher may still be running in the background.',
       })
-      await logError(`Failed to stop file watcher: ${String(error)}`)
+      await logError(errorMsg)
     }
   },
 

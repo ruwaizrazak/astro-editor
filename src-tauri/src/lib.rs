@@ -346,6 +346,9 @@ pub fn run() {
             write_file_content,
             create_directory,
             open_path_in_ide,
+            get_app_version,
+            get_platform_info,
+            get_app_info,
             get_available_ides
         ])
         .run(tauri::generate_context!())

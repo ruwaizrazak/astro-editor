@@ -4,6 +4,7 @@
  * Main API for managing project identification, settings, and persistence
  */
 
+import { safeLog } from '../diagnostics'
 import {
   ProjectRegistry,
   GlobalSettings,
@@ -63,6 +64,9 @@ export class ProjectRegistryManager {
       throw new Error('Registry not initialized')
     }
 
+    await safeLog.debug(
+      `Astro Editor [PROJECT_REGISTRY] Registering project: ${projectPath}`
+    )
     const existingIds = new Set(Object.keys(this.registry.projects))
 
     // Check if this project already exists (by path)
@@ -70,6 +74,9 @@ export class ProjectRegistryManager {
       p => p.path === projectPath
     )
     if (existingProject) {
+      await safeLog.debug(
+        `Astro Editor [PROJECT_REGISTRY] Found existing project: ${existingProject.id}`
+      )
       // Update last opened time
       existingProject.lastOpened = new Date().toISOString()
       this.registry.lastOpenedProject = existingProject.id
@@ -80,6 +87,9 @@ export class ProjectRegistryManager {
     // Check if this is a moved project
     const movedProject = await this.findMovedProject(projectPath)
     if (movedProject) {
+      await safeLog.info(
+        `Astro Editor [PROJECT_REGISTRY] Detected moved project: ${movedProject.id} from ${movedProject.path} to ${projectPath}`
+      )
       // Update the path
       movedProject.path = projectPath
       movedProject.lastOpened = new Date().toISOString()
@@ -89,7 +99,13 @@ export class ProjectRegistryManager {
     }
 
     // Discover new project
+    await safeLog.info(
+      `Astro Editor [PROJECT_REGISTRY] Discovering new project at: ${projectPath}`
+    )
     const projectMetadata = await discoverProject(projectPath, existingIds)
+    await safeLog.info(
+      `Astro Editor [PROJECT_REGISTRY] New project discovered: ${projectMetadata.name} (ID: ${projectMetadata.id})`
+    )
 
     // Add to registry
     this.registry.projects[projectMetadata.id] = projectMetadata
