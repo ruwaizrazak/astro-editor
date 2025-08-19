@@ -10,6 +10,7 @@ import {
   GlobalSettings,
   ProjectSettings,
 } from '../lib/project-registry'
+import { useEditorStore } from './editorStore'
 
 interface ProjectState {
   // Core identifiers
@@ -47,6 +48,9 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
         await info(
           `Astro Editor [PROJECT_SETUP] Starting project setup: ${path}`
         )
+
+        // Close any currently open file when switching projects
+        useEditorStore.getState().closeCurrentFile()
 
         // Register the project and get its ID
         await info(`Astro Editor [PROJECT_SETUP] Registering project: ${path}`)
