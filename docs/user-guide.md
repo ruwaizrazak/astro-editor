@@ -23,7 +23,7 @@ Steps 1-3 are very much _writer mode_ tasks, while 4 & 5 are definitely _coder m
 
 - Code blocks are not syntax highlighted. If you have code examples in your files you're better off authoring them in a coding tool which can properly lint, format and check your code examples.
 - There's no mechanism for comitting or publishing in Astro Editor. You should do that in a code editor or terminal.
-- There's no way to preview your writing. The best way to do that is by running your astro site locally with `npm run dev` and looking at it there.
+- There's no way to preview your writing. The best way to do that is by running your astro site locally with `pnpm run dev` and looking at it there.
 
 Because the goal of this **simplicity when in writer mode**, Astro Editor is intentionally opinionated about its UI and limits the user customisation features to _"making it work with your Astro project and no more"_. It's not possible to customise the colour schemes, typeface etc. If you need fine-grained customization & extensibility we recommend using a custom profile in VSCode (or Obsidian) which you've set up for Markdown editing.
 
@@ -371,11 +371,13 @@ Astro Editor automatically logs detailed information to help diagnose setup prob
 **To collect logs for support:**
 
 **Method 1: Complete Log File (Recommended)**
+
 1. **Open Finder** and navigate to: `~/Library/Logs/is.danny.astroeditor/`
 2. **Copy the file** `Astro Editor.log`
 3. **Send this file** along with a description of your issue
 
 **Method 2: Console.app for Live Monitoring**
+
 1. **Open Console.app** (Applications > Utilities > Console)
 2. **Search for "Astro Editor"** in the search bar
 3. **Reproduce the issue** you're experiencing (try opening the project again, etc.)

@@ -40,7 +40,7 @@
 4. **Batch Operations**: Use multiple tool calls in single responses
 5. **Match Code Style**: Follow existing formatting and patterns
 6. **Test Coverage**: Write comprehensive tests for business logic
-7. **Quality Gates**: Run `npm run check:all` after significant changes
+7. **Quality Gates**: Run `pnpm run check:all` after significant changes
 8. **No Dev Server**: Ask user to run and report back
 9. **No Unsolicited Commits**: Only when explicitly requested
 10. **Documentation**: Update `docs/developer/architecture-guide.md` for new patterns
@@ -250,12 +250,12 @@ useHotkeys(
 ## Development Commands & Organization
 
 ```bash
-npm run dev              # Start dev server
-npm run tauri:build      # Build app
-npm run check:all        # All checks (TS + Rust + tests) - RUN BEFORE COMMITS
-npm run fix:all          # Auto-fix all issues
-npm run test             # Watch mode
-npm run test:run         # Run once
+pnpm run dev              # Start dev server
+pnpm run tauri:build      # Build app
+pnpm run check:all        # All checks (TS + Rust + tests) - RUN BEFORE COMMITS
+pnpm run fix:all          # Auto-fix all issues
+pnpm run test             # Watch mode
+pnpm run test:run         # Run once
 ```
 
 **Component Organization**: `kebab-case` directories, `PascalCase` components, `index.ts` barrel exports, domain-based grouping

@@ -17,7 +17,7 @@ We'll respond within 48 hours and provide updates on our progress.
 When contributing to Astro Editor:
 
 - Follow the [Tauri Security Guide](https://tauri.app/v1/guides/building/security)
-- Run `npm run check:all` before committing to catch security issues
+- Run `pnpm run check:all` before committing to catch security issues
 - Be careful with file system operations - only access intended directories
 - Review Tauri command implementations for privilege escalation risks
 - Update dependencies promptly when security patches are available

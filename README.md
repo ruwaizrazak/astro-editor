@@ -15,11 +15,7 @@
 - Keyboard shortcuts for inline markdown formatting, toggling headings, etc. Pasting URLs over selected text inserts a link tag. Holding option makes URLs clickable. Multiple cursors à la VSCode.
 - Autosave & crash recovery.
 
-
-
 https://github.com/user-attachments/assets/89b87f98-88c0-4845-a020-284201464b86
-
-
 
 ## Supported Astro Projects
 
@@ -111,9 +107,9 @@ node -v # Check you have node installed
 The clone the repo and run
 
 ```
-npm install # Install node deps
-npm reset:testdata # Create a local astro project for manual testing
-npm run tauri:dev # Start the development app (which will install any missing rust dependencies)
+pnpm install # Install node deps
+pnpm reset:testdata # Create a local astro project for manual testing
+pnpm run tauri:dev # Start the development app (which will install any missing rust dependencies)
 ```
 
 ### Basic Workflow

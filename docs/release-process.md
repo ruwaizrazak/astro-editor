@@ -14,7 +14,7 @@ git checkout main
 git pull origin main
 
 # Verify everything works
-npm run check:all
+pnpm run check:all
 ```
 
 **Step 2: Update Version Numbers**
@@ -152,7 +152,7 @@ main branch: ──●──●──●──●──●──●──●─�
 **Build fails:**
 
 - Verify `TAURI_PRIVATE_KEY` secret is set correctly
-- Check that all tests pass locally: `npm run check:all`
+- Check that all tests pass locally: `pnpm run check:all`
 
 **Auto-update doesn't work:**
 
@@ -194,7 +194,7 @@ git tag -l
 git tag v0.1.1 && git push origin main --tags
 
 # Run all checks
-npm run check:all
+pnpm run check:all
 ```
 
 ## Next Steps

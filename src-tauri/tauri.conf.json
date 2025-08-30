@@ -4,9 +4,9 @@
   "version": "0.1.23",
   "identifier": "is.danny.astroeditor",
   "build": {
-    "beforeDevCommand": "npm run dev",
+    "beforeDevCommand": "pnpm run dev",
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "npm run build",
+    "beforeBuildCommand": "pnpm run build",
     "frontendDist": "../dist",
     "removeUnusedCommands": true
   },
@@ -53,17 +53,13 @@
     "copyright": "Copyright © 2025 Danny Smith. All rights reserved.",
     "fileAssociations": [
       {
-        "ext": [
-          "md"
-        ],
+        "ext": ["md"],
         "name": "Markdown Document",
         "description": "Markdown document",
         "role": "Editor"
       },
       {
-        "ext": [
-          "mdx"
-        ],
+        "ext": ["mdx"],
         "name": "MDX Document",
         "description": "MDX document with React components",
         "role": "Editor"
