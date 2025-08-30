@@ -37,6 +37,7 @@ export const DEFAULT_GLOBAL_SETTINGS: GlobalSettings = {
       light: '#191919', // Use default text color
       dark: '#cccccc', // Use default text color
     },
+    fontSize: 14, // Default editor font size in pixels
   },
   defaultProjectSettings: DEFAULT_PROJECT_SETTINGS,
   version: 1,

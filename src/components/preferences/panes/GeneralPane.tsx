@@ -61,11 +61,12 @@ export const GeneralPane: React.FC = () => {
           },
           autoSaveDelay: globalSettings?.general?.autoSaveDelay || 2,
         },
-        appearance: globalSettings?.appearance || {
+        appearance: {
           headingColor: {
-            light: '#191919',
-            dark: '#cccccc',
+            light: globalSettings?.appearance?.headingColor?.light || '#191919',
+            dark: globalSettings?.appearance?.headingColor?.dark || '#cccccc',
           },
+          fontSize: globalSettings?.appearance?.fontSize || 14,
         },
       })
     },
@@ -91,11 +92,12 @@ export const GeneralPane: React.FC = () => {
           },
           autoSaveDelay: globalSettings?.general?.autoSaveDelay || 2,
         },
-        appearance: globalSettings?.appearance || {
+        appearance: {
           headingColor: {
-            light: '#191919',
-            dark: '#cccccc',
+            light: globalSettings?.appearance?.headingColor?.light || '#191919',
+            dark: globalSettings?.appearance?.headingColor?.dark || '#cccccc',
           },
+          fontSize: globalSettings?.appearance?.fontSize || 14,
         },
       })
     },
@@ -128,6 +130,7 @@ export const GeneralPane: React.FC = () => {
             dark: globalSettings?.appearance?.headingColor?.dark || '#cccccc',
             [mode]: color,
           },
+          fontSize: globalSettings?.appearance?.fontSize || 14,
         },
       })
     },
@@ -157,16 +160,68 @@ export const GeneralPane: React.FC = () => {
           },
           autoSaveDelay: parseInt(value, 10),
         },
-        appearance: globalSettings?.appearance || {
+        appearance: {
           headingColor: {
-            light: '#191919',
-            dark: '#cccccc',
+            light: globalSettings?.appearance?.headingColor?.light || '#191919',
+            dark: globalSettings?.appearance?.headingColor?.dark || '#cccccc',
           },
+          fontSize: globalSettings?.appearance?.fontSize || 14,
         },
       })
     },
     [updateGlobal, globalSettings?.general, globalSettings?.appearance]
   )
+
+  const handleFontSizeChange = useCallback(
+    (size: number) => {
+      void updateGlobal({
+        general: {
+          ideCommand: globalSettings?.general?.ideCommand || '',
+          theme: globalSettings?.general?.theme || 'system',
+          highlights: globalSettings?.general?.highlights || {
+            nouns: true,
+            verbs: true,
+            adjectives: true,
+            adverbs: true,
+            conjunctions: true,
+          },
+          autoSaveDelay: globalSettings?.general?.autoSaveDelay || 2,
+        },
+        appearance: {
+          headingColor: {
+            light: globalSettings?.appearance?.headingColor?.light || '#191919',
+            dark: globalSettings?.appearance?.headingColor?.dark || '#cccccc',
+          },
+          fontSize: size,
+        },
+      })
+    },
+    [updateGlobal, globalSettings?.general, globalSettings?.appearance]
+  )
+
+  const handleResetFontSize = useCallback(() => {
+    void updateGlobal({
+      general: {
+        ideCommand: globalSettings?.general?.ideCommand || '',
+        theme: globalSettings?.general?.theme || 'system',
+        highlights: globalSettings?.general?.highlights || {
+          nouns: true,
+          verbs: true,
+          adjectives: true,
+          adverbs: true,
+          conjunctions: true,
+        },
+        autoSaveDelay: globalSettings?.general?.autoSaveDelay || 2,
+      },
+      appearance: {
+        headingColor: {
+          light: globalSettings?.appearance?.headingColor?.light || '#191919',
+          dark: globalSettings?.appearance?.headingColor?.dark || '#cccccc',
+        },
+        fontSize: 14,
+      },
+    })
+  }, [updateGlobal, globalSettings?.general, globalSettings?.appearance])
 
   return (
     <div className="space-y-6">
@@ -273,6 +328,32 @@ export const GeneralPane: React.FC = () => {
               variant="outline"
               size="sm"
               onClick={() => handleResetHeadingColor('dark')}
+              className="text-xs"
+            >
+              Reset
+            </Button>
+          </div>
+        </SettingsField>
+
+        <SettingsField
+          label="Editor Font Size"
+          description="Set the font size for the editor in pixels"
+        >
+          <div className="flex items-center gap-2">
+            <Input
+              type="number"
+              min="8"
+              max="32"
+              step="1"
+              value={globalSettings?.appearance?.fontSize || 14}
+              onChange={e => handleFontSizeChange(parseInt(e.target.value, 10))}
+              className="w-20"
+            />
+            <span className="text-sm text-muted-foreground">px</span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleResetFontSize()}
               className="text-xs"
             >
               Reset

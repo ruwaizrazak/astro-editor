@@ -63,6 +63,7 @@ export interface GlobalSettings {
       light: string
       dark: string
     }
+    fontSize: number // Editor font size in pixels
   }
   // Default settings that apply to new projects
   defaultProjectSettings: ProjectSettings

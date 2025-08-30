@@ -1,3 +1,4 @@
+
 import React, {
   createContext,
   useContext,
@@ -6,6 +7,7 @@ import React, {
   useMemo,
   useCallback,
 } from 'react'
+import { useProjectStore } from '../store/projectStore'
 
 type Theme = 'light' | 'dark' | 'system'
 
@@ -46,6 +48,8 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
   )
 
+  const { globalSettings } = useProjectStore()
+
   useEffect(() => {
     const root = window.document.documentElement
 
@@ -73,6 +77,14 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
 
     root.classList.add(theme)
   }, [theme])
+
+  // Apply font size from preferences to CSS custom property
+  useEffect(() => {
+    const fontSize = globalSettings?.appearance?.fontSize || 14
+    
+    // Set the user font size preference that will override responsive sizing
+    document.documentElement.style.setProperty('--editor-user-font-size', `${fontSize}px`)
+  }, [globalSettings?.appearance?.fontSize])
 
   const handleSetTheme = useCallback(
     (theme: Theme) => {

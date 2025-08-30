@@ -184,7 +184,7 @@
 @media (min-width: 440px) {
   /* Small Width */
   .editor-view {
-    --editor-font-size: var(--editor-type-scale-small);
+    --editor-font-size: var(--editor-user-font-size, var(--editor-type-scale-small));
     --editor-line-height: 1.742; /* 20.9px ÷ 12px */
     /* --editor-font-variation-settings: 'spcg' 14; */
   }
@@ -193,7 +193,7 @@
 @media (min-width: 875px) {
   /* Medium Width */
   .editor-view {
-    --editor-font-size: var(--editor-type-scale-medium);
+    --editor-font-size: var(--editor-user-font-size, var(--editor-type-scale-medium));
     --editor-line-height: 1.742; /* 20.9px ÷ 12px */
     /* --editor-font-variation-settings: 'spcg' 14; */
     --editor-content-max-width: 705px;
@@ -203,7 +203,7 @@
 @media (min-width: 1250px) {
   /* Large Width */
   .editor-view {
-    --editor-font-size: var(--editor-type-scale-large);
+    --editor-font-size: var(--editor-user-font-size, var(--editor-type-scale-large));
     --editor-line-height: 1.721; /* 24.1px ÷ 14px */
     /* --editor-font-variation-settings: 'spcg' 3; */
     --editor-content-max-width: 800px;
@@ -213,7 +213,7 @@
 @media (min-width: 1660px) {
   /* Huge Width */
   .editor-view {
-    --editor-font-size: var(--editor-type-scale-huge);
+    --editor-font-size: var(--editor-user-font-size, var(--editor-type-scale-huge));
     --editor-line-height: 1.7916; /* 43px ÷ 24px */
     /* --editor-font-variation-settings: 'spcg' 20; */
     --editor-content-max-width: 980px;
