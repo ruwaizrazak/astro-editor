@@ -34,7 +34,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
-          cache: 'npm'
+          cache: 'pnpm'
+          cache-dependency-path: 'pnpm-lock.yaml'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
@@ -45,7 +52,7 @@ jobs:
           workspaces: './src-tauri -> target'
 
       - name: Install frontend dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Import Code-Signing Certificates
         if: matrix.platform == 'macos-14'
@@ -99,7 +106,7 @@ jobs:
         run: |
           # Find the generated DMG file
           DMG_FILE=$(find src-tauri/target/release/bundle/dmg -name "*.dmg" | head -1)
-          
+
           if [ -n "$DMG_FILE" ]; then
             echo "Found DMG: $DMG_FILE"
             # Copy to website folder with static name
